@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<h1>Daftar Layanan</h1>
+<a href="{% url 'tambah_layanan' %}" class="btn btn-primary mb-3">+ Tambah Layanan</a>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>No</th>
+        <th>Nama Layanan</th>
+        <th>Aksi</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for layanan in layanan_list %}
+        <tr>
+{#            <td>{{ forloop.counter }}</td>#}
+            <td>{{ forloop.counter }}</td>
+            <td>{{ layanan.nama_layanan }}</td>
+            <td>
+                <a href="{% url 'edit_layanan' layanan.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'hapus_layanan' layanan.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3">Belum ada layanan</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

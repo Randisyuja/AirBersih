@@ -1,0 +1,52 @@
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nama</th>
+        <th>No. Rumah</th>
+        <th>Layanan</th>
+        <th>Bulan</th>
+        <th>Tanggal Bayar</th>
+        <th>Jumlah</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for bayar in recent %}
+        <tr>
+            <td>{{ bayar.pelanggan.id }}</td>
+            <td>{{ bayar.pelanggan.nama }}</td>
+            <td>{{ bayar.pelanggan.rumah.no_rumah }}</td>
+            <td>{{ bayar.jenis_layanan.nama }}</td>
+            <td>{{ bayar.bulan }}</td>
+            <td>{{ bayar.tgl_pembayaran }}</td>
+            <td>Rp {{ bayar.jumlah_bayar|floatformat:0 }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="7">Belum ada pembayaran</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% if recent.has_previous %}
+            <li class="page-item">
+                <a class="page-link page-ajax" href="?page={{ recent.previous_page_number }}">Previous</a>
+            </li>
+        {% endif %}
+
+        {% for num in recent.paginator.page_range %}
+            <li class="page-item {% if recent.number == num %}active{% endif %}">
+                <a class="page-link page-ajax" href="?page={{ num }}">{{ num }}</a>
+            </li>
+        {% endfor %}
+
+        {% if recent.has_next %}
+            <li class="page-item">
+                <a class="page-link page-ajax" href="?page={{ recent.next_page_number }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>

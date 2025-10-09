@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <h1>Daftar Pelanggan</h1>
+    <a href="{% url 'tambah_pelanggan' %}" class="btn btn-primary mb-3">+ Tambah Pelanggan</a>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>Nama</th>
+            <th>No HP</th>
+            <th>Rumah</th>
+            <th>Aksi</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for p in pelanggan_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ p.nama }}</td>
+                <td>{{ p.no_hp }}</td>
+                <td>
+                    {% if p.rumah %}
+                        {{ p.rumah.no_rumah }}
+                    {% else %}
+                        Tanpa Rumah
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'edit_pelanggan' p.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'hapus_pelanggan' p.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">Belum ada pelanggan</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+{% load rupiah_filters %}
+
+    <h1>Daftar Jenis Layanan</h1>
+    <a href="{% url 'tambah_jenis_layanan' %}" class="btn btn-primary mb-3">+ Tambah Jenis</a>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>Layanan</th>
+            <th>Jenis</th>
+            <th>Tarif</th>
+            <th>Aksi</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for jenis in jenis_layanan_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ jenis.layanan.nama_layanan }}</td>
+                <td>{{ jenis.nama_jenis }}</td>
+                <td>{{ jenis.tarif|rupiah }}</td>
+                <td>
+                    <a href="{% url 'edit_jenis_layanan' jenis.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'hapus_jenis_layanan' jenis.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">Belum ada jenis layanan</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    
+{% endblock %}

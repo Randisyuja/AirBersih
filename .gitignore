@@ -1,0 +1,78 @@
+# ==========================
+# 🧠 Python & Django Project
+# ==========================
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# ==========================
+# 🧰 Virtual Environment
+# ==========================
+venv/
+.venv/
+env/
+ENV/
+.ENV/
+
+# ==========================
+# 🔑 Environment & Secrets
+# ==========================
+.env
+*.env
+
+# ==========================
+# 🗄️ Database Files
+# ==========================
+db.sqlite3
+*.db
+
+# ==========================
+# 🧱 Django Stuff
+# ==========================
+staticfiles/
+media/
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+
+# ==========================
+# 🧑‍💻 IDE / Editor Files
+# ==========================
+.vscode/
+.idea/
+*.iml
+
+# ==========================
+# 🧪 Testing & Coverage
+# ==========================
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.cache
+.pytest_cache/
+test_results/
+
+# ==========================
+# 📦 Packaging
+# ==========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==========================
+# 🧾 Miscellaneous
+# ==========================
+*.log
+.DS_Store
+Thumbs.db

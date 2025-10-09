@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <h1 >Daftar Kasir</h1>
+    <a href="{% url 'tambah_users' %}" class="btn btn-primary mb-3">+ Tambah Kasir</a>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>Username</th>
+            <th>Nama Lengkap</th>
+            <th>No HP</th>
+            <th>Aksi</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for u in users_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.first_name }} {{ u.last_name }}</td>
+                <td>{{ u.no_hp }}</td>
+                <td>
+                    <a href="{% url 'update_users' u.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'delete_users' u.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6">Belum ada kasir</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

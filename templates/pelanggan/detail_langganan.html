@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+
+    <h1>Detail Langganan</h1>
+
+    <ul>
+        <li><strong>Pelanggan:</strong> {{ langganan.pelanggan.nama }}</li>
+        <li><strong>Jenis Layanan:</strong> {{ langganan.jenis_layanan.nama_jenis }}</li>
+        <li><strong>Harga:</strong> Rp{{ langganan.harga|intcomma }}</li>
+        <li><strong>Status:</strong> {{ langganan.aktif|yesno:"Aktif,Tidak Aktif" }}</li>
+    </ul>
+
+    <a href="{% url 'daftar_langganan' %}" class="btn btn-secondary">Kembali</a>
+    <a href="{% url 'langganan_update' langganan.pk %}" class="btn btn-warning">Edit</a>
+    <a href="{% url 'langganan_delete' langganan.pk %}" class="btn btn-danger">Hapus</a>
+
+{% endblock %}

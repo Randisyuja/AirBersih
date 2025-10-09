@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <h1>Daftar Rumah</h1>
+    <a href="{% url 'tambah_rumah' %}" class="btn btn-primary mb-3">+ Tambah Rumah</a>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>RT</th>
+            <th>No Rumah</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for rumah in rumah_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ rumah.rt }}</td>
+                <td>{{ rumah.no_rumah }}</td>
+                <td>{{ rumah.status }}</td>
+                <td>
+                    <a href="{% url 'edit_rumah' rumah.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'hapus_rumah' rumah.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">Belum ada data rumah</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

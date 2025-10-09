@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <h1>{% if object %}Edit{% else %}Tambah{% endif %} Pembayaran</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Simpan</button>
+        <a href="{% url 'daftar_pembayaran' %}" class="btn btn-secondary">Batal</a>
+    </form>
+
+    <script>
+        $("#id_pelanggan").change(function () {
+            var pelangganId = $(this).val();
+            $.ajax({
+                url: "{% url 'ajax_load_jenis_layanan' %}",
+                data: {
+                    "pelanggan_id": pelangganId
+                },
+                success: function (data) {
+                    $("#id_jenis_layanan").html('<option value="">--- Pilih Jenis Layanan ---</option>');
+                    $.each(data, function (index, item) {
+                        $("#id_jenis_layanan").append(
+                            $("<option></option>").val(item.id).html(item.nama)
+                        );
+                    });
+                }
+            });
+        });
+
+        $("#id_jenis_layanan").change(function () {
+            var jenisId = $(this).val();
+            console.log("Jenis ID dipilih di dropdown:", jenisId);
+
+            if (jenisId) {
+                $.ajax({
+                    url: "{% url 'get_harga_jenis' %}",
+                    data: {'jenis_id': jenisId},
+                    success: function (data) {
+                        console.log("✅ Data dari server:", data);
+                        $("#id_jumlah_bayar").val(data.harga);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("❌ AJAX Error:", status, error);
+                        console.log("Response:", xhr.responseText);
+                    }
+                });
+            } else {
+                $("#id_harga").val("");
+            }
+        });
+    </script>
+
+{% endblock %}

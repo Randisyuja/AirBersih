@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+{% load rupiah_filters %}
+
+    <h2>Daftar Langganan</h2>
+
+    <a href="{% url 'langganan_create' %}" class="btn btn-primary">+ Tambah Langganan</a>
+
+    <table class="table table-bordered mt-3">
+        <thead>
+        <tr>
+            <th>Pelanggan</th>
+            <th>Jenis Layanan</th>
+            <th>Harga</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for l in langganan_list %}
+            <tr>
+                <td>{{ l.pelanggan.nama }}</td>
+                <td>{{ l.jenis_layanan.nama_jenis }}</td>
+                <td>{{ l.jenis_layanan.tarif|rupiah }}</td>
+                <td>{{ l.aktif|yesno:"Aktif,Tidak Aktif" }}</td>
+                <td>
+                    <a href="{% url 'langganan_detail' l.pk %}" class="btn btn-info btn-sm">Detail</a>
+                    <a href="{% url 'langganan_update' l.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'langganan_delete' l.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">Belum ada data langganan</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

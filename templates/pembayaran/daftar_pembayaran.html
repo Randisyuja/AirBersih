@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+{% load rupiah_filters %}
+{% load custom_tags %}
+
+    <h1>Daftar Pembayaran</h1>
+
+    <a href="{% url 'tambah_pembayaran' %}" class="btn btn-primary mb-3">+ Tambah Pembayaran</a>
+    <a href="{% url 'generate_tagihan' %}" class="btn btn-primary mb-3">Generate Tagihan Bulan Baru</a>
+
+    <!-- Filter -->
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-3">
+            <select name="bulan" class="form-select">
+                <option value="">-- Pilih Bulan --</option>
+                {% for i in 1|add:0|make_list %}{% endfor %}
+                {% for i in 1|until:13 %}
+                    <option value="{{ i }}" {% if request.GET.bulan == i|stringformat:"s" %}selected{% endif %}>
+                        {{ i }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="tahun" class="form-control" placeholder="Tahun"
+                   value="{{ request.GET.tahun }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+    
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Pelanggan</th>
+            <th>Jenis Layanan</th>
+            <th>Bulan</th>
+            <th>Tahun</th>
+            <th>Status</th>
+            <th>Tgl Bayar</th>
+            <th>Jumlah Bayar</th>
+            <th>Kasir</th>
+            <th>Aksi</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for pembayaran in pembayaran_list %}
+            <tr>
+                <td>{{ pembayaran.pelanggan.nama }}</td>
+                <td>{{ pembayaran.jenis_layanan.nama_jenis }}</td>
+                <td>{{ pembayaran.bulan }}</td>
+                <td>{{ pembayaran.tahun }}</td>
+                <td>{{ pembayaran.get_status_bayar_display }}</td>
+                <td>{{ pembayaran.tgl_pembayaran|default:"-" }}</td>
+                <td>{{ pembayaran.jumlah_bayar|rupiah }}</td>
+                <td>
+                    {% if pembayaran.kasir %}
+                        {{ pembayaran.kasir }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'edit_pembayaran' pembayaran.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'hapus_pembayaran' pembayaran.pk %}" class="btn btn-danger btn-sm">Hapus</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="9">Belum ada data pembayaran.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 🔽 Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page=
+                                   {{ page_obj.previous_page_number }}{% if request.GET.bulan %}&bulan={{ request.GET.bulan }}{% endif %}{% if request.GET.tahun %}&tahun={{ request.GET.tahun }}{% endif %}">
+                            Previous
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link"
+                           href="?page=
+                                   {{ num }}{% if request.GET.bulan %}&bulan={{ request.GET.bulan }}{% endif %}{% if request.GET.tahun %}&tahun={{ request.GET.tahun }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page=
+                                   {{ page_obj.next_page_number }}{% if request.GET.bulan %}&bulan={{ request.GET.bulan }}{% endif %}{% if request.GET.tahun %}&tahun={{ request.GET.tahun }}{% endif %}">
+                            Next
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+{% endblock %}

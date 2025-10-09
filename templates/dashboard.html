@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            📊 Status Pembayaran Bulan Ini ({{ bulan }}/{{ tahun }})
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-6">
+                    <div class="p-3 bg-light border rounded">
+                        <h6>Status WiFi</h6>
+                        <p class="display-6 text-danger fw-bold">{{ status_wifi }}</p>
+                        <p class="text-muted">Orang Belum Bayar</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light border rounded">
+                        <h6>Status Air</h6>
+                        <p class="display-6 text-danger fw-bold">{{ status_air }}</p>
+                        <p class="text-muted">Orang Belum Bayar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Input Pembayaran Baru -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <strong>Input Pembayaran Baru</strong>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        Nama
+                    </div>
+                    <div class="col-md-3">
+                        No Rumah
+                    </div>
+                    <div class="col-md-3">
+                        Bulan
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        {{ form_pembayaran.pelanggan }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form_pembayaran.jenis_layanan }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form_pembayaran.bulan }}
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Laporan Pembayaran -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <strong>Laporan Pembayaran Terbaru</strong>
+        </div>
+        <div class="card-body" id="laporan-container">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>No. Rumah</th>
+                    <th>Layanan</th>
+                    <th>Bulan</th>
+                    <th>Tanggal Bayar</th>
+                    <th>Jumlah</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for bayar in recent %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ bayar.pelanggan.nama }}</td>
+                        <td>{{ bayar.pelanggan.rumah.no_rumah }}</td>
+                        <td>{{ bayar.jenis_layanan.layanan }}</td>
+                        <td>{{ bayar.bulan }}</td>
+                        <td>{{ bayar.tgl_pembayaran }}</td>
+                        <td>Rp {{ bayar.jumlah_bayar|floatformat:0 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">Belum ada pembayaran</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+
+        $("#id_pelanggan").change(function () {
+            var pelangganId = $(this).val();
+            $.ajax({
+                url: "{% url 'ajax_load_jenis_layanan' %}",
+                data: {
+                    "pelanggan_id": pelangganId
+                },
+                success: function (data) {
+                    $("#id_jenis_layanan").html('<option value="">--- Pilih Jenis Layanan ---</option>');
+                    $.each(data, function (index, item) {
+                        $("#id_jenis_layanan").append(
+                            $("<option></option>").val(item.id).html(item.nama)
+                        );
+                    });
+                }
+            });
+        });
+
+        function loadPage(url) {
+            $.ajax({
+                url: url,
+                success: function (data) {
+                    $("#laporan-container").html(data.html);
+                }
+            });
+        }
+
+        // delegasi event ke link dengan class .page-ajax
+        $(document).on("click", ".page-ajax", function (e) {
+            e.preventDefault();
+            var url = $(this).attr("href");
+            loadPage("/laporan-recent/" + url);
+        });
+    
+    </script>
+    
+{% endblock %}
