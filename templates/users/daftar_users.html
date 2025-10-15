@@ -1,38 +1,67 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
 {% load static %}
 
-    <h1 >Daftar Kasir</h1>
-    <a href="{% url 'tambah_users' %}" class="btn btn-primary mb-3">+ Tambah Kasir</a>
+    <div class="container-fluid">
 
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th>No</th>
-            <th>Username</th>
-            <th>Nama Lengkap</th>
-            <th>No HP</th>
-            <th>Aksi</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for u in users_list %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ u.username }}</td>
-                <td>{{ u.first_name }} {{ u.last_name }}</td>
-                <td>{{ u.no_hp }}</td>
-                <td>
-                    <a href="{% url 'update_users' u.pk %}" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="{% url 'delete_users' u.pk %}" class="btn btn-danger btn-sm">Hapus</a>
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="6">Belum ada kasir</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <!-- Page Heading -->
+        <h1 class="h3 mb-3 text-gray-800">Daftar Pengguna</h1>
+        <a href="{% url 'tambah_users' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
+                class="fas fa-plus fa-sm text-white-50"></i> Tambah Pengguna</a>
+
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Username</th>
+                            <th>Nama Lengkap</th>
+                            <th>No HP</th>
+                            <th>Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for u in users_list %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ u.username }}</td>
+                                <td>{{ u.first_name }} {{ u.last_name }}</td>
+                                <td>{{ u.no_hp }}</td>
+                                <td>
+                                    <a href="{% url 'update_users' u.pk %}"
+                                       class="btn-sm btn-warning btn-icon-split">
+                                        <span class="icon text-white-50">
+                                            <i class="fas fa-pen"></i>
+                                        </span>
+                                        <span class="text">Edit</span>
+                                    </a>
+                                    <a href="{% url 'delete_users' u.pk %}"
+                                       class="btn-sm btn-danger btn-icon-split">
+                                        <span class="icon text-white-50">
+                                            <i class="fas fa-trash"></i>
+                                        </span>
+                                        <span class="text">Hapus</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">Belum ada kasir</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 
 {% endblock %}

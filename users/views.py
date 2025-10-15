@@ -15,6 +15,7 @@ from pembayaran.forms import PembayaranUpdate
 from pembayaran.choices import StatusChoice
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from users.forms import PenggunaForm, LoginForm
 
 
 class Dashboard(LoginRequiredMixin, TemplateView):
@@ -90,7 +91,7 @@ class DaftarKasir(LoginRequiredMixin, ListView):
 
 class TambahKasir(LoginRequiredMixin, CreateView):
     model = Kasir
-    fields = ["username", "first_name", "last_name", "email", "no_hp", "password"]
+    form_class = PenggunaForm
     template_name = "users/form_users.html"
     success_url = reverse_lazy("daftar_users")
 
@@ -104,7 +105,7 @@ class TambahKasir(LoginRequiredMixin, CreateView):
 
 class UpdateKasir(LoginRequiredMixin, UpdateView):
     model = Kasir
-    fields = ["username", "first_name", "last_name", "email", "no_hp"]
+    form_class = PenggunaForm
     template_name = "users/form_users.html"
     success_url = reverse_lazy("daftar_users")
 
@@ -140,6 +141,7 @@ User = get_user_model()
 
 class UserLoginView(LoginView):
     template_name = "users/login.html"  # template login
+    form_class = LoginForm
     redirect_authenticated_user = True  # kalau sudah login, langsung redirect
     next_page = reverse_lazy("dashboard")  # ke dashboard setelah login sukses
 
