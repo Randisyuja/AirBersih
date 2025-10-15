@@ -3,6 +3,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy
 from layanan.models import Layanan, JenisLayanan
 from django.contrib.auth.mixins import LoginRequiredMixin
+from layanan.forms import LayananForm, JenisLayananForm
 
 
 class DaftarLayanan(LoginRequiredMixin, ListView):
@@ -13,14 +14,14 @@ class DaftarLayanan(LoginRequiredMixin, ListView):
 
 class TambahLayanan(LoginRequiredMixin, CreateView):
     model = Layanan
-    fields = ["nama_layanan"]
+    form_class = LayananForm
     template_name = "layanan/form_layanan.html"
     success_url = reverse_lazy("daftar_layanan")
 
 
 class UpdateLayanan(LoginRequiredMixin, UpdateView):
     model = Layanan
-    fields = ['nama_layanan']
+    form_class = LayananForm
     template_name = "layanan/form_layanan.html"
     success_url = reverse_lazy("daftar_layanan")
 
@@ -39,14 +40,14 @@ class DaftarJenisLayanan(LoginRequiredMixin, ListView):
 
 class TambahJenisLayanan(LoginRequiredMixin, CreateView):
     model = JenisLayanan
-    fields = ["layanan", "nama_jenis", "tarif"]
+    form_class = JenisLayananForm
     template_name = "layanan/form_jenis_layanan.html"
     success_url = reverse_lazy("daftar_jenis_layanan")
 
 
 class UpdateJenisLayanan(LoginRequiredMixin, UpdateView):
     model = JenisLayanan
-    fields = ["layanan", "nama_jenis", "tarif"]
+    form_class = JenisLayananForm
     template_name = "layanan/form_jenis_layanan.html"
     success_url = reverse_lazy("daftar_jenis_layanan")
 

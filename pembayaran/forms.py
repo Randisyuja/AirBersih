@@ -39,3 +39,8 @@ class PembayaranUpdate(forms.ModelForm):
             "jenis_layanan",
             "bulan"
         ]
+        widgets = {
+            "pelanggan": forms.Select(attrs={"class": "form-control"}),
+            "jenis_layanan": forms.Select(attrs={"class": "form-control"}),
+            "bulan": forms.Select(attrs={"class": "form-control"}),
+        }

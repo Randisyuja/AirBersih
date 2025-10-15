@@ -1,108 +1,181 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
 {% load static %}
 
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            📊 Status Pembayaran Bulan Ini ({{ bulan }}/{{ tahun }})
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
         </div>
-        <div class="card-body">
-            <div class="row text-center">
-                <div class="col-md-6">
-                    <div class="p-3 bg-light border rounded">
-                        <h6>Status WiFi</h6>
-                        <p class="display-6 text-danger fw-bold">{{ status_wifi }}</p>
-                        <p class="text-muted">Orang Belum Bayar</p>
+        <!-- Content Row -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Pemasukan (Bulan Ini)
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="p-3 bg-light border rounded">
-                        <h6>Status Air</h6>
-                        <p class="display-6 text-danger fw-bold">{{ status_air }}</p>
-                        <p class="text-muted">Orang Belum Bayar</p>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Pemasukan (Tahun Ini)
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Status Wifi
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status_wifi }}</div>
+                                <div class="text-xs mb-0 text-gray-800">Belum Bayar</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Status Air
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status_air }}</div>
+                                <div class="text-xs text-gray-800">Belum Bayar</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Content Row -->
+        <div class="row">
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Pembayaran Terbaru</h6>
+                        <div class="dropdown no-arrow">
+                        </div>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <div class="table-responsive" id="laporan-container">
+                            <table class="table table-bordered" id="dataTable">
+                                <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama</th>
+                                    <th>No. Rumah</th>
+                                    <th>Layanan</th>
+                                    <th>Bulan</th>
+                                    <th>Tanggal Bayar</th>
+                                    <th>Jumlah</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for bayar in recent %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ bayar.pelanggan.nama }}</td>
+                                        <td>{{ bayar.pelanggan.rumah.no_rumah }}</td>
+                                        <td>{{ bayar.jenis_layanan.layanan }}</td>
+                                        <td>{{ bayar.bulan }}</td>
+                                        <td>{{ bayar.tgl_pembayaran }}</td>
+                                        <td>Rp {{ bayar.jumlah_bayar|floatformat:0 }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="7">Belum ada pembayaran</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div
+                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Input Pembayaran</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row mb-3">
+                                <div class="col">
+                                    Nama
+                                </div>
+                                <div class="col-md-8">
+                                    {{ form_pembayaran.pelanggan }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    Layanan
+                                </div>
+                                <div class="col-md-8">
+                                    {{ form_pembayaran.jenis_layanan }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    Bulan
+                                </div>
+                                <div class="col-md-8">
+                                    {{ form_pembayaran.bulan }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-
-    <!-- Input Pembayaran Baru -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <strong>Input Pembayaran Baru</strong>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-3">
-                        Nama
-                    </div>
-                    <div class="col-md-3">
-                        No Rumah
-                    </div>
-                    <div class="col-md-3">
-                        Bulan
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        {{ form_pembayaran.pelanggan }}
-                    </div>
-                    <div class="col-md-3">
-                        {{ form_pembayaran.jenis_layanan }}
-                    </div>
-                    <div class="col-md-3">
-                        {{ form_pembayaran.bulan }}
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Laporan Pembayaran -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <strong>Laporan Pembayaran Terbaru</strong>
-        </div>
-        <div class="card-body" id="laporan-container">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama</th>
-                    <th>No. Rumah</th>
-                    <th>Layanan</th>
-                    <th>Bulan</th>
-                    <th>Tanggal Bayar</th>
-                    <th>Jumlah</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for bayar in recent %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ bayar.pelanggan.nama }}</td>
-                        <td>{{ bayar.pelanggan.rumah.no_rumah }}</td>
-                        <td>{{ bayar.jenis_layanan.layanan }}</td>
-                        <td>{{ bayar.bulan }}</td>
-                        <td>{{ bayar.tgl_pembayaran }}</td>
-                        <td>Rp {{ bayar.jumlah_bayar|floatformat:0 }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7">Belum ada pembayaran</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
     <script>
 
         $("#id_pelanggan").change(function () {
@@ -138,7 +211,7 @@
             var url = $(this).attr("href");
             loadPage("/laporan-recent/" + url);
         });
-    
+
     </script>
-    
+
 {% endblock %}

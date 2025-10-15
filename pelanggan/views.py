@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from rumah.models import Rumah
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from pelanggan.forms import PelangganForm, LanggananForm
 
 
 class DaftarPelanggan(LoginRequiredMixin, ListView):
@@ -16,7 +17,7 @@ class DaftarPelanggan(LoginRequiredMixin, ListView):
 
 class TambahPelanggan(LoginRequiredMixin, CreateView):
     model = Pelanggan
-    fields = ["rumah", "nama", "no_hp"]
+    form_class = PelangganForm
     template_name = "pelanggan/form_pelanggan.html"
     success_url = reverse_lazy("daftar_pelanggan")
 
@@ -28,7 +29,7 @@ class TambahPelanggan(LoginRequiredMixin, CreateView):
 
 class UpdatePelanggan(LoginRequiredMixin, UpdateView):
     model = Pelanggan
-    fields = ["rumah", "nama", "no_hp"]
+    form_class = PelangganForm
     template_name = "pelanggan/form_pelanggan.html"
     success_url = reverse_lazy("daftar_pelanggan")
 
@@ -53,14 +54,14 @@ class DetailLangganan(LoginRequiredMixin, DetailView):
 
 class TambahLangganan(LoginRequiredMixin, CreateView):
     model = Langganan
-    fields = ["pelanggan", "jenis_layanan", "harga", "aktif"]
+    form_class = LanggananForm
     template_name = "pelanggan/form_langganan.html"
     success_url = reverse_lazy("daftar_langganan")
 
 
 class UpdateLangganan(LoginRequiredMixin, UpdateView):
     model = Langganan
-    fields = ["pelanggan", "jenis_layanan", "harga", "aktif"]
+    form_class = LanggananForm
     template_name = "pelanggan/form_langganan.html"
     success_url = reverse_lazy("daftar_langganan")
 

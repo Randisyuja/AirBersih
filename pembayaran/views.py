@@ -6,7 +6,7 @@ from pembayaran.models import Pembayaran
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from pembayaran.utils import generate_tagihan_bulanan
-from pembayaran.forms import PembayaranForm
+from pembayaran.forms import PembayaranForm, PembayaranUpdate
 from pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse, HttpResponse
 import io
@@ -48,16 +48,7 @@ class TambahPembayaran(LoginRequiredMixin, CreateView):
 
 class UpdatePembayaran(LoginRequiredMixin, UpdateView):
     model = Pembayaran
-    fields = [
-        "pelanggan",
-        "jenis_layanan",
-        "kasir",
-        "bulan",
-        "tahun",
-        "status_bayar",
-        "tgl_pembayaran",
-        "jumlah_bayar",
-    ]
+    form_class = PembayaranUpdate
     template_name = "pembayaran/form_pembayaran.html"
     success_url = reverse_lazy("daftar_pembayaran")
 

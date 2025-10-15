@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from rumah.models import Rumah
 from django.contrib.auth.mixins import LoginRequiredMixin
+from rumah.forms import RumahForm
 
 
 class DaftarRumah(LoginRequiredMixin, ListView):
@@ -13,14 +14,14 @@ class DaftarRumah(LoginRequiredMixin, ListView):
 
 class TambahRumah(LoginRequiredMixin, CreateView):
     model = Rumah
-    fields = ["rt", "no_rumah"]
+    form_class = RumahForm
     template_name = "rumah/form_rumah.html"
     success_url = reverse_lazy("daftar_rumah")
 
 
 class UpdateRumah(LoginRequiredMixin, UpdateView):
     model = Rumah
-    fields = ["rt", "no_rumah"]
+    form_class = RumahForm
     template_name = "rumah/form_rumah.html"
     success_url = reverse_lazy("daftar_rumah")
 

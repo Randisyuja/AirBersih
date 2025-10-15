@@ -65,19 +65,19 @@ class Dashboard(LoginRequiredMixin, TemplateView):
                 status_bayar=StatusChoice.Belum
             )
 
-            # 4️⃣ Update status pembayaran
+            # Update status pembayaran
             pembayaran.status_bayar = StatusChoice.Lunas
             pembayaran.tgl_pembayaran = timezone.now().date()
             pembayaran.kasir = request.user
             pembayaran.save()
 
-            messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} berhasil diperbarui ✅")
+            messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} berhasil diperbarui")
 
         except Rumah.DoesNotExist:
-            messages.error(request, f"Rumah dengan nomor {pelanggan.rumah.no_rumah} tidak ditemukan ❌")
+            messages.error(request, f"Rumah dengan nomor {pelanggan.rumah.no_rumah} tidak ditemukan")
 
         except Pembayaran.DoesNotExist:
-            messages.error(request, f"Tagihan untuk rumah {pelanggan.rumah.no_rumah} belum ada atau sudah dibayar ❌")
+            messages.error(request, f"Tagihan untuk rumah {pelanggan.rumah.no_rumah} belum ada atau sudah dibayar")
 
         return redirect("dashboard")
 
