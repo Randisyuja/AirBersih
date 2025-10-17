@@ -328,6 +328,49 @@
     </div>
 </div>
 
+<!-- Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Hapus data ini?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Pilih "Hapus" dibawah ini jika kamu benar benar ingin menghapus data</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                <form method="post" id="deleteForm" action="#" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // EVENT BOOTSTRAP 4
+    $(document).on('show.bs.modal', '#deleteModal', function (event) {
+        var button = $(event.relatedTarget);
+        var url = button.data('url');
+        var nama = button.data('nama');
+
+        console.log("🔍 Modal terbuka. URL =", url, "| Nama =", nama);
+
+        var modal = $(this);
+        modal.find('#deleteForm').attr('action', url);
+        modal.find('#dataName').text(nama);
+    });
+</script>
+
+
 <!-- Bootstrap core JavaScript (offline) -->
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>

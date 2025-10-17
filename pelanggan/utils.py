@@ -1,6 +1,6 @@
 from django.utils import timezone
 from pelanggan.models import Langganan
-from pembayaran.models import Pembayaran
+from pelanggan.models import Tagihan
 
 
 def generate_tagihan_bulanan():
@@ -9,7 +9,7 @@ def generate_tagihan_bulanan():
     count = 0
 
     for langganan in Langganan.objects.filter(aktif=True):
-        exists = Pembayaran.objects.filter(
+        exists = Tagihan.objects.filter(
             pelanggan=langganan.pelanggan,
             jenis_layanan=langganan.jenis_layanan,
             bulan=bulan,
@@ -17,14 +17,12 @@ def generate_tagihan_bulanan():
         ).exists()
 
         if not exists:
-            Pembayaran.objects.create(
+            Tagihan.objects.create(
                 pelanggan=langganan.pelanggan,
                 jenis_layanan=langganan.jenis_layanan,
                 bulan=bulan,
                 tahun=tahun,
-                status_bayar="Belum",
-                tgl_pembayaran=None,
-                kasir=None,
+                status_tagihan="Belum",
                 jumlah_bayar=langganan.jenis_layanan.tarif
             )
             count += 1

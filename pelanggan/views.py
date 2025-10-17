@@ -1,12 +1,15 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
-from .models import Pelanggan, Langganan
+from .models import Pelanggan, Langganan, Tagihan
 from layanan.models import JenisLayanan
 from django.http import JsonResponse, HttpResponseBadRequest
 from rumah.models import Rumah
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from pelanggan.forms import PelangganForm, LanggananForm
+from pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
+from django.contrib import messages
+from pelanggan.utils import generate_tagihan_bulanan
+from django.shortcuts import redirect, get_object_or_404
 
 
 class DaftarPelanggan(LoginRequiredMixin, ListView):
@@ -34,10 +37,12 @@ class UpdatePelanggan(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("daftar_pelanggan")
 
 
-class DeletePelanggan(LoginRequiredMixin, DeleteView):
-    model = Pelanggan
-    template_name = "pelanggan/delete_pelanggan.html"
-    success_url = reverse_lazy("daftar_pelanggan")
+def hapus_pelanggan(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Pelanggan, pk=pk)
+        data.delete()
+        return redirect('daftar_pelanggan')
+    return redirect('daftar_pelanggan')
 
 
 class DaftarLangganan(LoginRequiredMixin, ListView):
@@ -66,10 +71,12 @@ class UpdateLangganan(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("daftar_langganan")
 
 
-class DeleteLangganan(LoginRequiredMixin, DeleteView):
-    model = Langganan
-    template_name = "pelanggan/delete_langganan.html"
-    success_url = reverse_lazy("daftar_langganan")
+def hapus_langganan(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Langganan, pk=pk)
+        data.delete()
+        return redirect('daftar_langganan')
+    return redirect('daftar_langganan')
 
 
 @login_required()
@@ -83,3 +90,43 @@ def get_harga_jenis(request):
         return JsonResponse({"harga": jenis.tarif})
     except JenisLayanan.DoesNotExist:
         return HttpResponseBadRequest("Jenis tidak ditemukan")
+
+
+class DaftarTagihan(LoginRequiredMixin, ListView):
+    model = Tagihan
+    template_name = "pelanggan/daftar_tagihan.html"
+    context_object_name = "tagihan_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["bulan_list"] = range(1, 13)
+        return context
+
+
+class TambahTagihan(LoginRequiredMixin, CreateView):
+    model = Tagihan
+    form_class = TagihanForm
+    template_name = "pelanggan/form_tagihan.html"
+    success_url = reverse_lazy("daftar_tagihan")
+
+
+class UpdateTagihan(LoginRequiredMixin, UpdateView):
+    model = Tagihan
+    form_class = TagihanForm
+    template_name = "pelanggan/form_tagihan.html"
+    success_url = reverse_lazy("daftar_tagihan")
+
+
+def hapus_tagihan(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Tagihan, pk=pk)
+        data.delete()
+        return redirect('daftar_tagihan')
+    return redirect('daftar_tagihan')
+
+
+@login_required()
+def generate_tagihan(request):
+    jumlah = generate_tagihan_bulanan()
+    messages.success(request, f"Berhasil generate {jumlah} tagihan baru bulan ini.")
+    return redirect("daftar_tagihan")

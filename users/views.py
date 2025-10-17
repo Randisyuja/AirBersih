@@ -7,7 +7,7 @@ from users.models import Kasir
 from django.utils import timezone
 from pembayaran.models import Pembayaran
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from rumah.models import Rumah
 from pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse
@@ -115,6 +115,13 @@ class DeleteKasir(LoginRequiredMixin, DeleteView):
     template_name = "users/delete_users.html"
     success_url = reverse_lazy("daftar_users")
 
+
+def hapus_tagihan(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Kasir, pk=pk)
+        data.delete()
+        return redirect('daftar_users')
+    return redirect('daftar_users')
 
 @login_required()
 def get_layanan_by_rumah(request):

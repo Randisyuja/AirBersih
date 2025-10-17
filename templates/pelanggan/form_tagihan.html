@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+    <div class="container-fluid">
+        <h1 class="h3 mb-3 text-gray-800">
+            {% if object %}
+                Edit Tagihan
+            {% else %}
+                Tambah Tagihan
+            {% endif %}
+        </h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success btn-icon-split"> 
+                <span class="icon text-white-50">
+                    <i class="fas fa-check"></i>
+                </span>
+                <span class="text">
+                    Simpan
+                </span>
+            </button>
+            <a href="{% url 'daftar_tagihan' %}" class="btn btn-secondary btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+                <span class="text">Kembali</span>
+            </a>
+        </form>
+    </div>
+
+{% endblock %}

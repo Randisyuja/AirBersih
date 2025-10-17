@@ -1,37 +1,26 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.utils import timezone
-from pembayaran.choices import StatusChoice
 from pembayaran.models import Pembayaran
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from pembayaran.utils import generate_tagihan_bulanan
+from django.shortcuts import render
 from pembayaran.forms import PembayaranForm, PembayaranUpdate
 from pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse, HttpResponse
-import io
+from io import BytesIO
 from openpyxl import Workbook
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.styles import getSampleStyleSheet
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, get_object_or_404
 
 
 class DaftarPembayaran(LoginRequiredMixin, ListView):
     model = Pembayaran
     template_name = "pembayaran/daftar_pembayaran.html"
     context_object_name = "pembayaran_list"
-    paginate_by = 20
-
-    def get_queryset(self):
-        qs = Pembayaran.objects.select_related(
-            "pelanggan", "pelanggan__rumah", "jenis_layanan", "kasir"
-        ).order_by("-tahun", "-bulan", "-tgl_pembayaran")
-        bulan = self.request.GET.get("bulan")
-        tahun = self.request.GET.get("tahun")
-        if bulan and tahun:
-            qs = qs.filter(bulan=bulan, tahun=tahun)
-        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,17 +42,12 @@ class UpdatePembayaran(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("daftar_pembayaran")
 
 
-class DeletePembayaran(LoginRequiredMixin, DeleteView):
-    model = Pembayaran
-    template_name = "pembayaran/delete_pembayaran.html"
-    success_url = reverse_lazy("daftar_pembayaran")
-
-
-@login_required()
-def generate_tagihan(request):
-    jumlah = generate_tagihan_bulanan()
-    messages.success(request, f"Berhasil generate {jumlah} tagihan baru bulan ini.")
-    return redirect("daftar_pembayaran")
+def hapus_pembayaran(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Pembayaran, pk=pk)
+        data.delete()
+        return redirect('daftar_pembayaran')
+    return redirect('daftar_pembayaran')
 
 
 @login_required()
@@ -116,30 +100,56 @@ def export_pembayaran_excel(request):
 
 @login_required()
 def export_pembayaran_pdf(request):
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
+    # Table data
+    data = [
+        ["Nama Pelanggan", "Alamat Rumah", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov",
+         "Des"],
+        ["Warga 1", "D2NO9", *["Belum"] * 12],
+        ["Warga 2", "D3NO16", *["Belum"] * 12],
+        ["Warga 3", "D2NO11", *["Belum"] * 12],
+        ["Warga 4", "D3NO9", *["Belum"] * 12],
+        ["Warga 5", "D2NO7", *["Belum"] * 12],
+        ["Warga 6", "D2NO8", *["Belum"] * 12],
+        ["Warga 7", "D2NO10", *["Belum"] * 12],
+        ["Warga 8", "D2NO12", *["Belum"] * 12],
+        ["Warga 9", "D3NO10", *["Belum"] * 12],
+    ]
 
-    queryset = Pembayaran.objects.select_related(
-        "pelanggan", "pelanggan__rumah", "jenis_layanan", "kasir"
-    ).order_by("-tahun", "-bulan")
+    # Create a BytesIO buffer to write the PDF in memory
+    buffer = BytesIO()
 
-    y = 800
-    p.setFont("Helvetica-Bold", 12)
-    p.drawString(200, y, "Laporan Pembayaran")
-    y -= 30
+    # Create the PDF document in landscape A4
+    pdf = SimpleDocTemplate(buffer, pagesize=landscape(A4))
 
-    p.setFont("Helvetica", 9)
-    for pembayaran in queryset[:100]:  # batasi 100 record biar tidak overflow
-        line = f"{pembayaran.id_pembayaran} | {pembayaran.pelanggan.nama} | {pembayaran.pelanggan.rumah.no_rumah} | {pembayaran.jenis_layanan.nama_jenis} | {pembayaran.bulan}/{pembayaran.tahun} | {pembayaran.status_bayar} | {pembayaran.tgl_pembayaran or '-'} | {pembayaran.jumlah_bayar}"
-        p.drawString(30, y, line)
-        y -= 15
-        if y < 50:
-            p.showPage()
-            y = 800
+    # Define a style for the table
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+    ])
 
-    p.save()
+    # Create table
+    table = Table(data, repeatRows=1)
+    table.setStyle(style)
+
+    # Add heading
+    styles = getSampleStyleSheet()
+    title = Paragraph("Laporan Pembayaran Warga", styles['Heading1'])
+
+    # Build the PDF content
+    pdf.build([title, table])
+
+    # Move buffer to the beginning
     buffer.seek(0)
-    return HttpResponse(buffer, content_type="application/pdf")
+
+    # Return as a downloadable PDF response
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="Laporan_Warga.pdf"'
+    return response
 
 
 # class LaporanPembayaran(ListView):

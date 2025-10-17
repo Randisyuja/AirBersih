@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from rumah.models import Rumah
@@ -26,8 +26,10 @@ class UpdateRumah(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("daftar_rumah")
 
 
-class DeleteRumah(LoginRequiredMixin, DeleteView):
-    model = Rumah
-    template_name = "rumah/delete_rumah.html"
-    success_url = reverse_lazy("daftar_rumah")
+def hapus_rumah(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Rumah, pk=pk)
+        data.delete()
+        return redirect('daftar_rumah')
+    return redirect('daftar_rumah')
 

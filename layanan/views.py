@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy
 from layanan.models import Layanan, JenisLayanan
@@ -26,10 +26,12 @@ class UpdateLayanan(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("daftar_layanan")
 
 
-class DeleteLayanan(LoginRequiredMixin, DeleteView):
-    model = Layanan
-    template_name = "layanan/delete_layanan.html"
-    success_url = reverse_lazy("daftar_layanan")
+def hapus_layanan(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(Layanan, pk=pk)
+        data.delete()
+        return redirect('daftar_layanan')
+    return redirect('daftar_layanan')
 
 
 class DaftarJenisLayanan(LoginRequiredMixin, ListView):
@@ -52,8 +54,10 @@ class UpdateJenisLayanan(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("daftar_jenis_layanan")
 
 
-class DeleteJenisLayanan(LoginRequiredMixin, DeleteView):
-    model = JenisLayanan
-    template_name = "layanan/delete_jenis_layanan.html"
-    success_url = reverse_lazy("daftar_jenis_layanan")
+def hapus_jenis_layanan(request, pk):
+    if request.method == 'POST':
+        data = get_object_or_404(JenisLayanan, pk=pk)
+        data.delete()
+        return redirect('daftar_jenis_layanan')  # ganti dengan nama url list kamu
+    return redirect('daftar_jenis_layanan')
 

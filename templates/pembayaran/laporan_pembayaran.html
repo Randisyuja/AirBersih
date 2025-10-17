@@ -1,96 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
-{% load static %}
-{% load rupiah_filters %}
-{% load custom_tags %}
+    {% load static %}
+    {% load rupiah_filters %}
+    {% load custom_tags %}
 
-    <h1>Laporan Pembayaran</h1>
+    <div class="container-fluid">
 
-    <a href="{% url 'export_pembayaran_excel' %}" class="btn btn-primary mb-3">Export Excel</a>
-    <a href="{% url 'export_pembayaran_pdf' %}" class="btn btn-primary mb-3">Export PDF</a>
+        <!-- Page Heading -->
+        <h1 class="h3 mb-3 text-gray-800">Laporan Pembayaran</h1>
+        <a href="{% url 'export_pembayaran_excel' %}"
+           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
+                class="fas fa-download fa-sm text-white-50"></i> Export to Excel</a>
+        <a href="{% url 'export_pembayaran_pdf' %}"
+           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
+                class="fas fa-download fa-sm text-white-50"></i> Export to PDF</a>
 
-    <!-- Filter -->
-    <form method="get" class="row g-2 mb-3">
-        <div class="col-md-3">
-            <input type="number" name="tahun" class="form-control" placeholder="--Pilih Tahun--"
-                   value="{{ request.GET.tahun }}">
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            <th>Nama Pelanggan</th>
+                            <th>Alamat Rumah</th>
+                            {% for num, bulan in bulan_list %}
+                                <th>{{ bulan }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in laporan %}
+                            <tr>
+                                <td>{{ row.nama }}</td>
+                                <td>{{ row.rumah }}</td>
+                                {% for s in row.status %}
+                                    {% if s == "Lunas" %}
+                                        <td class="text-success fw-bold">Lunas</td>
+                                    {% else %}
+                                        <td class="text-danger fw-bold">Belum</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="14" class="text-center">Tidak ada data pembayaran</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Filter</button>
-        </div>
-    </form>
 
-    <h3>Laporan Tahunan {{ layanan.nama_jenis }} - {{ tahun }}</h3>
-
-    <table class="table table-bordered table-hover">
-        <thead>
-        <tr>
-            <th>Nama Pelanggan</th>
-            <th>Alamat Rumah</th>
-            {% for num, bulan in bulan_list %}
-            <th>{{ bulan }}</th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for row in laporan %}
-            <tr>
-                <td>{{ row.nama }}</td>
-                <td>{{ row.rumah }}</td>
-                {% for s in row.status %}
-                    {% if s == "Lunas" %}
-                        <td class="text-success fw-bold">Lunas</td>
-                    {% else %}
-                        <td class="text-danger fw-bold">Belum</td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="14" class="text-center">Tidak ada data pembayaran</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- 🔽 Pagination -->
-    {% if is_paginated %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="?page=
-
-                                   {{ page_obj.previous_page_number }}{% if request.GET.bulan %}&bulan={{ request.GET.bulan }}{% endif %}{% if request.GET.tahun %}&tahun={{ request.GET.tahun }}{% endif %}">
-                            Previous
-                        </a>
-                    </li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                        <a class="page-link"
-                           href="?page=
-
-                                   {{ num }}{% if request.GET.bulan %}&bulan={{ request.GET.bulan }}{% endif %}{% if request.GET.tahun %}&tahun={{ request.GET.tahun }}{% endif %}">
-                            {{ num }}
-                        </a>
-                    </li>
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="?page=
-
-                                   {{ page_obj.next_page_number }}{% if request.GET.bulan %}&bulan={{ request.GET.bulan }}{% endif %}{% if request.GET.tahun %}&tahun={{ request.GET.tahun }}{% endif %}">
-                            Next
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-    {% endif %}
+    </div>
 
 {% endblock %}
