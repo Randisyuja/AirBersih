@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.utils import timezone
 from pembayaran.models import Pembayaran
 from django.shortcuts import render
-from pembayaran.forms import PembayaranForm, PembayaranUpdate
+from pembayaran.forms import PembayaranForm
 from pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse, HttpResponse
 from io import BytesIO
@@ -37,7 +37,7 @@ class TambahPembayaran(LoginRequiredMixin, CreateView):
 
 class UpdatePembayaran(LoginRequiredMixin, UpdateView):
     model = Pembayaran
-    form_class = PembayaranUpdate
+    form_class = PembayaranForm
     template_name = "pembayaran/form_pembayaran.html"
     success_url = reverse_lazy("daftar_pembayaran")
 

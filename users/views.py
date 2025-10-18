@@ -5,13 +5,13 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from users.models import Kasir
 from django.utils import timezone
-from pembayaran.models import Pembayaran
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from rumah.models import Rumah
-from pelanggan.models import Langganan, Pelanggan
+from pelanggan.models import Langganan, Pelanggan, Tagihan
+from pembayaran.models import Pembayaran
 from django.http import JsonResponse
-from pembayaran.forms import PembayaranUpdate
+from pelanggan.forms import TagihanUpdate
 from pembayaran.choices import StatusChoice
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -26,14 +26,14 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         bulan = timezone.now().month
         tahun = timezone.now().year
 
-        context["status_wifi"] = Pembayaran.objects.filter(
+        context["status_wifi"] = Tagihan.objects.filter(
             jenis_layanan__layanan__nama_layanan="WIFI",
-            bulan=bulan, tahun=tahun, status_bayar=StatusChoice.Belum
+            bulan=bulan, tahun=tahun, status_tagihan=StatusChoice.Belum
         ).select_related("pelanggan", "pelanggan__rumah").count()
 
-        context["status_air"] = Pembayaran.objects.filter(
+        context["status_air"] = Tagihan.objects.filter(
             jenis_layanan__layanan__nama_layanan="AIR",
-            bulan=bulan, tahun=tahun, status_bayar=StatusChoice.Belum
+            bulan=bulan, tahun=tahun, status_tagihan=StatusChoice.Belum
         ).select_related("pelanggan", "pelanggan__rumah").count()
 
         context["recent"] = Pembayaran.objects.filter(
@@ -44,7 +44,7 @@ class Dashboard(LoginRequiredMixin, TemplateView):
 
         context["bulan"] = bulan
         context["tahun"] = tahun
-        context["form_pembayaran"] = PembayaranUpdate()
+        context["form_pembayaran"] = TagihanUpdate()
 
         return context
 
@@ -58,21 +58,35 @@ class Dashboard(LoginRequiredMixin, TemplateView):
 
             pelanggan = Pelanggan.objects.get(id_pelanggan=pelanggan)
 
-            pembayaran = Pembayaran.objects.get(
+            tagihan = Tagihan.objects.get(
                 pelanggan=pelanggan,
-                jenis_layanan=id_layanan,
+                jenis_layanan_id=id_layanan,
                 bulan=bulan,
                 tahun=tahun,
-                status_bayar=StatusChoice.Belum
+                status_tagihan=StatusChoice.Belum
             )
 
             # Update status pembayaran
-            pembayaran.status_bayar = StatusChoice.Lunas
-            pembayaran.tgl_pembayaran = timezone.now().date()
-            pembayaran.kasir = request.user
-            pembayaran.save()
+            tagihan.status_tagihan = StatusChoice.Lunas
+            tagihan.save()
 
-            messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} berhasil diperbarui")
+            pembayaran, created = Pembayaran.objects.get_or_create(
+                pelanggan=tagihan.pelanggan,
+                jenis_layanan=tagihan.jenis_layanan,
+                bulan=tagihan.bulan,
+                tahun=tagihan.tahun,
+                defaults={
+                    'status_bayar': StatusChoice.Lunas,
+                    'kasir': request.user,
+                    'tgl_pembayaran': timezone.now().date(),
+                    'jumlah_bayar': tagihan.jenis_layanan.tarif
+                }
+            )
+
+            if created:
+                messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} bulan {tagihan.bulan} berhasil")
+            else:
+                messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} bulan {tagihan.bulan} sudah ada, tidak ditambahkan lagi.")
 
         except Rumah.DoesNotExist:
             messages.error(request, f"Rumah dengan nomor {pelanggan.rumah.no_rumah} tidak ditemukan")

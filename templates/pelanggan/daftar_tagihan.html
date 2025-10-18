@@ -40,7 +40,7 @@
                                 <td>{{ tagihan.jenis_layanan.nama_jenis }}</td>
                                 <td>{{ tagihan.bulan }}</td>
                                 <td>{{ tagihan.tahun }}</td>
-                                <td>{{ tagihan.get_status_bayar_display }}</td>
+                                <td>{{ tagihan.get_status_tagihan_display }}</td>
                                 <td>{{ tagihan.jumlah_bayar|rupiah }}</td>
                                 <td>
                                     <a href="{% url 'edit_tagihan' tagihan.pk %}"

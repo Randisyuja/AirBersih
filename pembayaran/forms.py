@@ -30,17 +30,3 @@ class PembayaranForm(forms.ModelForm):
         elif self.instance.pk:
             self.fields["jenis_layanan"].queryset = Langganan.objects.filter(pelanggan=self.instance.pelanggan)
 
-
-class PembayaranUpdate(forms.ModelForm):
-    class Meta:
-        model = Pembayaran
-        fields = [
-            "pelanggan",
-            "jenis_layanan",
-            "bulan"
-        ]
-        widgets = {
-            "pelanggan": forms.Select(attrs={"class": "form-control"}),
-            "jenis_layanan": forms.Select(attrs={"class": "form-control"}),
-            "bulan": forms.Select(attrs={"class": "form-control"}),
-        }

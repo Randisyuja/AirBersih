@@ -47,3 +47,18 @@ class TagihanForm(forms.ModelForm):
             "status_tagihan": forms.Select(attrs={"class": "form-control"}),
             "jumlah_bayar": forms.NumberInput(attrs={"class": "form-control"}),
         }
+
+
+class TagihanUpdate(forms.ModelForm):
+    class Meta:
+        model = Tagihan
+        fields = [
+            "pelanggan",
+            "jenis_layanan",
+            "bulan"
+        ]
+        widgets = {
+            "pelanggan": forms.Select(attrs={"class": "form-control"}),
+            "jenis_layanan": forms.Select(attrs={"class": "form-control"}),
+            "bulan": forms.Select(attrs={"class": "form-control"}),
+        }

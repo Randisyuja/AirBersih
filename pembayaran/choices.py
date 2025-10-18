@@ -3,7 +3,7 @@ from django.db import models
 
 class StatusChoice(models.TextChoices):
     Lunas = "Lunas", "Lunas"
-    Belum = "Belum", "Belum Lunas"
+    Belum = "Belum", "Belum"
 
 
 class BulanChoice(models.IntegerChoices):
