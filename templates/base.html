@@ -65,9 +65,19 @@
                 <i class="fas fa-fw fa-money-bill"></i>
                 <span>Pembayaran</span></a>
 
-            <a class="nav-link" href="{% url "laporan_tahunan" %}">
-                <i class="fas fa-fw fa-file-invoice"></i>
-                <span>Laporan</span></a>
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOne"
+               aria-expanded="true" aria-controls="collapseTwo">
+                <i class="fas fa-fw fa-file-invoice"></i>   
+                <span>Laporan</span>
+            </a>
+
+            <div id="collapseOne" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Laporan:</h6>
+                    <a class="collapse-item" href="{% url "laporan_air" %}">Air</a>
+                    <a class="collapse-item" href="{% url "laporan_wifi" %}">Wifi</a>
+                </div>
+            </div>
             
             <a class="nav-link" href="{% url "daftar_tagihan" %}">
                 <i class="fas fa-fw fa-money-bill"></i>
@@ -292,7 +302,7 @@
         <footer class="sticky-footer bg-white">
             <div class="container my-auto">
                 <div class="copyright text-center my-auto">
-                    <span>Copyright &copy; Your Website 2021</span>
+                    <span>Copyright &copy; (SIAP RT05/RW09) Sistem Informasi Administrasi Pembayaran 2025</span>
                 </div>
             </div>
         </footer>
@@ -357,7 +367,7 @@
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
 <script>
     // EVENT BOOTSTRAP 4
@@ -377,7 +387,6 @@
 
 <!-- Bootstrap core JavaScript (offline) -->
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <!-- Core plugin JavaScript (offline) -->
 <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 <!-- Custom scripts for all pages (offline) -->

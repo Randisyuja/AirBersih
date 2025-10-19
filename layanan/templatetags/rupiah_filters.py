@@ -9,8 +9,8 @@ def rupiah(value):
     Format angka ke format Rupiah: Rp150.000,00
     """
     try:
-        value = float(value)
+        value = int(value)
     except (ValueError, TypeError):
         return value  # kalau bukan angka, kembalikan apa adanya
 
-    return "Rp{:,.2f}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")
+    return "Rp{:,}".format(value).replace(",", "X").replace(".", ",").replace("X", ".")

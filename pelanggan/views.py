@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
 from django.contrib import messages
-from pelanggan.utils import generate_tagihan_bulanan
+from pelanggan.utils import generate_tagihan_setahun
 from django.shortcuts import redirect, get_object_or_404
 
 
@@ -127,6 +127,6 @@ def hapus_tagihan(request, pk):
 
 @login_required()
 def generate_tagihan(request):
-    jumlah = generate_tagihan_bulanan()
+    jumlah = generate_tagihan_setahun()
     messages.success(request, f"Berhasil generate {jumlah} tagihan baru bulan ini.")
     return redirect("daftar_tagihan")

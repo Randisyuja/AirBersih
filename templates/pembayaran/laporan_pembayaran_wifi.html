@@ -18,7 +18,7 @@
         <!-- DataTales Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Laporan Wifi</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -27,27 +27,23 @@
                         <tr>
                             <th>Nama Pelanggan</th>
                             <th>Alamat Rumah</th>
-                            {% for num, bulan in bulan_list %}
+                            {% for bulan in bulan_labels %}
                                 <th>{{ bulan }}</th>
                             {% endfor %}
                         </tr>
                         </thead>
                         <tbody>
-                        {% for row in laporan %}
+                        {% for row in data_laporan %}
                             <tr>
-                                <td>{{ row.nama }}</td>
-                                <td>{{ row.rumah }}</td>
-                                {% for s in row.status %}
-                                    {% if s == "Lunas" %}
-                                        <td class="text-success fw-bold">Lunas</td>
+                                <td>{{ row.pelanggan }}</td>
+                                <td>{{ row.alamat }}</td>
+                                {% for status in row.status_bulan %}
+                                    {% if status == "Lunas" %}
+                                        <td class="text-success"><b>Lunas</b></td>
                                     {% else %}
-                                        <td class="text-danger fw-bold">Belum</td>
+                                        <td class="text-danger"><b>Belum</b></td>
                                     {% endif %}
                                 {% endfor %}
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="14" class="text-center">Tidak ada data pembayaran</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -55,7 +51,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
 {% endblock %}

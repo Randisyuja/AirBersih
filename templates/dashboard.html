@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 {% load static %}
+{% load rupiah_filters %}
 
     <!-- Begin Page Content -->
     <div class="container-fluid">
@@ -18,7 +19,7 @@
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                     Pemasukan (Bulan Ini)
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ uang_bulan_ini|rupiah }}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -35,7 +36,7 @@
                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                     Pemasukan (Tahun Ini)
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ uang_tahun_ini|rupiah }}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -116,7 +117,7 @@
                                         <td>{{ bayar.jenis_layanan.layanan }}</td>
                                         <td>{{ bayar.bulan }}</td>
                                         <td>{{ bayar.tgl_pembayaran }}</td>
-                                        <td>Rp {{ bayar.jumlah_bayar|floatformat:0 }}</td>
+                                        <td>{{ bayar.jumlah_bayar|rupiah }}</td>
                                     </tr>
                                 {% empty %}
                                     <tr>

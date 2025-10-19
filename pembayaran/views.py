@@ -15,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
+from layanan.models import Layanan
 
 
 class DaftarPembayaran(LoginRequiredMixin, ListView):
@@ -152,66 +153,87 @@ def export_pembayaran_pdf(request):
     return response
 
 
-# class LaporanPembayaran(ListView):
-#     model = Pembayaran
-#     template_name = "pembayaran/laporan_pembayaran.html"
-#     context_object_name = "pembayaran_list"
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         la = Pembayaran.objects.filter(
-#             status_bayar=StatusChoice.Lunas,
-#             jenis_layanan__layanan__nama_layanan="AIR"
-#         ).select_related(
-#             "pelanggan", "pelanggan__rumah", "jenis_layanan", "kasir"
-#         ).order_by("-tahun", "-bulan", "-tgl_pembayaran")
-#         tahun = self.request.GET.get("tahun")
-#
-#         lw = Pembayaran.objects.filter(
-#             status_bayar=StatusChoice.Lunas,
-#             jenis_layanan__layanan__nama_layanan="WIFI"
-#         )
-#
-#         context["laporan_air"] = la
-#         context["laporan_wifi"] = lw
-#         return context
-
 @login_required()
-def laporan_tahunan(request):
-    AIR = 4
-    WIFI = 5
+def laporan_tahunan_air(request):
     tahun = timezone.now().year
+    data_laporan = []
 
-    # struktur pivot
-    laporan = []
-    pelanggan_list = Pelanggan.objects.select_related("rumah").all()
+    pelanggan_aktif = Pelanggan.objects.filter(
+        langganan__jenis_layanan__layanan__nama_layanan="AIR",
+        langganan__aktif=True
+    ).distinct()
 
-    for pelanggan in pelanggan_list:
-        # ambil semua pembayaran pelanggan untuk layanan tertentu di tahun ini
-        pembayaran_list = Pembayaran.objects.filter(
-            pelanggan=pelanggan,
-            jenis_layanan_id=5,
-            tahun=tahun
-        )
+    for pelanggan in pelanggan_aktif:
+        status_bulan = []
+        for bulan in range(1, 13):
+            pembayaran = Pembayaran.objects.filter(
+                jenis_layanan__layanan__nama_layanan="AIR",
+                pelanggan=pelanggan,
+                bulan=bulan,
+                tahun=tahun
+            ).first()
 
-        # jadikan dict: {bulan: "Lunas"/"Belum"}
-        status = {p.bulan: ("Lunas" if p.status_bayar == "Sudah" else "Belum")
-                  for p in pembayaran_list}
+            if pembayaran and pembayaran.status_bayar == "Lunas":
+                status_bulan.append("Lunas")
+            else:
+                status_bulan.append("Belum")
 
-        # tambahkan ke laporan (list 12 bulan, Jan–Des)
-        laporan.append({
-            "nama": pelanggan.nama,
-            "rumah": pelanggan.rumah.no_rumah if pelanggan.rumah else "-",
-            "status": [status.get(bulan, "Belum") for bulan in range(1, 13)],
+        data_laporan.append({
+            "pelanggan": pelanggan.nama,
+            "alamat": pelanggan.rumah.no_rumah,
+            "status_bulan": status_bulan
         })
 
     context = {
-        "laporan": laporan,
+        "data_laporan": data_laporan,
         "tahun": tahun,
-        "bulan_list": [
-            (1, "Jan"), (2, "Feb"), (3, "Mar"), (4, "Apr"), (5, "Mei"), (6, "Jun"),
-            (7, "Jul"), (8, "Aug"), (9, "Sep"), (10, "Okt"), (11, "Nov"), (12, "Des")
-        ],
+        "bulan_labels": [
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+        ]
     }
-    return render(request, "pembayaran/laporan_pembayaran.html", context)
 
+    return render(request, "pembayaran/laporan_pembayaran_air.html", context)
+
+
+@login_required()
+def laporan_tahunan_wifi(request):
+    tahun = timezone.now().year
+    data_laporan = []
+
+    pelanggan_aktif = Pelanggan.objects.filter(
+        langganan__jenis_layanan__layanan__nama_layanan="WIFI",
+        langganan__aktif=True
+    ).distinct()
+
+    for pelanggan in pelanggan_aktif:
+        status_bulan = []
+        for bulan in range(1, 13):
+            pembayaran = Pembayaran.objects.filter(
+                jenis_layanan__layanan__nama_layanan="WIFI",
+                pelanggan=pelanggan,
+                bulan=bulan,
+                tahun=tahun
+            ).first()
+
+            if pembayaran and pembayaran.status_bayar == "Lunas":
+                status_bulan.append("Lunas")
+            else:
+                status_bulan.append("Belum")
+
+        data_laporan.append({
+            "pelanggan": pelanggan.nama,
+            "alamat": pelanggan.rumah.no_rumah,
+            "status_bulan": status_bulan
+        })
+
+    context = {
+        "data_laporan": data_laporan,
+        "tahun": tahun,
+        "bulan_labels": [
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+        ]
+    }
+
+    return render(request, "pembayaran/laporan_pembayaran_wifi.html", context)

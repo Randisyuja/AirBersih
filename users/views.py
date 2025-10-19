@@ -16,6 +16,7 @@ from pembayaran.choices import StatusChoice
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from users.forms import PenggunaForm, LoginForm
+from django.db.models import Sum
 
 
 class Dashboard(LoginRequiredMixin, TemplateView):
@@ -41,6 +42,25 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         ).select_related(
             "pelanggan", "pelanggan", "jenis_layanan"
         ).order_by("-tgl_pembayaran")[:10]
+
+        context["uang_bulan_ini"] = (
+            Pembayaran.objects.filter(
+                bulan=bulan,
+                tahun=tahun,
+                status_bayar=StatusChoice.Lunas
+            )
+            .aggregate(total_uang=Sum("jumlah_bayar"))
+            ["total_uang"] or 0
+        )
+
+        context["uang_tahun_ini"] = (
+                Pembayaran.objects.filter(
+                    tahun=tahun,
+                    status_bayar=StatusChoice.Lunas
+                )
+                .aggregate(total_uang=Sum("jumlah_bayar"))
+                ["total_uang"] or 0
+        )
 
         context["bulan"] = bulan
         context["tahun"] = tahun
@@ -78,7 +98,7 @@ class Dashboard(LoginRequiredMixin, TemplateView):
                 defaults={
                     'status_bayar': StatusChoice.Lunas,
                     'kasir': request.user,
-                    'tgl_pembayaran': timezone.now().date(),
+                    'tgl_pembayaran': timezone.now(),
                     'jumlah_bayar': tagihan.jenis_layanan.tarif
                 }
             )

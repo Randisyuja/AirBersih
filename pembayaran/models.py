@@ -14,8 +14,8 @@ class Pembayaran(models.Model):
     bulan = models.PositiveSmallIntegerField(choices=BulanChoice.choices)  # 1 = Jan, 2 = Feb ...
     tahun = models.PositiveSmallIntegerField()
     status_bayar = models.CharField(max_length=10, choices=StatusChoice.choices, default="Belum")
-    tgl_pembayaran = models.DateField(null=True, blank=True)
-    jumlah_bayar = models.DecimalField(max_digits=12, decimal_places=2)
+    tgl_pembayaran = models.DateTimeField(null=True, blank=True)
+    jumlah_bayar = models.IntegerField()
 
     def __str__(self):
         return f"{self.pelanggan.nama} - {self.jenis_layanan} - {self.bulan}/{self.tahun}"
