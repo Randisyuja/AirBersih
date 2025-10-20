@@ -9,7 +9,7 @@ urlpatterns = [
     path("<int:pk>/hapus/", hapus_pembayaran, name="hapus_pembayaran"),
     path("ajax/load-jenis-layanan/", load_jenis_layanan, name="ajax_load_jenis_layanan"),
     path("pembayaran/export/excel/", export_pembayaran_excel, name="export_pembayaran_excel"),
-    path("pembayaran/export/pdf/", export_pembayaran_pdf, name="export_pembayaran_pdf"),
+    path("pembayaran/export/pdf/<str:layanan>", export_pembayaran_pdf, name="export_pembayaran_pdf"),
     path("laporan/", include([
         path("air/", laporan_tahunan_air, name="laporan_air"),
         path("wifi/", laporan_tahunan_wifi, name="laporan_wifi"),

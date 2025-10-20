@@ -15,7 +15,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
-from layanan.models import Layanan
 
 
 class DaftarPembayaran(LoginRequiredMixin, ListView):
@@ -100,21 +99,40 @@ def export_pembayaran_excel(request):
 
 
 @login_required()
-def export_pembayaran_pdf(request):
+def export_pembayaran_pdf(request, layanan):
+    nama_layanan = layanan
+    tahun = timezone.now().year
     # Table data
     data = [
         ["Nama Pelanggan", "Alamat Rumah", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov",
          "Des"],
-        ["Warga 1", "D2NO9", *["Belum"] * 12],
-        ["Warga 2", "D3NO16", *["Belum"] * 12],
-        ["Warga 3", "D2NO11", *["Belum"] * 12],
-        ["Warga 4", "D3NO9", *["Belum"] * 12],
-        ["Warga 5", "D2NO7", *["Belum"] * 12],
-        ["Warga 6", "D2NO8", *["Belum"] * 12],
-        ["Warga 7", "D2NO10", *["Belum"] * 12],
-        ["Warga 8", "D2NO12", *["Belum"] * 12],
-        ["Warga 9", "D3NO10", *["Belum"] * 12],
     ]
+
+    pelanggan_aktif = Pelanggan.objects.filter(
+        langganan__jenis_layanan__layanan__nama_layanan=nama_layanan,
+        langganan__aktif=True
+    ).distinct()
+
+    for pelanggan in pelanggan_aktif:
+        status_bulan = []
+        for bulan in range(1, 13):
+            pembayaran = Pembayaran.objects.filter(
+                jenis_layanan__layanan__nama_layanan=nama_layanan,
+                pelanggan=pelanggan,
+                bulan=bulan,
+                tahun=tahun
+            ).first()
+
+            if pembayaran and pembayaran.status_bayar == "Lunas":
+                status_bulan.append("Lunas")
+            else:
+                status_bulan.append("Belum")
+
+        data.append([
+            pelanggan.nama,
+            pelanggan.rumah.no_rumah,
+            *status_bulan
+        ])
 
     # Create a BytesIO buffer to write the PDF in memory
     buffer = BytesIO()
