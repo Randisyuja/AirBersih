@@ -12,6 +12,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
@@ -109,7 +110,7 @@ def export_pembayaran_pdf(request, layanan):
     ]
 
     pelanggan_aktif = Pelanggan.objects.filter(
-        langganan__jenis_layanan__layanan__nama_layanan=nama_layanan,
+        langganan__jenis_layanan__layanan__nama_layanan=nama_layanan.upper(),
         langganan__aktif=True
     ).distinct()
 
@@ -117,7 +118,7 @@ def export_pembayaran_pdf(request, layanan):
         status_bulan = []
         for bulan in range(1, 13):
             pembayaran = Pembayaran.objects.filter(
-                jenis_layanan__layanan__nama_layanan=nama_layanan,
+                jenis_layanan__layanan__nama_layanan=nama_layanan.upper(),
                 pelanggan=pelanggan,
                 bulan=bulan,
                 tahun=tahun
@@ -126,7 +127,7 @@ def export_pembayaran_pdf(request, layanan):
             if pembayaran and pembayaran.status_bayar == "Lunas":
                 status_bulan.append("Lunas")
             else:
-                status_bulan.append("Belum")
+                status_bulan.append("")
 
         data.append([
             pelanggan.nama,
@@ -151,13 +152,23 @@ def export_pembayaran_pdf(request, layanan):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
     ])
 
-    # Create table
-    table = Table(data, repeatRows=1)
+    # 🔹 Tentukan total lebar halaman (A4 landscape = 842 point)
+    total_width = 9.5 * inch  # lebar A4 dalam landscape
+    col_count = len(data[0])
+
+    # Misal: kolom pertama 1.5x lebih lebar, kolom kedua 1.2x, sisanya rata
+    weights = [2.2, 1.6] + [1] * (col_count - 2)
+    total_weight = sum(weights)
+    colWidths = [(w / total_weight) * total_width for w in weights]
+
+    table = Table(data, colWidths=colWidths, repeatRows=1)
     table.setStyle(style)
+
+    table.hAlign = 'LEFT'
 
     # Add heading
     styles = getSampleStyleSheet()
-    title = Paragraph("Laporan Pembayaran Warga", styles['Heading1'])
+    title = Paragraph(f"Laporan Pembayaran {nama_layanan.capitalize()}", styles['Heading1'])
 
     # Build the PDF content
     pdf.build([title, table])
