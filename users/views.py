@@ -17,6 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from users.forms import PenggunaForm, LoginForm
 from django.db.models import Sum
+from layanan.models import JenisLayanan
 
 
 class Dashboard(LoginRequiredMixin, TemplateView):
@@ -74,6 +75,8 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         bulan = request.POST.get("bulan")
         tahun = timezone.now().year
 
+        layanan = JenisLayanan.objects.get(pk=id_layanan)
+
         try:
 
             pelanggan = Pelanggan.objects.get(id_pelanggan=pelanggan)
@@ -107,6 +110,9 @@ class Dashboard(LoginRequiredMixin, TemplateView):
                 messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} bulan {tagihan.bulan} berhasil")
             else:
                 messages.success(request, f"Pembayaran {pelanggan.nama} dengan rumah {pelanggan.rumah.no_rumah} bulan {tagihan.bulan} sudah ada, tidak ditambahkan lagi.")
+
+        except Tagihan.DoesNotExist:
+            messages.error(request, f"Tagihan {layanan.layanan.nama_layanan} bulan {bulan} pada rumah dengan nomor {pelanggan.rumah.no_rumah} tidak ditemukan")
 
         except Rumah.DoesNotExist:
             messages.error(request, f"Rumah dengan nomor {pelanggan.rumah.no_rumah} tidak ditemukan")
