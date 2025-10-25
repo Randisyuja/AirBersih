@@ -8,11 +8,12 @@
 
         <!-- Page Heading -->
         <h1 class="h3 mb-3 text-gray-800">Daftar Tagihan</h1>
-        <a href="{% url 'tambah_tagihan' %}"
-           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
-                class="fas fa-plus fa-sm text-white-50"></i> Tambah Tagihan</a>
-        <a href="{% url 'generate_tagihan' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
-                class="fas fa-download fa-sm text-white-50"></i> Generate Tagihan</a>
+        <a href="{% url 'tambah_tagihan' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Tagihan
+        </a>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3" data-toggle="modal" data-target="#yearModal">
+            <i class="fas fa-download fa-sm text-white-50"></i> Generate Tagihan
+        </a>
 
         <!-- DataTales Example -->
         <div class="card shadow mb-4">

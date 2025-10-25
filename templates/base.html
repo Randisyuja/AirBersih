@@ -386,6 +386,36 @@
     </div>
 </div>
 
+
+<!-- Years Modal-->
+<div class="modal fade" id="yearModal" tabindex="-1" role="dialog" aria-labelledby="yearModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="yearModalLabel">Generate Tagihan</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form method="post" id="yearForm" action="{% url 'generate_tagihan' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="yearSelect">Pilih Tahun untuk generate tagihan.:</label>
+                        <select id="yearSelect" name="year" class="form-control"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Generate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 {% if messages %}
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -405,7 +435,7 @@
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
 <script>
-    // EVENT BOOTSTRAP 4
+
     $(document).on('show.bs.modal', '#deleteModal', function (event) {
         var button = $(event.relatedTarget);
         var url = button.data('url');
@@ -416,6 +446,18 @@
         var modal = $(this);
         modal.find('#deleteForm').attr('action', url);
         modal.find('#dataName').text(nama);
+    });
+
+    $(document).on('show.bs.modal', '#yearModal', function () {
+        const select = $('#yearSelect');
+        select.empty();
+
+        const currentYear = new Date().getFullYear();
+        const startYear = 1990;
+        for (let year = currentYear; year >= startYear; year--) {
+            const selected = (year === currentYear) ? 'selected' : '';
+            select.append(`<option value="${year}" ${selected}>${year}</option>`);
+        }
     });
 </script>
 

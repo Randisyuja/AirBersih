@@ -10,6 +10,7 @@ from pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
 from django.contrib import messages
 from pelanggan.utils import generate_tagihan_setahun
 from django.shortcuts import redirect, get_object_or_404
+from django.utils import timezone
 
 
 class DaftarPelanggan(LoginRequiredMixin, ListView):
@@ -127,6 +128,9 @@ def hapus_tagihan(request, pk):
 
 @login_required()
 def generate_tagihan(request):
-    jumlah = generate_tagihan_setahun()
-    messages.success(request, f"Berhasil generate {jumlah} tagihan baru bulan ini.")
+    if request.method == "POST":
+        tahun = int(request.POST.get("year", timezone.now().year))
+        jumlah = generate_tagihan_setahun(tahun)
+        messages.success(request, f"Berhasil generate {jumlah} tagihan untuk tahun {tahun}.")
+        return redirect("daftar_tagihan")
     return redirect("daftar_tagihan")
