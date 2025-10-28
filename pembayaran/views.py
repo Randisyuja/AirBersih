@@ -100,10 +100,16 @@ def export_pembayaran_excel(request):
 
 
 @login_required()
-def export_pembayaran_pdf(request, layanan):
+def export_pembayaran_pdf(request, layanan, tahun):
     nama_layanan = layanan
-    tahun = timezone.now().year
-    # Table data
+    tahun = tahun
+    current_year = timezone.now().year
+
+    try:
+        tahun = int(tahun) if tahun else current_year
+    except ValueError:
+        tahun = current_year
+
     data = [
         ["Nama Pelanggan", "Alamat Rumah", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov",
          "Des"],
@@ -168,7 +174,7 @@ def export_pembayaran_pdf(request, layanan):
 
     # Add heading
     styles = getSampleStyleSheet()
-    title = Paragraph(f"Laporan Pembayaran {nama_layanan.capitalize()}", styles['Heading1'])
+    title = Paragraph(f"Laporan Pembayaran {nama_layanan.capitalize()} {tahun}", styles['Heading1'])
 
     # Build the PDF content
     pdf.build([title, table])
@@ -183,12 +189,20 @@ def export_pembayaran_pdf(request, layanan):
 
 
 @login_required()
-def laporan_tahunan_air(request):
-    tahun = timezone.now().year
+def laporan_tahunan(request, layanan):
+    tahun = request.GET.get("tahun")
+    nama_layanan = layanan.upper()
+    current_year = timezone.now().year
+
+    try:
+        tahun = int(tahun) if tahun else current_year
+    except ValueError:
+        tahun = current_year
+
     data_laporan = []
 
     pelanggan_aktif = Pelanggan.objects.filter(
-        langganan__jenis_layanan__layanan__nama_layanan="AIR",
+        langganan__jenis_layanan__layanan__nama_layanan=nama_layanan,
         langganan__aktif=True
     ).distinct()
 
@@ -196,7 +210,7 @@ def laporan_tahunan_air(request):
         status_bulan = []
         for bulan in range(1, 13):
             pembayaran = Pembayaran.objects.filter(
-                jenis_layanan__layanan__nama_layanan="AIR",
+                jenis_layanan__layanan__nama_layanan=nama_layanan,
                 pelanggan=pelanggan,
                 bulan=bulan,
                 tahun=tahun
@@ -222,47 +236,5 @@ def laporan_tahunan_air(request):
         ]
     }
 
-    return render(request, "pembayaran/laporan_pembayaran_air.html", context)
+    return render(request, f"pembayaran/laporan_pembayaran_{nama_layanan.lower()}.html", context)
 
-
-@login_required()
-def laporan_tahunan_wifi(request):
-    tahun = timezone.now().year
-    data_laporan = []
-
-    pelanggan_aktif = Pelanggan.objects.filter(
-        langganan__jenis_layanan__layanan__nama_layanan="WIFI",
-        langganan__aktif=True
-    ).distinct()
-
-    for pelanggan in pelanggan_aktif:
-        status_bulan = []
-        for bulan in range(1, 13):
-            pembayaran = Pembayaran.objects.filter(
-                jenis_layanan__layanan__nama_layanan="WIFI",
-                pelanggan=pelanggan,
-                bulan=bulan,
-                tahun=tahun
-            ).first()
-
-            if pembayaran and pembayaran.status_bayar == "Lunas":
-                status_bulan.append("Lunas")
-            else:
-                status_bulan.append("Belum")
-
-        data_laporan.append({
-            "pelanggan": pelanggan.nama,
-            "alamat": pelanggan.rumah.no_rumah,
-            "status_bulan": status_bulan
-        })
-
-    context = {
-        "data_laporan": data_laporan,
-        "tahun": tahun,
-        "bulan_labels": [
-            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
-        ]
-    }
-
-    return render(request, "pembayaran/laporan_pembayaran_wifi.html", context)

@@ -8,17 +8,32 @@
 
         <!-- Page Heading -->
         <h1 class="h3 mb-3 text-gray-800">Laporan Pembayaran</h1>
+
+        <!-- Form Pilih Tahun -->
+        <form method="get" action="{% url 'laporan_tahunan' layanan="AIR" %}" class="mb-3">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label for="tahun" class="form-label">Pilih Tahun</label>
+                    <input type="number" name="tahun" id="tahun" class="form-control"
+                           value="{{ tahun }}" min="2000" max="{{ current_year }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary mt-3">Tampilkan</button>
+                </div>
+            </div>
+        </form>
+
         <a href="{% url 'export_pembayaran_excel' %}"
            class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
                 class="fas fa-download fa-sm text-white-50"></i> Export to Excel</a>
-        <a href="{% url 'export_pembayaran_pdf' layanan="air" %}"
+        <a href="{% url 'export_pembayaran_pdf' layanan="air" tahun=tahun %}"
            class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
                 class="fas fa-download fa-sm text-white-50"></i> Export to PDF</a>
 
         <!-- DataTales Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Laporan Air</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Laporan Air {{ tahun }}</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
