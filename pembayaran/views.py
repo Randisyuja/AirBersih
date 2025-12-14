@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.utils import timezone
 from pembayaran.models import Pembayaran
 from django.shortcuts import render
-from pembayaran.forms import PembayaranForm
+from pembayaran.forms import PembayaranForm, TahunForm
 from pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse, HttpResponse
 from io import BytesIO
@@ -190,13 +190,14 @@ def export_pembayaran_pdf(request, layanan, tahun):
 
 @login_required()
 def laporan_tahunan(request, layanan):
-    tahun = request.GET.get("tahun")
     nama_layanan = layanan.upper()
     current_year = timezone.now().year
 
-    try:
-        tahun = int(tahun) if tahun else current_year
-    except ValueError:
+    form = TahunForm(request.GET or None)
+
+    if form.is_valid():
+        tahun = int(form.cleaned_data.get("tahun") or current_year)
+    else:
         tahun = current_year
 
     data_laporan = []
@@ -230,6 +231,7 @@ def laporan_tahunan(request, layanan):
     context = {
         "data_laporan": data_laporan,
         "tahun": tahun,
+        "form": form,
         "bulan_labels": [
             "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
             "Jul", "Agu", "Sep", "Okt", "Nov", "Des"

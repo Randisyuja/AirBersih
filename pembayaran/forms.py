@@ -1,6 +1,7 @@
 from django import forms
 from pembayaran.models import Pembayaran
 from pelanggan.models import Langganan
+from django.utils import timezone
 
 
 class PembayaranForm(forms.ModelForm):
@@ -30,3 +31,21 @@ class PembayaranForm(forms.ModelForm):
         elif self.instance.pk:
             self.fields["jenis_layanan"].queryset = Langganan.objects.filter(pelanggan=self.instance.pelanggan)
 
+
+class TahunForm(forms.Form):
+    tahun = forms.ChoiceField(
+        label="Tahun",
+        required=False,
+        widget=forms.Select(attrs={
+            "class": "form-control",
+            "onchange": "this.form.submit();"
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        current_year = timezone.now().year
+        self.fields["tahun"].choices = [
+            (y, y) for y in range(current_year, current_year - 6, -1)
+        ]
