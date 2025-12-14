@@ -5,15 +5,10 @@
 
     <div class="container-fluid">
 
-        <!-- Page Heading -->
-        <h1 class="h3 mb-3 text-gray-800">Daftar Langganan</h1>
-        <a href="{% url 'langganan_create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
-                class="fas fa-plus fa-sm text-white-50"></i> Tambah Langganan</a>
-
         <!-- DataTales Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                <h1 class="h3 mb-3 text-gray-800">Daftar Langganan</h1>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -24,7 +19,6 @@
                             <th>Jenis Layanan</th>
                             <th>Harga</th>
                             <th>Status</th>
-                            <th>Aksi</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -34,32 +28,6 @@
                                 <td>{{ l.jenis_layanan.nama_jenis }}</td>
                                 <td>{{ l.jenis_layanan.tarif|rupiah }}</td>
                                 <td>{{ l.aktif|yesno:"Aktif,Tidak Aktif" }}</td>
-                                <td>
-                                    <a href="{% url 'langganan_detail' l.pk %}" class="btn-sm btn-info btn-icon-split">
-                                        <span class="icon text-white-50">
-                                            <i class="fas fa-info-circle"></i>
-                                        </span>
-                                        <span class="text">Detail</span>
-                                    </a>
-                                    <a href="{% url 'langganan_update' l.pk %}"
-                                       class="btn-sm btn-warning btn-icon-split">
-                                        <span class="icon text-white-50">
-                                            <i class="fas fa-pen"></i>
-                                        </span>
-                                        <span class="text">Edit</span>
-                                    </a>
-                                    <a href="#"
-                                       class="btn-sm btn-danger btn-icon-split"
-                                       data-toggle="modal"
-                                       data-target="#deleteModal"
-                                       data-url="{% url 'langganan_delete' l.pk %}"
-                                    >
-                                        <span class="icon text-white-50">
-                                            <i class="fas fa-trash"></i>
-                                        </span>
-                                        <span class="text">Hapus</span>
-                                    </a>
-                                </td>
                             </tr>
                         {% empty %}
                             <tr>
