@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'pembayaran',
     'rumah',
     'users',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
