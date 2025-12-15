@@ -1,1 +1,1 @@
-web: gunicorn airBersih.wsgi
+web: python manage.py collectstatic --noinput && gunicorn airBersih.wsgi:application
