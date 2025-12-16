@@ -34,6 +34,12 @@ AUTH_USER_MODEL = "users.Kasir"
 
 ALLOWED_HOSTS = ['.railway.app']
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://airbersih-production.up.railway.app",
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
