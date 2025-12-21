@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -7,6 +8,19 @@ class Layanan(models.Model):
 
     def __str__(self):
         return self.nama_layanan
+
+    def clean(self):
+        if Layanan.objects.filter(
+                nama_layanan__iexact=self.nama_layanan
+        ).exclude(pk=self.pk).exists():
+            raise ValidationError({
+                "nama_layanan": "Nama layanan sudah ada."
+            })
+
+    def save(self, *args, **kwargs):
+        if self.nama_layanan:
+            self.nama_layanan = self.nama_layanan.upper()
+        super().save(*args, **kwargs)
 
 
 class JenisLayanan(models.Model):
