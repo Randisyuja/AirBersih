@@ -2,6 +2,7 @@
 {% block content %}
 {% load static %}
 {% load rupiah_filters %}
+{% load dict_extras %}
 
     <!-- Begin Page Content -->
     <div class="container-fluid">
@@ -45,15 +46,16 @@
                     </div>
                 </div>
             </div>
+            {% for item in layanan %}
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card border-left-warning shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    Status Wifi
+                                    Status {{ item }}
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status_wifi }}</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status_layanan|get_item:item }}</div>
                                 <div class="text-xs mb-0 text-gray-800">Belum Bayar</div>
                             </div>
                             <div class="col-auto">
@@ -63,24 +65,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    Status Air
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status_air }}</div>
-                                <div class="text-xs text-gray-800">Belum Bayar</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
         <!-- Content Row -->
         <div class="row">

@@ -17,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from users.forms import PenggunaForm, LoginForm
 from django.db.models import Sum
-from layanan.models import JenisLayanan
+from layanan.models import JenisLayanan, Layanan
 
 
 class Dashboard(LoginRequiredMixin, TemplateView):
@@ -27,16 +27,20 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         bulan = timezone.now().month
         tahun = timezone.now().year
+        layanan = Layanan.objects.all()
 
-        context["status_wifi"] = Tagihan.objects.filter(
-            jenis_layanan__layanan__nama_layanan="WIFI",
-            bulan=bulan, tahun=tahun, status_tagihan=StatusChoice.Belum
-        ).select_related("pelanggan", "pelanggan__rumah").count()
+        context["status_layanan"] = {}
 
-        context["status_air"] = Tagihan.objects.filter(
-            jenis_layanan__layanan__nama_layanan="AIR",
-            bulan=bulan, tahun=tahun, status_tagihan=StatusChoice.Belum
-        ).select_related("pelanggan", "pelanggan__rumah").count()
+        for i in layanan:
+            context["status_layanan"][i] = (
+                Tagihan.objects.filter(
+                    jenis_layanan__layanan__nama_layanan=i,
+                    bulan=bulan,
+                    tahun=tahun,
+                    status_tagihan=StatusChoice.Belum
+                )
+                .select_related("pelanggan", "pelanggan__rumah")
+                .count())
 
         context["recent"] = Pembayaran.objects.filter(
             status_bayar=StatusChoice.Lunas
@@ -65,6 +69,7 @@ class Dashboard(LoginRequiredMixin, TemplateView):
 
         context["bulan"] = bulan
         context["tahun"] = tahun
+        context["layanan"] = layanan
         context["form_pembayaran"] = TagihanUpdate()
 
         return context
