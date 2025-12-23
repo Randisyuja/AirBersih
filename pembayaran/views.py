@@ -16,6 +16,8 @@ from reportlab.lib.units import inch
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
+from django.db.models import IntegerField
+from django.db.models.functions import Cast, Substr
 
 
 class DaftarPembayaran(LoginRequiredMixin, ListView):
@@ -101,8 +103,7 @@ def export_pembayaran_excel(request):
 
 @login_required()
 def export_pembayaran_pdf(request, layanan, tahun):
-    nama_layanan = layanan
-    tahun = tahun
+    nama_layanan = layanan.upper()
     current_year = timezone.now().year
 
     try:
@@ -110,21 +111,46 @@ def export_pembayaran_pdf(request, layanan, tahun):
     except ValueError:
         tahun = current_year
 
+    # Header tabel
     data = [
-        ["Nama Pelanggan", "Alamat Rumah", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov",
-         "Des"],
+        [
+            "Nama Pelanggan",
+            "Alamat Rumah",
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Aug", "Sep", "Okt", "Nov", "Des",
+        ],
     ]
 
-    pelanggan_aktif = Pelanggan.objects.filter(
-        langganan__jenis_layanan__layanan__nama_layanan=nama_layanan.upper(),
-        langganan__aktif=True
-    ).distinct()
+    # Query pelanggan AKTIF + SORTING no_rumah
+    pelanggan_aktif = (
+        Pelanggan.objects.filter(
+            langganan__jenis_layanan__layanan__nama_layanan=nama_layanan,
+            langganan__aktif=True
+        )
+        .select_related("rumah")
+        .annotate(
+            # Ambil angka setelah huruf D → blok
+            blok=Cast(
+                Substr("rumah__no_rumah", 2, 1),
+                IntegerField()
+            ),
+            # Ambil angka setelah NO → nomor rumah
+            nomor=Cast(
+                Substr("rumah__no_rumah", 5),
+                IntegerField()
+            )
+        )
+        .order_by("blok", "nomor")
+        .distinct()
+    )
 
+    # Isi data tabel
     for pelanggan in pelanggan_aktif:
         status_bulan = []
+
         for bulan in range(1, 13):
             pembayaran = Pembayaran.objects.filter(
-                jenis_layanan__layanan__nama_layanan=nama_layanan.upper(),
+                jenis_layanan__layanan__nama_layanan=nama_layanan,
                 pelanggan=pelanggan,
                 bulan=bulan,
                 tahun=tahun
@@ -141,13 +167,10 @@ def export_pembayaran_pdf(request, layanan, tahun):
             *status_bulan
         ])
 
-    # Create a BytesIO buffer to write the PDF in memory
+    # ===== PDF GENERATION =====
     buffer = BytesIO()
-
-    # Create the PDF document in landscape A4
     pdf = SimpleDocTemplate(buffer, pagesize=landscape(A4))
 
-    # Define a style for the table
     style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
@@ -158,31 +181,28 @@ def export_pembayaran_pdf(request, layanan, tahun):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
     ])
 
-    # 🔹 Tentukan total lebar halaman (A4 landscape = 842 point)
-    total_width = 9.5 * inch  # lebar A4 dalam landscape
+    # Lebar kolom
+    total_width = 9.5 * inch
     col_count = len(data[0])
 
-    # Misal: kolom pertama 1.5x lebih lebar, kolom kedua 1.2x, sisanya rata
     weights = [2.2, 1.6] + [1] * (col_count - 2)
     total_weight = sum(weights)
     colWidths = [(w / total_weight) * total_width for w in weights]
 
     table = Table(data, colWidths=colWidths, repeatRows=1)
     table.setStyle(style)
-
     table.hAlign = 'LEFT'
 
-    # Add heading
     styles = getSampleStyleSheet()
-    title = Paragraph(f"Laporan Pembayaran {nama_layanan.capitalize()} {tahun}", styles['Heading1'])
+    title = Paragraph(
+        f"Laporan Pembayaran {nama_layanan.capitalize()} {tahun}",
+        styles['Heading1']
+    )
 
-    # Build the PDF content
     pdf.build([title, table])
 
-    # Move buffer to the beginning
     buffer.seek(0)
 
-    # Return as a downloadable PDF response
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="Laporan_Warga.pdf"'
     return response
@@ -190,7 +210,7 @@ def export_pembayaran_pdf(request, layanan, tahun):
 
 @login_required()
 def laporan_tahunan(request, layanan):
-    nama_layanan = layanan.upper()
+    nama_layanan = layanan
     current_year = timezone.now().year
 
     form = TahunForm(request.GET or None)
@@ -229,6 +249,7 @@ def laporan_tahunan(request, layanan):
         })
 
     context = {
+        "layanan": layanan,
         "data_laporan": data_laporan,
         "tahun": tahun,
         "form": form,
@@ -238,5 +259,5 @@ def laporan_tahunan(request, layanan):
         ]
     }
 
-    return render(request, f"pembayaran/laporan_pembayaran_{nama_layanan.lower()}.html", context)
+    return render(request, f"pembayaran/laporan_pembayaran_layanan.html", context)
 
