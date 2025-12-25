@@ -36,13 +36,16 @@ class LanggananAdmin(admin.ModelAdmin):
     list_display = (
         'pelanggan',
         'jenis_layanan',
-        'harga',
         'aktif',
     )
-
+    exclude = ('harga',)
     list_filter = ('aktif', 'jenis_layanan')
     search_fields = ('pelanggan__nama',)
     autocomplete_fields = ('pelanggan', 'jenis_layanan')
+
+    def save_model(self, request, obj, form, change):
+        obj.harga = obj.jenis_layanan.tarif
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(Tagihan)
