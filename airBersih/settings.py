@@ -32,7 +32,7 @@ DEBUG = False
 
 AUTH_USER_MODEL = "users.Kasir"
 
-ALLOWED_HOSTS = ['.railway.app']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.railway.app']
 
 CSRF_TRUSTED_ORIGINS = [
     "https://airbersih-production.up.railway.app",
@@ -102,14 +102,18 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("DB_NAME"),
+            'USER': os.getenv("DB_USER"),
+            'PASSWORD': os.getenv("DB_PASSWORD"),
+            'HOST': os.getenv("DB_HOST"),
+            'PORT': os.getenv("DB_PORT"),
+        }
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 
 
