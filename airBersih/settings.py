@@ -102,6 +102,10 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    }
+else:
+    DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv("DB_NAME"),
@@ -110,10 +114,6 @@ if DATABASE_URL:
             'HOST': os.getenv("DB_HOST"),
             'PORT': os.getenv("DB_PORT"),
         }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 
 
