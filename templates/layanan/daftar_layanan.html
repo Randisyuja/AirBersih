@@ -3,8 +3,6 @@
 {% load static %}
 
     <div class="container-fluid">
-
-        <!-- DataTales Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <h1 class="h3 mb-3 text-gray-800">Daftar Layanan</h1>
@@ -13,16 +11,16 @@
                 <div class="table-responsive">
                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                         <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Layanan</th>
-                        </tr>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Layanan</th>
+                            </tr>
                         </thead>
                         <tbody>
                         {% for layanan in layanan_list %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ layanan.nama_layanan }}</td>>
+                                <td>{{ layanan}}</td>>
                             </tr>
                         {% empty %}
                             <tr>
