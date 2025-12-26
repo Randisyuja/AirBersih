@@ -1,6 +1,6 @@
 from django.urls import path, include
 from .views import (DaftarPembayaran, TambahPembayaran, UpdatePembayaran, hapus_pembayaran, load_jenis_layanan,
-                    export_pembayaran_excel, export_pembayaran_pdf, laporan_tahunan)
+                    export_pembayaran_excel, export_pembayaran_pdf, laporan_tahunan, PembayaranBulananView)
 
 urlpatterns = [
     path("", DaftarPembayaran.as_view(), name="daftar_pembayaran"),
@@ -11,4 +11,6 @@ urlpatterns = [
     path("pembayaran/export/excel/", export_pembayaran_excel, name="export_pembayaran_excel"),
     path("pembayaran/export/pdf/<str:layanan>/<int:tahun>", export_pembayaran_pdf, name="export_pembayaran_pdf"),
     path("laporan/<str:layanan>/", laporan_tahunan, name="laporan_tahunan"),
+    path("pembayaran/bulanan/", PembayaranBulananView.as_view(), name="pembayaran-bulanan"),
+
 ]

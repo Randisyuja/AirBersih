@@ -10,13 +10,21 @@ class PembayaranForm(forms.ModelForm):
         fields = [
             "pelanggan",
             "jenis_layanan",
-            "kasir",
             "bulan",
             "tahun",
             "status_bayar",
             "tgl_pembayaran",
             "jumlah_bayar",
         ]
+        widgets = {
+            "pelanggan": forms.Select(attrs={"class": "form-control"}),
+            "jenis_layanan": forms.Select(attrs={"class": "form-control"}),
+            "bulan": forms.Select(attrs={"class": "form-control"}),
+            "tahun": forms.NumberInput(attrs={"class": "form-control"}),
+            "status_bayar": forms.Select(attrs={"class": "form-control"}),
+            "tgl_pembayaran": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "jumlah_bayar": forms.NumberInput(attrs={"class": "form-control"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

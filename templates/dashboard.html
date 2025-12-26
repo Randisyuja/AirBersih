@@ -72,9 +72,8 @@
             <div class="col-xl-8 col-lg-7">
                 <div class="card shadow mb-4">
                     <!-- Card Header - Dropdown -->
-                    <div
-                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Pembayaran Terbaru</h6>
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Tagihan Bulan Ini</h6>
                         <div class="dropdown no-arrow">
                         </div>
                     </div>
@@ -89,7 +88,6 @@
                                     <th>No. Rumah</th>
                                     <th>Layanan</th>
                                     <th>Bulan</th>
-                                    <th>Tanggal Bayar</th>
                                     <th>Jumlah</th>
                                 </tr>
                                 </thead>
@@ -101,7 +99,6 @@
                                         <td>{{ bayar.pelanggan.rumah.no_rumah }}</td>
                                         <td>{{ bayar.jenis_layanan.layanan }}</td>
                                         <td>{{ bayar.bulan }}</td>
-                                        <td>{{ bayar.tgl_pembayaran }}</td>
                                         <td>{{ bayar.jumlah_bayar|rupiah }}</td>
                                     </tr>
                                 {% empty %}

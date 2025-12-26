@@ -42,20 +42,22 @@ class Dashboard(LoginRequiredMixin, TemplateView):
                 .select_related("pelanggan", "pelanggan__rumah")
                 .count())
 
-        context["recent"] = Pembayaran.objects.filter(
-            status_bayar=StatusChoice.Lunas
+        context["recent"] = Tagihan.objects.filter(
+            bulan=bulan,
+            tahun=tahun,
+            status_tagihan=StatusChoice.Belum
         ).select_related(
             "pelanggan", "pelanggan", "jenis_layanan"
-        ).order_by("-tgl_pembayaran")[:10]
+        )
 
         context["uang_bulan_ini"] = (
-            Pembayaran.objects.filter(
-                bulan=bulan,
-                tahun=tahun,
-                status_bayar=StatusChoice.Lunas
-            )
-            .aggregate(total_uang=Sum("jumlah_bayar"))
-            ["total_uang"] or 0
+                Pembayaran.objects.filter(
+                    bulan=bulan,
+                    tahun=tahun,
+                    status_bayar=StatusChoice.Lunas
+                )
+                .aggregate(total_uang=Sum("jumlah_bayar"))
+                ["total_uang"] or 0
         )
 
         context["uang_tahun_ini"] = (

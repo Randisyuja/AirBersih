@@ -5,13 +5,14 @@
     {% load custom_tags %}
 
     <div class="container-fluid">
-{#  off sementara  #}
-{#        <a href="{% url 'export_pembayaran_excel' %}"#}
-{#           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i#}
-{#                class="fas fa-download fa-sm text-white-50"></i> Export to Excel</a>#}
+        <a href="{% url 'pembayaran-bulanan' %}"
+           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3">
+            Laporan Bulanan
+        </a>
         <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}"
-           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3"><i
-                class="fas fa-download fa-sm text-white-50"></i> Export to PDF</a>
+           class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm mb-3"><i
+                class="fas fa-download fa-sm text-white-50"></i> Export to PDF
+        </a>
 
         <!-- DataTales Example -->
         <div class="card shadow mb-4">
@@ -47,10 +48,10 @@
                                 <td>{{ row.pelanggan }}</td>
                                 <td>{{ row.alamat }}</td>
                                 {% for status in row.status_bulan %}
-                                    {% if status == "Lunas" %}
-                                        <td class="text-success"><b>Lunas</b></td>
-                                    {% else %}
+                                    {% if status == "Belum" %}
                                         <td class="text-danger"><b>Belum</b></td>
+                                    {% else %}
+                                        <td class="text-success"><b>Lunas</b></td>
                                     {% endif %}
                                 {% endfor %}
                             </tr>
