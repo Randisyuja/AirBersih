@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 AUTH_USER_MODEL = "users.Kasir"
 
@@ -100,7 +100,9 @@ WSGI_APPLICATION = 'airBersih.wsgi.application'
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DATABASE_URL:
+DB = os.getenv("DB_NAME")
+
+if DB:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
