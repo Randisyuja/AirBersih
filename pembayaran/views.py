@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, TemplateView
 from django.utils import timezone
 from pembayaran.models import Pembayaran
 from django.shortcuts import render
@@ -8,7 +8,7 @@ from pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse, HttpResponse
 from io import BytesIO
 from openpyxl import Workbook
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -16,8 +16,9 @@ from reportlab.lib.units import inch
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
-from django.db.models import IntegerField
+from django.db.models import IntegerField, Sum
 from django.db.models.functions import Cast, Substr
+from pembayaran.choices import StatusChoice, BulanChoice
 
 
 class DaftarPembayaran(LoginRequiredMixin, ListView):
@@ -28,6 +29,41 @@ class DaftarPembayaran(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["bulan_list"] = range(1, 13)
+        return context
+
+
+class PembayaranBulananView(TemplateView):
+    template_name = "pembayaran/pembayaran_bulanan.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Ambil bulan & tahun dari GET, default: bulan & tahun sekarang
+        bulan = int(self.request.GET.get("bulan", timezone.now().month))
+        tahun = int(self.request.GET.get("tahun", timezone.now().year))
+
+        pembayaran = (
+            Pembayaran.objects.filter(
+                bulan=bulan,
+                tahun=tahun,
+                status_bayar=StatusChoice.Lunas
+            )
+            .select_related("pelanggan", "pelanggan__rumah", "jenis_layanan", "kasir")
+            .order_by("-tgl_pembayaran")
+        )
+
+        total_pemasukan = (
+                pembayaran.aggregate(total=Sum("jumlah_bayar"))["total"] or 0
+        )
+
+        context.update({
+            "pembayaran": pembayaran,
+            "bulan": bulan,
+            "tahun": tahun,
+            "total_pemasukan": total_pemasukan,
+            "bulan_choices": BulanChoice.choices,
+        })
+
         return context
 
 
@@ -167,6 +203,16 @@ def export_pembayaran_pdf(request, layanan, tahun):
             *status_bulan
         ])
 
+    total_pemasukan_tahun = (
+            Pembayaran.objects.filter(
+                jenis_layanan__layanan__nama_layanan=nama_layanan,
+                tahun=tahun,
+                status_bayar=StatusChoice.Lunas
+            )
+            .aggregate(total_uang=Sum("jumlah_bayar"))
+            ["total_uang"] or 0
+    )
+
     # ===== PDF GENERATION =====
     buffer = BytesIO()
     pdf = SimpleDocTemplate(buffer, pagesize=landscape(A4))
@@ -199,12 +245,24 @@ def export_pembayaran_pdf(request, layanan, tahun):
         styles['Heading1']
     )
 
-    pdf.build([title, table])
+    total_text = Paragraph(
+        f"<b>Total pemasukan tahun {tahun}:</b> "
+        f"Rp {total_pemasukan_tahun:,.0f}".replace(",", "."),
+        styles["Normal"]
+    )
+
+    pdf.build([
+        title,
+        Spacer(1, 12),
+        table,
+        Spacer(1, 16),
+        total_text
+    ])
 
     buffer.seek(0)
 
     response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="Laporan_Warga.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="Laporan_Pembayaran_{nama_layanan}_{tahun}.pdf"'
     return response
 
 
