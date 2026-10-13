@@ -1,66 +1,235 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load rupiah_filters %}
+{% load custom_tags %}
+
+{% block title %}Laporan Tahunan {{ layanan }} {{ tahun }} - Jogo Tirto{% endblock %}
+
 {% block content %}
-    {% load static %}
-    {% load rupiah_filters %}
-    {% load custom_tags %}
-
-    <div class="container-fluid">
-        <a href="{% url 'pembayaran-bulanan' %}"
-           class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3">
-            Laporan Bulanan
-        </a>
-        <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}"
-           class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm mb-3"><i
-                class="fas fa-download fa-sm text-white-50"></i> Export to PDF
-        </a>
-
-        <!-- DataTales Example -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h1 class="h3 mb-3 text-gray-800">Laporan Pembayaran {{ layanan }} {{ tahun }}</h1>
-
-                <!-- Form Pilih Tahun -->
-                <form method="get" action="{% url 'laporan_tahunan' layanan=layanan %}" class="mb-3">
-                    <div class="row align-items-end">
-                        <div class="col-md-3">
-                            {{ form.tahun }}
-                        </div>
-                        <div class="col-md-2">
-                        </div>
-                    </div>
-                </form>
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="badge badge-pill badge-primary-subtle text-primary mr-2 px-2 py-1 font-weight-bold">
+                    {% if layanan == 'AIR' %}<i class="fas fa-tint mr-1"></i>{% else %}<i class="fas fa-wifi mr-1"></i>{% endif %}{{ layanan }}
+                </span>
+                <h1 class="h3 font-weight-bold text-slate-800 mb-0">Laporan Tahunan {{ tahun }}</h1>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
+            <p class="text-muted small mb-0">Matriks rekapitulasi status pembayaran iuran warga selama 12 bulan</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2 align-items-center">
+            <a href="{% url 'pembayaran-bulanan' %}" class="btn btn-outline-primary btn-sm px-3 shadow-sm mr-2" style="border-radius: 8px;">
+                <i class="fas fa-calendar-alt mr-1"></i> Laporan Bulanan
+            </a>
+            <!-- Button Buka Modal Preview PDF -->
+            <button type="button" class="btn btn-danger btn-sm px-3 shadow-sm mr-2" style="border-radius: 8px;" 
+                    id="btnBukaModalPdf" data-toggle="modal" data-target="#modalPreviewPdf" 
+                    title="Buka Pratinjau Dokumen PDF Laporan">
+                <i class="fas fa-file-pdf mr-1"></i> Cetak / Preview PDF
+            </button>
+            <!-- Direct Download Button -->
+            <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}?download=1" 
+               class="btn btn-outline-danger btn-sm px-3 shadow-sm" style="border-radius: 8px;" 
+               title="Unduh langsung file PDF" id="btnDirectDownloadPdf">
+                <i class="fas fa-download mr-1"></i> Unduh
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Year Card -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; background: #ffffff;">
+        <div class="card-body py-3 px-4">
+            <form method="get" action="{% url 'laporan_tahunan' layanan=layanan %}" class="form-inline d-flex align-items-center">
+                <label class="mr-3 font-weight-semibold text-slate-700 small mb-0">
+                    <i class="fas fa-filter text-primary mr-1"></i> Pilih Tahun Laporan:
+                </label>
+                <div class="mr-2">
+                    {{ form.tahun }}
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary px-3" style="border-radius: 8px;">
+                    Tampilkan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Matrix Card -->
+    <div class="card data-card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive p-3">
+                <table class="table modern-table table-hover align-middle mb-0 text-center" id="dataTable" width="100%">
+                    <thead>
                         <tr>
-                            <th>Nama Pelanggan</th>
-                            <th>Alamat Rumah</th>
+                            <th class="text-left" style="min-width: 160px;">Nama Pelanggan</th>
+                            <th class="text-left" style="min-width: 110px;">No. Rumah</th>
                             {% for bulan in bulan_labels %}
-                                <th>{{ bulan }}</th>
+                                <th style="min-width: 55px; font-size: 0.8rem;">{{ bulan }}</th>
                             {% endfor %}
                         </tr>
-                        </thead>
-                        <tbody>
-                        {% for row in data_laporan %}
-                            <tr>
-                                <td>{{ row.pelanggan }}</td>
-                                <td>{{ row.alamat }}</td>
-                                {% for status in row.status_bulan %}
+                    </thead>
+                    <tbody>
+                    {% for row in data_laporan %}
+                        <tr>
+                            <td class="text-left font-weight-bold text-slate-800">{{ row.pelanggan }}</td>
+                            <td class="text-left">
+                                <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
+                                    <i class="fas fa-home text-muted mr-1"></i>{{ row.alamat }}
+                                </span>
+                            </td>
+                            {% for status in row.status_bulan %}
+                                <td>
                                     {% if status == "Belum" %}
-                                        <td class="text-danger"><b>Belum</b></td>
+                                        <span class="badge badge-pill badge-danger-subtle text-danger" style="font-size: 0.75rem; padding: 0.25rem 0.45rem;">
+                                            Belum
+                                        </span>
                                     {% else %}
-                                        <td class="text-success"><b>Lunas</b></td>
+                                        <span class="badge badge-pill badge-success-subtle text-success" style="font-size: 0.75rem; padding: 0.25rem 0.45rem;">
+                                            <i class="fas fa-check"></i>
+                                        </span>
                                     {% endif %}
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="14" class="text-center py-5 text-muted">
+                                <i class="fas fa-file-invoice fa-3x mb-2 text-slate-300 d-block"></i>
+                                Tidak ada data laporan untuk periode tahun ini.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL PREVIEW DOKUMEN LAPORAN PDF (LANDSCAPE A4)
+     ========================================================================== -->
+<div class="modal fade" id="modalPreviewPdf" tabindex="-1" role="dialog" aria-labelledby="modalPreviewPdfLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 92vw;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; height: 90vh;">
+            <!-- Modal Header -->
+            <div class="modal-header text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #991b1b 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 38px; height: 38px;">
+                        <i class="fas fa-file-pdf fa-lg"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-white mb-0" id="modalPreviewPdfLabel" style="font-size: 1.1rem;">
+                            Pratinjau Cetak Laporan {{ layanan }} Tahun {{ tahun }}
+                        </h5>
+                        <small class="text-white-50" style="font-size: 0.78rem;">
+                            Dokumen Resmi Matriks Kas Warga &bull; Format Landscape A4
+                        </small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}" target="_blank" 
+                       class="btn btn-sm btn-outline-light mr-2 font-weight-medium" style="border-radius: 6px;" 
+                       title="Buka dokumen di tab browser baru">
+                        <i class="fas fa-external-link-alt mr-1"></i> Buka Tab Penuh
+                    </a>
+                    <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}?download=1" 
+                       class="btn btn-sm btn-light text-danger font-weight-bold mr-2 shadow-sm" style="border-radius: 6px;" 
+                       title="Unduh berkas PDF">
+                        <i class="fas fa-download mr-1"></i> Unduh PDF
+                    </a>
+                    <button type="button" class="close text-white ml-2" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; text-shadow: none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body (Iframe Preview Container) -->
+            <div class="modal-body p-0 position-relative" style="background-color: #f1f5f9; height: calc(90vh - 125px); overflow: hidden;">
+                <!-- Loading State Spinner -->
+                <div id="pdfLoadingIndicator" class="d-flex flex-column align-items-center justify-content-center h-100 w-100 position-absolute" style="top: 0; left: 0; background: rgba(248, 250, 252, 0.96); z-index: 5;">
+                    <div class="spinner-border text-danger mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="sr-only">Memuat...</span>
+                    </div>
+                    <div class="font-weight-bold text-slate-800">Menyiapkan Pratinjau Dokumen PDF...</div>
+                    <small class="text-muted mt-1">Mengkompilasi data matriks pembayaran warga ke format ReportLab PDF</small>
+                </div>
+
+                <!-- PDF Iframe Embed -->
+                <iframe id="pdfPreviewIframe" 
+                        data-src="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}" 
+                        src="" 
+                        class="w-100 h-100 border-0" 
+                        style="min-height: 100%; display: block;">
+                </iframe>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer bg-white py-2 px-4 border-top d-flex justify-content-between align-items-center">
+                <div class="small text-muted d-none d-sm-block">
+                    <i class="fas fa-info-circle text-primary mr-1"></i>
+                    Gunakan tombol di bilah dokumen PDF untuk zoom in/out, mencetak, atau menyimpan dokumen.
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary btn-sm px-3 mr-2" data-dismiss="modal" style="border-radius: 8px;">
+                        Tutup
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm mr-2" id="btnPrintPdfModal" style="border-radius: 8px;">
+                        <i class="fas fa-print mr-1"></i> Cetak Dokumen
+                    </button>
+                    <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}?download=1" class="btn btn-danger btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+                        <i class="fas fa-download mr-1"></i> Unduh File
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $("form select").addClass("form-control form-control-sm form-control-modern");
+
+        // Lazy-load PDF source inside modal only upon user open request
+        $('#modalPreviewPdf').on('show.bs.modal', function () {
+            var $iframe = $('#pdfPreviewIframe');
+            var pdfUrl = $iframe.data('src');
+            var $spinner = $('#pdfLoadingIndicator');
+
+            $spinner.removeClass('d-none').addClass('d-flex');
+            
+            // Set or refresh iframe src
+            if ($iframe.attr('src') !== pdfUrl) {
+                $iframe.attr('src', pdfUrl);
+            }
+
+            $iframe.off('load').on('load', function () {
+                $spinner.removeClass('d-flex').addClass('d-none');
+            });
+
+            // Fallback timeout to hide spinner
+            setTimeout(function() {
+                $spinner.removeClass('d-flex').addClass('d-none');
+            }, 2500);
+        });
+
+        // Trigger Cetak Dokumen via Iframe focus & print
+        $('#btnPrintPdfModal').on('click', function () {
+            var iframe = document.getElementById('pdfPreviewIframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    window.open(iframe.getAttribute('src'), '_blank');
+                }
+            } else {
+                var src = $('#pdfPreviewIframe').data('src');
+                window.open(src, '_blank');
+            }
+        });
+    });
+</script>
 {% endblock %}

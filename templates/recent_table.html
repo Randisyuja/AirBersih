@@ -1,52 +1,87 @@
-    <table class="table table-striped">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Nama</th>
-        <th>No. Rumah</th>
-        <th>Layanan</th>
-        <th>Bulan</th>
-        <th>Tanggal Bayar</th>
-        <th>Jumlah</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for bayar in recent %}
-        <tr>
-            <td>{{ bayar.pelanggan.id }}</td>
-            <td>{{ bayar.pelanggan.nama }}</td>
-            <td>{{ bayar.pelanggan.rumah.no_rumah }}</td>
-            <td>{{ bayar.jenis_layanan.nama }}</td>
-            <td>{{ bayar.bulan }}</td>
-            <td>{{ bayar.tgl_pembayaran }}</td>
-            <td>Rp {{ bayar.jumlah_bayar|floatformat:0 }}</td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="7">Belum ada pembayaran</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-
-<nav aria-label="Page navigation">
-    <ul class="pagination">
-        {% if recent.has_previous %}
-            <li class="page-item">
-                <a class="page-link page-ajax" href="?page={{ recent.previous_page_number }}">Previous</a>
-            </li>
-        {% endif %}
-
-        {% for num in recent.paginator.page_range %}
-            <li class="page-item {% if recent.number == num %}active{% endif %}">
-                <a class="page-link page-ajax" href="?page={{ num }}">{{ num }}</a>
-            </li>
+{% load rupiah_filters %}
+<div class="table-responsive">
+    <table class="table modern-table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th style="width: 50px;">No</th>
+                <th>Nama Pelanggan</th>
+                <th>No. Rumah</th>
+                <th>Layanan</th>
+                <th>Periode</th>
+                <th>Waktu Bayar</th>
+                <th class="text-right">Nominal</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for bayar in recent %}
+            <tr>
+                <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">
+                    {{ forloop.counter0|add:recent.start_index }}
+                </td>
+                <td>
+                    <div class="font-weight-bold text-slate-800">{{ bayar.pelanggan.nama }}</div>
+                </td>
+                <td>
+                    <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
+                        <i class="fas fa-home text-muted mr-1"></i>{{ bayar.pelanggan.rumah.no_rumah|default:"-" }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1 font-weight-semibold">
+                        {{ bayar.jenis_layanan.layanan.nama_layanan|default:bayar.jenis_layanan.nama_jenis }}
+                    </span>
+                </td>
+                <td>
+                    <span class="text-slate-700 font-weight-medium">{{ bayar.bulan }}/{{ bayar.tahun }}</span>
+                </td>
+                <td class="text-muted small">
+                    <i class="far fa-calendar-alt mr-1"></i>{{ bayar.tgl_pembayaran|date:"d-m-Y H:i"|default:"-" }}
+                </td>
+                <td class="text-right font-weight-bold text-success" style="font-size: 0.95rem;">
+                    {{ bayar.jumlah_bayar|rupiah }}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="fas fa-inbox fa-2x mb-2 text-slate-300 d-block"></i>
+                    Belum ada riwayat transaksi pembayaran.
+                </td>
+            </tr>
         {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-        {% if recent.has_next %}
-            <li class="page-item">
-                <a class="page-link page-ajax" href="?page={{ recent.next_page_number }}">Next</a>
-            </li>
-        {% endif %}
-    </ul>
-</nav>
+{% if recent.paginator.num_pages > 1 %}
+<div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+    <div class="small text-muted">
+        Halaman {{ recent.number }} dari {{ recent.paginator.num_pages }}
+    </div>
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm mb-0">
+            {% if recent.has_previous %}
+                <li class="page-item">
+                    <a class="page-link page-ajax" href="?page={{ recent.previous_page_number }}">
+                        <i class="fas fa-chevron-left mr-1"></i> Prev
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in recent.paginator.page_range %}
+                <li class="page-item {% if recent.number == num %}active{% endif %}">
+                    <a class="page-link page-ajax" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if recent.has_next %}
+                <li class="page-item">
+                    <a class="page-link page-ajax" href="?page={{ recent.next_page_number }}">
+                        Next <i class="fas fa-chevron-right ml-1"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
