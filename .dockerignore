@@ -1,0 +1,47 @@
+# Version control
+.git
+.gitignore
+
+# Python cache & virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+.ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Databases
+*.sqlite3
+*.db
+
+# Django static & media artifacts
+staticfiles/
+media/
+*.log
+
+# Docker files
+.dockerignore
+docker-compose*.yml
+
+# Environment files
+.env
+*.env
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation / Sample files
+*.pdf

@@ -1,0 +1,62 @@
+site_name: WaterPay & AirBersih Technical Docs
+site_description: Dokumentasi Internal & Arsitektur Teknis Sistem WaterPay / AirBersih
+site_author: Tim Pengembang AirBersih
+repo_name: Randisyuja/AirBersih
+repo_url: https://github.com/Randisyuja/AirBersih
+
+theme:
+  name: material
+  palette:
+    # Mode terang / gelap otomatis atau switch manual
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Overview: index.md
+  - Onboarding & Local Setup: local-setup.md
+  - Architecture Draft: architecture_draft.md
+  - Frontend UI/UX Guidelines: frontend_guidelines.md
+  - Architecture Decision Records (ADR):
+      - 001 - Celery & Async Tasks: adr/0001-celery-async-tasks.md
+      - 002 - Clean Modular Architecture: adr/0002-clean-architecture.md
+      - 003 - Split MPBService: adr/0003-split-mpbservice.md
+  - Modul Aplikasi (Django Apps):
+      - Standar Umum: modules/standar_umum.md
+      - Users & Dashboard: modules/users.md
+      - Layanan & Tarif: modules/layanan.md
+      - Rumah & Pemukiman: modules/rumah.md
+      - Pelanggan & Tagihan: modules/pelanggan.md
+      - Pembayaran & Laporan: modules/pembayaran.md
+  - Architecture & Ops:
+      - Docker Architecture: runbook/docker.md
+      - Deployment & Hosting: runbook/deployment.md
+      - Database & Storage: runbook/database.md
+      - Disaster Recovery & Backup: runbook/disaster_recovery.md
