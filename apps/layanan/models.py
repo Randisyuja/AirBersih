@@ -30,4 +30,4 @@ class JenisLayanan(models.Model):
     tarif = models.IntegerField()
 
     def __str__(self):
-        return f"{self.layanan.nama_layanan} - {self.nama_jenis}"
+        return f"{self.layanan.nama_layanan} - {self.nama_jenis} (Rp {self.tarif:,})".replace(",", ".")

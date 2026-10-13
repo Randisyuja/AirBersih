@@ -3,21 +3,21 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
-from users.models import Kasir
+from apps.users.models import Kasir
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
-from rumah.models import Rumah
-from pelanggan.models import Langganan, Pelanggan, Tagihan
-from pembayaran.models import Pembayaran
+from apps.rumah.models import Rumah
+from apps.pelanggan.models import Langganan, Pelanggan, Tagihan
+from apps.pembayaran.models import Pembayaran
 from django.http import JsonResponse
-from pelanggan.forms import TagihanUpdate
-from pembayaran.choices import StatusChoice
+from apps.pelanggan.forms import TagihanUpdate
+from apps.pembayaran.choices import StatusChoice
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from users.forms import PenggunaForm, LoginForm
+from apps.users.forms import PenggunaForm, LoginForm
 from django.db.models import Sum
-from layanan.models import JenisLayanan, Layanan
+from apps.layanan.models import JenisLayanan, Layanan
 
 
 class Dashboard(LoginRequiredMixin, TemplateView):
@@ -42,12 +42,10 @@ class Dashboard(LoginRequiredMixin, TemplateView):
                 .select_related("pelanggan", "pelanggan__rumah")
                 .count())
 
-        context["recent"] = Tagihan.objects.filter(
-            bulan=bulan,
-            tahun=tahun,
-            status_tagihan=StatusChoice.Belum
-        ).select_related(
-            "pelanggan", "pelanggan", "jenis_layanan"
+        context["recent"] = (
+            Pembayaran.objects.filter(status_bayar=StatusChoice.Lunas)
+            .select_related("pelanggan", "pelanggan__rumah", "jenis_layanan", "jenis_layanan__layanan", "kasir")
+            .order_by("-tgl_pembayaran", "-id_pembayaran")[:10]
         )
 
         context["uang_bulan_ini"] = (
@@ -209,3 +207,19 @@ class SignUpView(CreateView):
     form_class = UserCreationForm  # bisa custom form kalau mau tambah field
     template_name = "users/signup.html"
     success_url = reverse_lazy("login")  # setelah daftar, ke login
+
+
+@login_required()
+def laporan_recent(request):
+    from django.template.loader import render_to_string
+    from django.core.paginator import Paginator
+    pembayaran_list = (
+        Pembayaran.objects.filter(status_bayar=StatusChoice.Lunas)
+        .select_related("pelanggan", "pelanggan__rumah", "jenis_layanan", "jenis_layanan__layanan", "kasir")
+        .order_by("-tgl_pembayaran", "-id_pembayaran")
+    )
+    paginator = Paginator(pembayaran_list, 10)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+    html = render_to_string("recent_table.html", {"recent": page_obj}, request=request)
+    return JsonResponse({"html": html})

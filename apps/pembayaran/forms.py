@@ -1,6 +1,6 @@
 from django import forms
-from pembayaran.models import Pembayaran
-from pelanggan.models import Langganan
+from apps.pembayaran.models import Pembayaran
+from apps.pelanggan.models import Langganan
 from django.utils import timezone
 
 

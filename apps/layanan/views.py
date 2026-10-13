@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy
-from layanan.models import Layanan, JenisLayanan
+from apps.layanan.models import Layanan, JenisLayanan
 from django.contrib.auth.mixins import LoginRequiredMixin
-from layanan.forms import LayananForm, JenisLayananForm
+from apps.layanan.forms import LayananForm, JenisLayananForm
 
 
 class DaftarLayanan(LoginRequiredMixin, ListView):

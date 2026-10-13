@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from users.models import Kasir
+from apps.users.models import Kasir
 
 
 @admin.register(Kasir)

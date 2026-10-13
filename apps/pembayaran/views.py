@@ -1,10 +1,10 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, TemplateView
 from django.utils import timezone
-from pembayaran.models import Pembayaran
+from apps.pembayaran.models import Pembayaran
 from django.shortcuts import render
-from pembayaran.forms import PembayaranForm, TahunForm
-from pelanggan.models import Langganan, Pelanggan
+from apps.pembayaran.forms import PembayaranForm, TahunForm
+from apps.pelanggan.models import Langganan, Pelanggan
 from django.http import JsonResponse, HttpResponse
 from io import BytesIO
 from openpyxl import Workbook
@@ -18,7 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
 from django.db.models import IntegerField, Sum
 from django.db.models.functions import Cast, Substr
-from pembayaran.choices import StatusChoice, BulanChoice
+from apps.pembayaran.choices import StatusChoice, BulanChoice
 
 
 class DaftarPembayaran(LoginRequiredMixin, ListView):
@@ -92,9 +92,12 @@ def hapus_pembayaran(request, pk):
 @login_required()
 def load_jenis_layanan(request):
     pelanggan_id = request.GET.get("pelanggan_id")
-    langganan = Langganan.objects.filter(pelanggan_id=pelanggan_id).select_related("jenis_layanan")
+    langganan = Langganan.objects.filter(pelanggan_id=pelanggan_id, aktif=True).select_related("jenis_layanan", "jenis_layanan__layanan")
     data = [
-        {"id": l.jenis_layanan.id_jenis, "nama": str(l.jenis_layanan.nama_jenis)}
+        {
+            "id": l.jenis_layanan.id_jenis,
+            "nama": f"{l.jenis_layanan.layanan.nama_layanan} - {l.jenis_layanan.nama_jenis} (Rp {l.jenis_layanan.tarif:,})".replace(",", ".")
+        }
         for l in langganan
     ]
     return JsonResponse(data, safe=False)
@@ -261,8 +264,10 @@ def export_pembayaran_pdf(request, layanan, tahun):
 
     buffer.seek(0)
 
+    is_download = request.GET.get('download') == '1'
+    disposition_type = 'attachment' if is_download else 'inline'
     response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Laporan_Pembayaran_{nama_layanan}_{tahun}.pdf"'
+    response['Content-Disposition'] = f'{disposition_type}; filename="Laporan_Pembayaran_{nama_layanan}_{tahun}.pdf"'
     return response
 
 

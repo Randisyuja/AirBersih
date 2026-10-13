@@ -32,7 +32,7 @@ DEBUG = True
 
 AUTH_USER_MODEL = "users.Kasir"
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.railway.app']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '.railway.app']
 
 CSRF_TRUSTED_ORIGINS = [
     "https://airbersih-production.up.railway.app",
@@ -56,11 +56,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'layanan',
-    'pelanggan',
-    'pembayaran',
-    'rumah',
-    'users',
+    'apps.layanan',
+    'apps.pelanggan',
+    'apps.pembayaran',
+    'apps.rumah',
+    'apps.users',
 ]
 
 MIDDLEWARE = [

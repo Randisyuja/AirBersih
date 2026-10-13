@@ -1,6 +1,5 @@
 from django.utils import timezone
-from pelanggan.models import Langganan
-from pelanggan.models import Tagihan
+from apps.pelanggan.models import Langganan, Tagihan
 
 
 def generate_tagihan_setahun(tahun=None):

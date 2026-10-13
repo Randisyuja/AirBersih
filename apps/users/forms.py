@@ -1,5 +1,5 @@
 from django import forms
-from users.models import Kasir
+from apps.users.models import Kasir
 from django.contrib.auth.forms import AuthenticationForm
 
 

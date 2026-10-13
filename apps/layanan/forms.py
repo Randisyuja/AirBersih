@@ -1,5 +1,5 @@
 from django import forms
-from layanan.models import Layanan, JenisLayanan
+from apps.layanan.models import Layanan, JenisLayanan
 
 
 class LayananForm(forms.ModelForm):

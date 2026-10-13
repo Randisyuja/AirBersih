@@ -1,5 +1,5 @@
 from django import forms
-from rumah.models import Rumah
+from apps.rumah.models import Rumah
 
 
 class RumahForm(forms.ModelForm):

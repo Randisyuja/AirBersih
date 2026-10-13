@@ -1,14 +1,14 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
-from .models import Pelanggan, Langganan, Tagihan
-from layanan.models import JenisLayanan
+from apps.pelanggan.models import Pelanggan, Langganan, Tagihan
+from apps.layanan.models import JenisLayanan
 from django.http import JsonResponse, HttpResponseBadRequest
-from rumah.models import Rumah
+from apps.rumah.models import Rumah
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
+from apps.pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
 from django.contrib import messages
-from pelanggan.utils import generate_tagihan_setahun
+from apps.pelanggan.utils import generate_tagihan_setahun
 from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
 
@@ -17,6 +17,46 @@ class DaftarPelanggan(LoginRequiredMixin, ListView):
     model = Pelanggan
     template_name = "pelanggan/daftar_pelanggan.html"
     context_object_name = "pelanggan_list"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("rumah")
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            import re
+            from django.db.models import Q
+            clean_q = q.strip()
+            no_spaces_q = re.sub(r"\s+", "", clean_q)
+            rt_stripped = re.sub(r"^(rt|no\.?)\s*", "", clean_q, flags=re.IGNORECASE).strip()
+            rt_stripped_no_spaces = re.sub(r"^(rt|no\.?)\s*", "", no_spaces_q, flags=re.IGNORECASE).strip()
+
+            candidates = {clean_q}
+            if no_spaces_q:
+                candidates.add(no_spaces_q)
+            if rt_stripped:
+                candidates.add(rt_stripped)
+                if rt_stripped.isdigit():
+                    candidates.add(rt_stripped.zfill(2))
+                    candidates.add(rt_stripped.lstrip("0"))
+            if rt_stripped_no_spaces:
+                candidates.add(rt_stripped_no_spaces)
+
+            query_filter = Q()
+            for term in candidates:
+                if term:
+                    query_filter |= (
+                        Q(nama__icontains=term)
+                        | Q(rumah__rt__icontains=term)
+                        | Q(rumah__no_rumah__icontains=term)
+                        | Q(no_hp__icontains=term)
+                    )
+            queryset = queryset.filter(query_filter)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["query"] = self.request.GET.get("q", "").strip()
+        context["total_count"] = self.get_queryset().count()
+        return context
 
 
 class TambahPelanggan(LoginRequiredMixin, CreateView):
@@ -36,6 +76,13 @@ class UpdatePelanggan(LoginRequiredMixin, UpdateView):
     form_class = PelangganForm
     template_name = "pelanggan/form_pelanggan.html"
     success_url = reverse_lazy("daftar_pelanggan")
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        from django.db.models import Q
+        current_rumah_id = self.object.rumah_id if self.object and self.object.rumah_id else None
+        form.fields["rumah"].queryset = Rumah.objects.filter(Q(penghuni__isnull=True) | Q(id_rumah=current_rumah_id))
+        return form
 
 
 def hapus_pelanggan(request, pk):

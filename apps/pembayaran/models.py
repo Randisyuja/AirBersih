@@ -1,8 +1,8 @@
 from django.db import models
-from pelanggan.models import Pelanggan
-from layanan.models import JenisLayanan
-from users.models import Kasir
-from pembayaran.choices import StatusChoice, BulanChoice
+from apps.pelanggan.models import Pelanggan
+from apps.layanan.models import JenisLayanan
+from apps.users.models import Kasir
+from apps.pembayaran.choices import StatusChoice, BulanChoice
 
 
 class Pembayaran(models.Model):
