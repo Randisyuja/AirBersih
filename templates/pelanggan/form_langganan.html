@@ -1,58 +1,202 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
 {% load rupiah_filters %}
 
-    <div class="container-fluid">
-        <h1 class="h3 mb-3 text-gray-800">
-            {% if object %}
-                Edit Langganan
-            {% else %}
-                Tambah Langganan
-            {% endif %}
-        </h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-success btn-icon-split"> 
-                <span class="icon text-white-50">
-                    <i class="fas fa-check"></i>
-                </span>
-                <span class="text">
-                    Simpan
-                </span>
-            </button>
-            <a href="{% url 'daftar_langganan' %}" class="btn btn-secondary btn-icon-split">
-                <span class="icon text-white-50">
-                    <i class="fas fa-arrow-left"></i>
-                </span>
-                <span class="text">Kembali</span>
+{% block title %}{% if object %}Edit Langganan{% else %}Pendaftaran Langganan Baru{% endif %} - Jogo Tirto{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'vendor/select2/select2.min.css' %}" rel="stylesheet">
+<style>
+    .select2-container .select2-selection--single {
+        height: 44px !important;
+        border: 1.5px solid var(--slate-300) !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-left: 0.75rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 44px !important;
+        font-size: 0.92rem !important;
+        color: var(--slate-800) !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 42px !important;
+        right: 10px !important;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px var(--primary-glow) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">
+                {% if object %}Edit Langganan Warga{% else %}Pendaftaran Langganan Layanan{% endif %}
+            </h1>
+            <p class="text-muted small mb-0">Hubungkan pelanggan warga dengan jenis layanan serta tarif otomatis</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{% url 'daftar_langganan' %}" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+                <i class="fas fa-arrow-left mr-1"></i> Kembali ke Daftar
             </a>
-        </form>
+        </div>
     </div>
 
-    <script>
-        $("#id_jenis_layanan").change(function () {
-            var jenisId = $(this).val();
-            console.log("Jenis ID dipilih di dropdown:", jenisId);
+    <!-- Form Card -->
+    <div class="row">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card data-card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h6 class="m-0 font-weight-bold text-slate-800">
+                        <i class="fas fa-link text-primary mr-2"></i> Formulir Langganan
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="langgananForm">
+                        {% csrf_token %}
+                        
+                        <!-- Field Pelanggan / Warga Searchable -->
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold text-slate-700 small mb-1" for="id_pelanggan">
+                                PELANGGAN / WARGA: <span class="text-danger">*</span>
+                            </label>
+                            <div class="select2-wrapper">
+                                {{ form.pelanggan }}
+                            </div>
+                            <small class="form-text text-muted mt-1">
+                                <i class="fas fa-search mr-1 text-primary"></i> 
+                                Dropdown dapat <strong>diketik langsung</strong> untuk mencari berdasarkan <strong>Nama</strong>, <strong>RT</strong>, atau <strong>Nomor Rumah</strong>.
+                            </small>
+                            {% if form.pelanggan.errors %}
+                                <div class="text-danger small mt-1 font-weight-semibold">{{ form.pelanggan.errors.0 }}</div>
+                            {% endif %}
+                        </div>
 
+                        <!-- Field Jenis Layanan Searchable -->
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold text-slate-700 small mb-1" for="id_jenis_layanan">
+                                JENIS LAYANAN: <span class="text-danger">*</span>
+                            </label>
+                            <div class="select2-wrapper">
+                                {{ form.jenis_layanan }}
+                            </div>
+                            <small class="form-text text-muted mt-1">
+                                <i class="fas fa-search mr-1 text-primary"></i> 
+                                Dropdown dapat <strong>diketik langsung</strong> untuk mencari jenis fasilitas (contoh: <strong>Air</strong>, <strong>WiFi</strong>). Tarif otomatis terisi.
+                            </small>
+                            {% if form.jenis_layanan.errors %}
+                                <div class="text-danger small mt-1 font-weight-semibold">{{ form.jenis_layanan.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Field Harga / Tarif -->
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold text-slate-700 small mb-1" for="id_harga">
+                                TARIF / BIAYA PER BULAN: <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-light border-right-0 font-weight-bold text-slate-600" style="border-radius: 8px 0 0 8px; border-color: var(--slate-300); height: 44px;">
+                                        Rp
+                                    </span>
+                                </div>
+                                {{ form.harga }}
+                            </div>
+                            <small class="form-text text-muted mt-1">
+                                Nominal tagihan bulanan. Nilai default terisi otomatis sesuai paket layanan dan dapat disesuaikan jika diperlukan.
+                            </small>
+                            {% if form.harga.errors %}
+                                <div class="text-danger small mt-1 font-weight-semibold">{{ form.harga.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Field Status Aktif -->
+                        <div class="form-group mb-3">
+                            <label class="form-label font-weight-bold text-slate-700 small mb-1" for="id_aktif">
+                                STATUS LANGGANAN: <span class="text-danger">*</span>
+                            </label>
+                            {{ form.aktif }}
+                            <small class="form-text text-muted mt-1">
+                                Status aktif menentukan apakah langganan ini diproses dalam pembuatan tagihan iuran bulanan.
+                            </small>
+                            {% if form.aktif.errors %}
+                                <div class="text-danger small mt-1 font-weight-semibold">{{ form.aktif.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'daftar_langganan' %}" class="btn btn-secondary px-3 mr-2" style="border-radius: 8px;">
+                                Batal
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm" style="border-radius: 8px; font-weight: 600;">
+                                <i class="fas fa-save mr-1"></i> Simpan Langganan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        // 1. Inisialisasi Select2 Searchable Dropdown Pelanggan
+        $('#id_pelanggan').select2({
+            placeholder: '-- Ketik Nama, RT, atau Nomor Rumah --',
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: true,
+            language: {
+                noResults: function () {
+                    return "Data pelanggan/warga tidak ditemukan.";
+                }
+            }
+        });
+
+        // 2. Inisialisasi Select2 Searchable Dropdown Jenis Layanan
+        $('#id_jenis_layanan').select2({
+            placeholder: '-- Pilih atau Ketik Jenis Layanan --',
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: true,
+            language: {
+                noResults: function () {
+                    return "Jenis layanan tidak ditemukan.";
+                }
+            }
+        });
+
+        // 3. Auto-populate Tarif saat Jenis Layanan dipilih
+        $('#id_jenis_layanan').on('change select2:select', function () {
+            var jenisId = $(this).val();
             if (jenisId) {
                 $.ajax({
                     url: "{% url 'get_harga_jenis' %}",
-                    data: {'jenis_id': jenisId},
+                    data: { 'jenis_id': jenisId },
                     success: function (data) {
-                        console.log("✅ Data dari server:", data);
                         $("#id_harga").val(data.harga);
                     },
                     error: function (xhr, status, error) {
-                        console.error("❌ AJAX Error:", status, error);
-                        console.log("Response:", xhr.responseText);
+                        console.error("AJAX Error:", status, error);
                     }
                 });
             } else {
                 $("#id_harga").val("");
             }
         });
-    </script>
-
+    });
+</script>
 {% endblock %}
