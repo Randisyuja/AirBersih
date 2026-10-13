@@ -1,0 +1,143 @@
+{% load static %}
+<!-- Sidebar -->
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center px-3 py-3" href="{% url 'dashboard' %}" id="brandLink">
+        <div class="sidebar-brand-icon mr-2 flex-shrink-0" style="background: #ffffff; padding: 4px; border-radius: 10px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" style="max-height: 28px; max-width: 28px; object-fit: contain;">
+        </div>
+        <div class="sidebar-brand-text d-flex flex-column text-left" style="line-height: 1.15; overflow: hidden; white-space: nowrap;">
+            <span class="text-white font-weight-bold" style="font-size: 1.05rem; letter-spacing: -0.01em;">JOGO <span style="color: #38bdf8;">TIRTO</span></span>
+            <span class="text-white-50" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;">RT 05 / RW 09</span>
+        </div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-2">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+        <a class="nav-link" href="{% url 'dashboard' %}" id="navDashboard">
+            <i class="fas fa-fw fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Transaksi & Loket
+    </div>
+
+    <!-- Nav Item - Pembayaran -->
+    <li class="nav-item {% if 'pembayaran' in request.resolver_match.url_name %}active{% endif %}">
+        <a class="nav-link" href="{% url 'daftar_pembayaran' %}" id="navPembayaran">
+            <i class="fas fa-fw fa-receipt"></i>
+            <span>Data Pembayaran</span>
+        </a>
+    </li>
+
+    <!-- Nav Item - Tagihan -->
+    <li class="nav-item {% if 'tagihan' in request.resolver_match.url_name %}active{% endif %}">
+        <a class="nav-link" href="{% url 'daftar_tagihan' %}" id="navTagihan">
+            <i class="fas fa-fw fa-file-invoice-dollar"></i>
+            <span>Kelola Tagihan</span>
+        </a>
+    </li>
+
+    <!-- Nav Item - Generate Tagihan Modal -->
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-toggle="modal" data-target="#yearModal" id="navGenerateTagihan">
+            <i class="fas fa-fw fa-magic"></i>
+            <span>Generate Tagihan</span>
+        </a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Laporan & Analitik
+    </div>
+
+    <!-- Nav Item - Laporan Menu -->
+    <li class="nav-item {% if 'laporan' in request.resolver_match.url_name %}active{% endif %}">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLaporan"
+           aria-expanded="false" aria-controls="collapseLaporan" id="navLaporanMenu">
+            <i class="fas fa-fw fa-chart-line"></i>
+            <span>Laporan Tahunan</span>
+        </a>
+        <div id="collapseLaporan" class="collapse {% if 'laporan' in request.resolver_match.url_name %}show{% endif %}"
+             aria-labelledby="navLaporanMenu" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Pilih Layanan:</h6>
+                <a class="collapse-item {% if request.resolver_match.kwargs.layanan == 'AIR' %}active{% endif %}" 
+                   href="{% url 'laporan_tahunan' layanan='AIR' %}">
+                    <i class="fas fa-tint text-info mr-2"></i> Laporan Air
+                </a>
+                <a class="collapse-item {% if request.resolver_match.kwargs.layanan == 'WIFI' %}active{% endif %}" 
+                   href="{% url 'laporan_tahunan' layanan='WIFI' %}">
+                    <i class="fas fa-wifi text-primary mr-2"></i> Laporan WiFi
+                </a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">
+        Master Data
+    </div>
+
+    <!-- Nav Item - Master Data Collapse -->
+    <li class="nav-item {% if request.resolver_match.url_name in 'daftar_layanan,daftar_jenis_layanan,daftar_langganan,daftar_pelanggan,daftar_rumah,daftar_users,daftar_kasir' %}active{% endif %}">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseMaster"
+           aria-expanded="false" aria-controls="collapseMaster" id="navMasterMenu">
+            <i class="fas fa-fw fa-database"></i>
+            <span>Data Master</span>
+        </a>
+        <div id="collapseMaster" class="collapse {% if request.resolver_match.url_name in 'daftar_layanan,daftar_jenis_layanan,daftar_langganan,daftar_pelanggan,daftar_rumah,daftar_users,daftar_kasir' %}show{% endif %}"
+             aria-labelledby="navMasterMenu" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Kelola Entitas:</h6>
+                <a class="collapse-item {% if request.resolver_match.url_name == 'daftar_pelanggan' %}active{% endif %}" 
+                   href="{% url 'daftar_pelanggan' %}">
+                    <i class="fas fa-users mr-2 text-primary"></i> Data Pelanggan
+                </a>
+                <a class="collapse-item {% if request.resolver_match.url_name == 'daftar_rumah' %}active{% endif %}" 
+                   href="{% url 'daftar_rumah' %}">
+                    <i class="fas fa-home mr-2 text-success"></i> Data Rumah
+                </a>
+                <a class="collapse-item {% if request.resolver_match.url_name == 'daftar_layanan' %}active{% endif %}" 
+                   href="{% url 'daftar_layanan' %}">
+                    <i class="fas fa-cogs mr-2 text-info"></i> Layanan
+                </a>
+                <a class="collapse-item {% if request.resolver_match.url_name == 'daftar_jenis_layanan' %}active{% endif %}" 
+                   href="{% url 'daftar_jenis_layanan' %}">
+                    <i class="fas fa-tags mr-2 text-warning"></i> Jenis Layanan
+                </a>
+                <a class="collapse-item {% if request.resolver_match.url_name == 'daftar_langganan' %}active{% endif %}" 
+                   href="{% url 'daftar_langganan' %}">
+                    <i class="fas fa-link mr-2 text-secondary"></i> Langganan
+                </a>
+                <a class="collapse-item {% if request.resolver_match.url_name in 'daftar_users,daftar_kasir,tambah_users,update_users,delete_users' %}active{% endif %}" 
+                   href="/users/">
+                    <i class="fas fa-user-shield mr-2 text-dark"></i> Petugas / Kasir
+                </a>
+            </div>
+        </div>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block mt-4">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline mb-4">
+        <button class="rounded-circle border-0" id="sidebarToggle" aria-label="Toggle Sidebar"></button>
+    </div>
+
+</ul>
+<!-- End of Sidebar -->

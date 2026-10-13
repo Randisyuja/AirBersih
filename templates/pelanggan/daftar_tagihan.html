@@ -1,58 +1,104 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load rupiah_filters %}
+{% load custom_tags %}
+
+{% block title %}Kelola Tagihan - Jogo Tirto{% endblock %}
+
 {% block content %}
-    {% load static %}
-    {% load rupiah_filters %}
-    {% load custom_tags %}
-
-    <div class="container-fluid">
-
-        <!-- DataTales Example -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h1 class="h3 mb-3 text-gray-800">Daftar Tagihan</h1>
-                <a href="{% url 'tambah_tagihan' %}"
-                   class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3">
-                    <i class="fas fa-plus fa-sm text-white-50"></i> Tambah Tagihan
-                </a>
-                <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-3" data-toggle="modal"
-                   data-target="#yearModal">
-                    <i class="fas fa-download fa-sm text-white-50"></i> Generate Tagihan
-                </a>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                        <tr>
-                            <th>Pelanggan</th>
-                            <th>Jenis Layanan</th>
-                            <th>Bulan</th>
-                            <th>Tahun</th>
-                            <th>Status</th>
-                            <th>Jumlah Bayar</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for tagihan in tagihan_list %}
-                            <tr>
-                                <td>{{ tagihan.pelanggan.nama }}</td>
-                                <td>{{ tagihan.jenis_layanan.nama_jenis }}</td>
-                                <td>{{ tagihan.bulan }}</td>
-                                <td>{{ tagihan.tahun }}</td>
-                                <td>{{ tagihan.get_status_tagihan_display }}</td>
-                                <td>{{ tagihan.jumlah_bayar|rupiah }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="9">Belum ada data pembayaran.</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Daftar Tagihan Iuran & Air</h1>
+            <p class="text-muted small mb-0">Manajemen status kewajiban tagihan warga bulanan dan generate data masal</p>
         </div>
-
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm px-3 shadow-sm mr-2" data-toggle="modal" data-target="#yearModal" style="border-radius: 8px;">
+                <i class="fas fa-magic mr-1"></i> Generate Tagihan
+            </button>
+            <a href="{% url 'tambah_tagihan' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+                <i class="fas fa-plus mr-1"></i> Tambah Tagihan
+            </a>
+        </div>
     </div>
 
+    <!-- Data Card -->
+    <div class="card data-card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive p-3">
+                <table class="table modern-table table-hover align-middle mb-0" id="dataTable" width="100%">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Pelanggan</th>
+                            <th>Jenis Layanan</th>
+                            <th>Periode</th>
+                            <th>Status Tagihan</th>
+                            <th class="text-right">Nominal Tagihan</th>
+                            <th class="text-center" style="width: 120px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for tagihan in tagihan_list %}
+                        <tr>
+                            <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="font-weight-bold text-slate-800">{{ tagihan.pelanggan.nama }}</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-home mr-1"></i>{{ tagihan.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
+                                    {{ tagihan.jenis_layanan.nama_jenis|default:tagihan.jenis_layanan }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="font-weight-semibold text-slate-700">Bulan {{ tagihan.bulan }}</span>
+                                <small class="text-muted">/ {{ tagihan.tahun }}</small>
+                            </td>
+                            <td>
+                                {% if tagihan.status_tagihan == 'Lunas' or tagihan.status_tagihan == '1' or 'Lunas' in tagihan.get_status_tagihan_display %}
+                                    <span class="badge-status-paid">
+                                        <i class="fas fa-check-circle mr-1"></i> Lunas
+                                    </span>
+                                {% else %}
+                                    <span class="badge-status-unpaid">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Belum Lunas
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right font-weight-bold text-slate-800" style="font-size: 0.95rem;">
+                                {{ tagihan.jumlah_bayar|rupiah }}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'edit_tagihan' tagihan.id_tagihan %}" class="btn btn-light border text-primary" title="Edit Tagihan" style="border-radius: 6px 0 0 6px;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Tagihan" 
+                                            data-toggle="modal" data-target="#deleteModal" 
+                                            data-url="{% url 'hapus_tagihan' tagihan.id_tagihan %}" 
+                                            data-nama="Tagihan {{ tagihan.pelanggan.nama }} ({{ tagihan.bulan }}/{{ tagihan.tahun }})"
+                                            style="border-radius: 0 6px 6px 0;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-file-invoice-dollar fa-3x mb-2 text-slate-300 d-block"></i>
+                                Belum ada data tagihan tercatat.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

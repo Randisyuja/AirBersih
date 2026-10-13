@@ -1,22 +1,81 @@
 {% extends 'auth_base.html' %}
 {% load static %}
+
+{% block title %}Masuk ke Sistem - Jogo Tirto{% endblock %}
+
 {% block content %}
-
-    <div class="p-5">
-        <div class="text-center">
-            <h1 class="h4 text-gray-900 mb-4">Welcome to SIAP!</h1>
-        </div>
-        {% if form.errors %}
-            <div class="alert alert-danger">
-                Username atau password salah. Coba lagi.
+<div class="login-box w-100">
+    <!-- Centered Header with Logo -->
+    <div class="text-center mb-3">
+        <div class="d-flex justify-content-center mb-2">
+            <div class="d-inline-flex p-2 bg-light border shadow-sm align-items-center justify-content-center" style="border-radius: 14px; width: 52px; height: 52px;">
+                <img src="{% static 'img/logo.png' %}" alt="Logo Jogo Tirto" style="max-height: 38px; max-width: 38px; object-fit: contain;">
             </div>
-        {% endif %}
-
-        <form class="user" method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary btn-user btn-block">Login</button>
-        </form>
+        </div>
+        <h2 class="h5 font-weight-bold text-slate-900 mb-1" style="font-size: 1.2rem;">Masuk ke Portal</h2>
+        <p class="text-muted small mb-0" style="font-size: 0.8rem;">SIAP RT 05/RW 09 &bull; Sistem Administrasi</p>
     </div>
-    
+
+    <!-- Error Alert -->
+    {% if form.errors %}
+        <div class="alert alert-danger py-2 px-3 mb-3 d-flex align-items-center" role="alert" style="border-radius: 10px; font-size: 0.85rem;">
+            <i class="fas fa-exclamation-circle mr-2 fa-lg"></i>
+            <div>
+                <strong>Gagal Masuk!</strong> Username atau password tidak sesuai.
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Login Form -->
+    <form class="user" method="post" id="loginForm">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+            <label class="form-label font-weight-semibold text-slate-700 small mb-1" for="id_username">
+                Username / Akun
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text bg-light border-right-0 text-muted" style="border-radius: 10px 0 0 10px;">
+                        <i class="fas fa-user-circle"></i>
+                    </span>
+                </div>
+                <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" 
+                       maxlength="150" required id="id_username" 
+                       class="form-control form-control-modern border-left-0" 
+                       placeholder="Masukkan username" 
+                       style="border-radius: 0 10px 10px 0;">
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label class="form-label font-weight-semibold text-slate-700 small mb-1" for="id_password">
+                Password
+            </label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text bg-light border-right-0 text-muted" style="border-radius: 10px 0 0 10px;">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                </div>
+                <input type="password" name="password" autocomplete="current-password" 
+                       required id="id_password" 
+                       class="form-control form-control-modern border-left-0" 
+                       placeholder="Masukkan password" 
+                       style="border-radius: 0 10px 10px 0;">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="custom-control custom-checkbox small">
+                <input type="checkbox" class="custom-control-input" id="rememberMe">
+                <label class="custom-control-label text-muted" for="rememberMe">Ingat saya</label>
+            </div>
+            <span class="small text-muted">Akses Terbatas Petugas</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block py-2 font-weight-bold shadow" id="btnSubmitLogin" style="border-radius: 10px; font-size: 0.95rem; letter-spacing: 0.01em;">
+            <i class="fas fa-sign-in-alt mr-2"></i> Masuk Sekarang
+        </button>
+    </form>
+</div>
 {% endblock %}

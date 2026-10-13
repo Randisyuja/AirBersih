@@ -1,0 +1,72 @@
+{% load static %}
+<!-- Topbar -->
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top" id="mainTopbar">
+
+    <!-- Sidebar Toggle (Topbar) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3" aria-label="Toggle Sidebar Navigation">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Topbar Date & System Status (Desktop) -->
+    <div class="d-none d-md-flex align-items-center ml-2">
+        <div class="d-flex align-items-center mr-3 text-secondary" style="font-size: 0.85rem; font-weight: 500;">
+            <i class="far fa-calendar-alt text-primary mr-2" style="font-size: 1rem;"></i>
+            <span id="currentDateDisplay">Memuat tanggal...</span>
+        </div>
+        <span class="badge badge-pill badge-light border text-muted px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+            <span class="d-inline-block rounded-circle bg-success mr-1" style="width: 8px; height: 8px;"></span> Sistem Online
+        </span>
+    </div>
+
+    <!-- Topbar Navbar -->
+    <ul class="navbar-nav ml-auto align-items-center">
+
+        <!-- Quick Action: Generate Tagihan Button -->
+        <li class="nav-item d-none d-sm-block mr-2">
+            <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#yearModal" id="topbarGenerateBtn" style="border-radius: 8px; font-weight: 600; font-size: 0.8rem; padding: 0.35rem 0.85rem;">
+                <i class="fas fa-magic mr-1"></i> Generate Tagihan
+            </button>
+        </li>
+
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow" id="userMenuWrapper">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <div class="d-flex flex-column text-right mr-3 d-none d-lg-inline">
+                    <span class="text-slate-800 font-weight-bold" style="font-size: 0.875rem; line-height: 1.2;">
+                        {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
+                    </span>
+                    <span class="badge-role align-self-end mt-1">
+                        {% if user.is_superuser %}ADMINISTRATOR{% else %}KASIR RT{% endif %}
+                    </span>
+                </div>
+                <div class="user-avatar-circle" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #2563eb); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);">
+                    {{ user.username|make_list|first|upper|default:"U" }}
+                </div>
+            </a>
+
+            <!-- Dropdown - User Information -->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in mt-2"
+                 aria-labelledby="userDropdown" style="border-radius: 12px; border: 1px solid rgba(226, 232, 240, 0.8); min-width: 200px; padding: 0.5rem;">
+                <div class="px-3 py-2 border-bottom mb-1">
+                    <p class="mb-0 text-muted small">Login sebagai</p>
+                    <p class="mb-0 font-weight-bold text-dark text-truncate">{{ user.username }}</p>
+                </div>
+                <a class="dropdown-item py-2" href="{% url 'dashboard' %}" style="border-radius: 8px;">
+                    <i class="fas fa-tachometer-alt fa-sm fa-fw mr-2 text-primary"></i>
+                    Dashboard
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item py-2 text-danger font-weight-semibold" href="#" data-toggle="modal" data-target="#logoutModal" style="border-radius: 8px;" id="btnLogoutTrigger">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>
+                    Keluar Sistem
+                </a>
+            </div>
+        </li>
+
+    </ul>
+
+</nav>
+<!-- End of Topbar -->

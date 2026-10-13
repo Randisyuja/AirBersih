@@ -1,0 +1,100 @@
+{% load static %}
+<!-- Core Scripts -->
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+<script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+<!-- DataTables Scripts -->
+<script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+<!-- Global App Utilities & Handlers -->
+<script>
+    $(document).ready(function () {
+        // 1. Live Indonesian Date Display
+        function updateDateDisplay() {
+            const dateEl = document.getElementById('currentDateDisplay');
+            if (dateEl) {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                try {
+                    dateEl.textContent = now.toLocaleDateString('id-ID', options);
+                } catch (e) {
+                    dateEl.textContent = now.toDateString();
+                }
+            }
+        }
+        updateDateDisplay();
+
+        // 2. Delete Modal Data Binding
+        $(document).on('show.bs.modal', '#deleteModal', function (event) {
+            const button = $(event.relatedTarget);
+            const url = button.data('url');
+            const nama = button.data('nama');
+
+            const modal = $(this);
+            modal.find('#deleteForm').attr('action', url);
+            modal.find('#dataName').text(nama ? nama : 'ini');
+        });
+
+        // 3. Year Modal Populate Range
+        $(document).on('show.bs.modal', '#yearModal', function () {
+            const select = $('#yearSelect');
+            if (select.children().length === 0) {
+                select.empty();
+                const currentYear = new Date().getFullYear();
+                const startYear = currentYear - 5;
+                const endYear = currentYear + 2;
+
+                for (let year = endYear; year >= startYear; year--) {
+                    const selected = (year === currentYear) ? 'selected' : '';
+                    select.append(`<option value="${year}" ${selected}>Tahun ${year}</option>`);
+                }
+            }
+        });
+
+        // 4. Auto-enhance Django form fields
+        $('form:not(.navbar-search) input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=file]):not([type=hidden]), form:not(.navbar-search) select, form:not(.navbar-search) textarea').each(function() {
+            $(this).addClass('form-control');
+        });
+
+        // 5. Enhanced DataTables Default Styling
+        if ($.fn.DataTable) {
+            $.extend(true, $.fn.dataTable.defaults, {
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Cari data...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari total _TOTAL_ data",
+                    infoEmpty: "Data tidak ditemukan",
+                    infoFiltered: "(disaring dari _MAX_ entri)",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: '<i class="fas fa-chevron-right"></i>',
+                        previous: '<i class="fas fa-chevron-left"></i>'
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+{% if messages %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let messageBody = '';
+        {% for message in messages %}
+            messageBody += `<div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} mb-2 shadow-sm" style="border-radius: 8px;">
+                <i class="fas fa-info-circle mr-1"></i> {{ message }}
+            </div>`;
+        {% endfor %}
+        const modalBody = document.getElementById('messageModalBody');
+        if (modalBody) {
+            modalBody.innerHTML = messageBody;
+            $('#messageModal').modal('show');
+        }
+    });
+</script>
+{% endif %}

@@ -1,39 +1,76 @@
 {% extends "base.html" %}
-{% block content %}
 {% load static %}
 
-    <div class="container-fluid">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h1 class="h3 mb-3 text-gray-800">Daftar Layanan</h1>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Layanan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for layanan in layanan_list %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ layanan}}</td>>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="3">Belum ada layanan</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+{% block title %}Daftar Layanan - Jogo Tirto{% endblock %}
 
+{% block content %}
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Master Kategori Layanan</h1>
+            <p class="text-muted small mb-0">Kelola kelompok fasilitas layanan yang disediakan bagi warga (Air Bersih, WiFi, dll)</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'tambah_layanan' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+                <i class="fas fa-plus mr-1"></i> Tambah Layanan
+            </a>
+        </div>
     </div>
 
-
+    <!-- Data Card -->
+    <div class="card data-card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive p-3">
+                <table class="table modern-table table-hover align-middle mb-0" id="dataTable" width="100%">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">No</th>
+                            <th>Nama Layanan</th>
+                            <th class="text-center" style="width: 120px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for layanan in layanan_list %}
+                        <tr>
+                            <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 36px; height: 36px; background: rgba(2, 132, 199, 0.1); color: var(--primary);">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div class="font-weight-bold text-slate-800" style="font-size: 0.95rem;">
+                                        {{ layanan.nama_layanan|default:layanan }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'edit_layanan' layanan.pk %}" class="btn btn-light border text-primary" title="Edit Layanan" style="border-radius: 6px 0 0 6px;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Layanan" 
+                                            data-toggle="modal" data-target="#deleteModal" 
+                                            data-url="{% url 'hapus_layanan' layanan.pk %}" 
+                                            data-nama="Layanan {{ layanan.nama_layanan|default:layanan }}"
+                                            style="border-radius: 0 6px 6px 0;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5 text-muted">
+                                <i class="fas fa-cogs fa-3x mb-2 text-slate-300 d-block"></i>
+                                Belum ada kategori layanan terdaftar.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

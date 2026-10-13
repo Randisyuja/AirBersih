@@ -1,60 +1,114 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
 {% load rupiah_filters %}
 {% load custom_tags %}
 
-    <div class="container-fluid">
+{% block title %}Daftar Pembayaran - Jogo Tirto{% endblock %}
 
-        <!-- DataTales Example -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h1 class="h3 mb-3 text-gray-800">Daftar Pembayaran</h1>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                        <tr>
-                            <th>Pelanggan</th>
-                            <th>Jenis Layanan</th>
-                            <th>Bulan</th>
-                            <th>Tahun</th>
-                            <th>Status</th>
-                            <th>Tgl Bayar</th>
-                            <th>Jumlah Bayar</th>
-                            <th>Kasir</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for pembayaran in pembayaran_list %}
-                            <tr>
-                                <td>{{ pembayaran.pelanggan.nama }}</td>
-                                <td>{{ pembayaran.jenis_layanan.nama_jenis }}</td>
-                                <td>{{ pembayaran.bulan }}</td>
-                                <td>{{ pembayaran.tahun }}</td>
-                                <td>{{ pembayaran.get_status_bayar_display }}</td>
-                                <td>{{ pembayaran.tgl_pembayaran|default:"-" }}</td>
-                                <td>{{ pembayaran.jumlah_bayar|rupiah }}</td>
-                                <td>
-                                    {% if pembayaran.kasir %}
-                                        {{ pembayaran.kasir }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="9">Belum ada data pembayaran.</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+{% block content %}
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Riwayat & Daftar Pembayaran</h1>
+            <p class="text-muted small mb-0">Catatan mutasi pelunasan tagihan air & iuran warga secara real-time</p>
         </div>
-
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'export_pembayaran_excel' %}" class="btn btn-outline-success btn-sm px-3 shadow-sm mr-2" style="border-radius: 8px;">
+                <i class="fas fa-file-excel mr-1"></i> Export Excel
+            </a>
+            <a href="{% url 'tambah_pembayaran' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+                <i class="fas fa-plus mr-1"></i> Tambah Pembayaran
+            </a>
+        </div>
     </div>
 
+    <!-- Data Card -->
+    <div class="card data-card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive p-3">
+                <table class="table modern-table table-hover align-middle mb-0" id="dataTable" width="100%">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Pelanggan</th>
+                            <th>Layanan</th>
+                            <th>Periode</th>
+                            <th>Status</th>
+                            <th>Tgl Bayar</th>
+                            <th class="text-right">Nominal</th>
+                            <th>Kasir</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for pembayaran in pembayaran_list %}
+                        <tr>
+                            <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="font-weight-bold text-slate-800">{{ pembayaran.pelanggan.nama }}</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-home mr-1"></i>{{ pembayaran.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
+                                    {{ pembayaran.jenis_layanan.nama_jenis|default:pembayaran.jenis_layanan }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="font-weight-semibold text-slate-700">{{ pembayaran.bulan }}</span>
+                                <small class="text-muted">/ {{ pembayaran.tahun }}</small>
+                            </td>
+                            <td>
+                                {% if pembayaran.status_bayar == 'Lunas' or pembayaran.status_bayar == '1' or 'Lunas' in pembayaran.get_status_bayar_display %}
+                                    <span class="badge-status-paid">
+                                        <i class="fas fa-check-circle mr-1"></i> Lunas
+                                    </span>
+                                {% else %}
+                                    <span class="badge-status-unpaid">
+                                        <i class="fas fa-clock mr-1"></i> Belum Lunas
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">
+                                {{ pembayaran.tgl_pembayaran|date:"d M Y"|default:pembayaran.tgl_pembayaran|default:"-" }}
+                            </td>
+                            <td class="text-right font-weight-bold text-success" style="font-size: 0.95rem;">
+                                {{ pembayaran.jumlah_bayar|rupiah }}
+                            </td>
+                            <td>
+                                <span class="badge badge-light border text-muted px-2 py-1" style="font-size: 0.75rem;">
+                                    <i class="fas fa-user-tie mr-1"></i>{{ pembayaran.kasir|default:"Sistem" }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'edit_pembayaran' pembayaran.id %}" class="btn btn-light border text-primary" title="Edit Transaksi" style="border-radius: 6px 0 0 6px;">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Transaksi" 
+                                            data-toggle="modal" data-target="#deleteModal" 
+                                            data-url="{% url 'hapus_pembayaran' pembayaran.id %}" 
+                                            data-nama="Pembayaran {{ pembayaran.pelanggan.nama }} ({{ pembayaran.bulan }}/{{ pembayaran.tahun }})"
+                                            style="border-radius: 0 6px 6px 0;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <i class="fas fa-receipt fa-3x mb-2 text-slate-300 d-block"></i>
+                                Belum ada catatan transaksi pembayaran.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

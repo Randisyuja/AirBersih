@@ -1,0 +1,124 @@
+{% load static %}
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-light border-0 py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-danger-light text-danger d-flex align-items-center justify-content-center mr-3" style="width: 38px; height: 38px; background: #fee2e2;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <h5 class="modal-title font-weight-bold text-slate-800" id="logoutModalLabel" style="font-size: 1.1rem;">Konfirmasi Keluar</h5>
+                </div>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body px-4 py-3 text-secondary" style="font-size: 0.95rem;">
+                Apakah Anda yakin ingin mengakhiri sesi kerja dan keluar dari sistem <strong>Jogo Tirto</strong>?
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button class="btn btn-light px-3" type="button" data-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Batal</button>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4" id="confirmLogoutBtn" style="border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-light border-0 py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 38px; height: 38px; background: #fee2e2; color: #ef4444;">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <h5 class="modal-title font-weight-bold text-slate-800" id="deleteModalLabel" style="font-size: 1.1rem;">Konfirmasi Hapus Data</h5>
+                </div>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body px-4 py-3 text-secondary" style="font-size: 0.95rem;">
+                Tindakan ini tidak dapat dibatalkan. Anda yakin ingin menghapus data <strong id="dataName" class="text-danger"></strong>?
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button class="btn btn-light px-3" type="button" data-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Batal</button>
+                <form method="post" id="deleteForm" action="#" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4" id="confirmDeleteBtn" style="border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                        <i class="fas fa-trash-alt mr-1"></i> Ya, Hapus
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Messages Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header bg-light border-0 py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 38px; height: 38px; background: #e0f2fe; color: #0284c7;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h5 class="modal-title font-weight-bold text-slate-800" id="messageModalLabel" style="font-size: 1.1rem;">Notifikasi Sistem</h5>
+                </div>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body px-4 py-3" id="messageModalBody" style="font-size: 0.95rem;">
+                <!-- Injected via JS -->
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button class="btn btn-primary px-4" type="button" data-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Mengerti</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Tagihan (Year) Modal -->
+<div class="modal fade" id="yearModal" tabindex="-1" role="dialog" aria-labelledby="yearModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); color: #fff;">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h5 class="modal-title font-weight-bold text-white mb-0" id="yearModalLabel" style="font-size: 1.1rem;">Generate Tagihan Tahunan</h5>
+                </div>
+                <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" id="yearForm" action="{% url 'generate_tagihan' %}">
+                {% csrf_token %}
+                <div class="modal-body px-4 py-4">
+                    <div class="form-group mb-3">
+                        <label for="yearSelect" class="form-label-modern mb-2">Pilih Tahun Tagihan yang akan digenerate:</label>
+                        <select id="yearSelect" name="year" class="form-control form-control-modern"></select>
+                    </div>
+                    <div class="alert alert-info py-2 px-3 mb-0" style="font-size: 0.85rem; border-radius: 8px; border: 1px solid rgba(2, 132, 199, 0.2);">
+                        <i class="fas fa-info-circle mr-1"></i> Sistem akan secara otomatis membuat record tagihan 12 bulan untuk seluruh pelanggan aktif pada tahun yang dipilih.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button class="btn btn-light px-3" type="button" data-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4" id="btnSubmitGenerate" style="border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                        <i class="fas fa-bolt mr-1"></i> Generate Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,19 +1,86 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
-{% load humanize %}
+{% load rupiah_filters %}
 
-    <h1>Detail Langganan</h1>
+{% block title %}Detail Langganan - Jogo Tirto{% endblock %}
 
-    <ul>
-        <li><strong>Pelanggan:</strong> {{ langganan.pelanggan.nama }}</li>
-        <li><strong>Jenis Layanan:</strong> {{ langganan.jenis_layanan.nama_jenis }}</li>
-        <li><strong>Harga:</strong> Rp{{ langganan.harga|intcomma }}</li>
-        <li><strong>Status:</strong> {{ langganan.aktif|yesno:"Aktif,Tidak Aktif" }}</li>
-    </ul>
+{% block content %}
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Rincian Data Langganan</h1>
+            <p class="text-muted small mb-0">Informasi lengkap relasi langganan layanan warga</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'daftar_langganan' %}" class="btn btn-outline-secondary btn-sm px-3 shadow-sm mr-2" style="border-radius: 8px;">
+                <i class="fas fa-arrow-left mr-1"></i> Kembali ke Daftar
+            </a>
+            <a href="{% url 'langganan_update' langganan.pk %}" class="btn btn-primary btn-sm px-3 shadow-sm mr-2" style="border-radius: 8px;">
+                <i class="fas fa-edit mr-1"></i> Edit Langganan
+            </a>
+            <button type="button" class="btn btn-danger btn-sm px-3 shadow-sm" style="border-radius: 8px;"
+                    data-toggle="modal" data-target="#deleteModal" 
+                    data-url="{% url 'langganan_delete' langganan.pk %}" 
+                    data-nama="Langganan {{ langganan.pelanggan.nama }} ({{ langganan.jenis_layanan.nama_jenis }})">
+                <i class="fas fa-trash-alt mr-1"></i> Hapus
+            </button>
+        </div>
+    </div>
 
-    <a href="{% url 'daftar_langganan' %}" class="btn btn-secondary">Kembali</a>
-    <a href="{% url 'langganan_update' langganan.pk %}" class="btn btn-warning">Edit</a>
-    <a href="{% url 'langganan_delete' langganan.pk %}" class="btn btn-danger">Hapus</a>
-
+    <!-- Detail Card -->
+    <div class="row">
+        <div class="col-lg-7 col-xl-6">
+            <div class="card data-card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
+                    <div class="stat-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 40px; height: 40px; background: rgba(2, 132, 199, 0.1); color: var(--primary);">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <h6 class="m-0 font-weight-bold text-slate-800">Kartu Langganan Layanan</h6>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-group list-group-flush mb-0">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                            <span class="text-muted font-weight-medium">Nama Pelanggan</span>
+                            <span class="font-weight-bold text-slate-800" style="font-size: 1rem;">
+                                {{ langganan.pelanggan.nama }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                            <span class="text-muted font-weight-medium">Nomor Rumah</span>
+                            <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
+                                <i class="fas fa-home text-muted mr-1"></i>
+                                RT {{ langganan.pelanggan.rumah.rt|default:"-" }} / No. {{ langganan.pelanggan.rumah.no_rumah|default:"-" }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                            <span class="text-muted font-weight-medium">Paket Layanan</span>
+                            <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
+                                {{ langganan.jenis_layanan.nama_jenis }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                            <span class="text-muted font-weight-medium">Tarif Bulanan</span>
+                            <span class="font-weight-bold text-success" style="font-size: 1.15rem;">
+                                {{ langganan.harga|rupiah }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                            <span class="text-muted font-weight-medium">Status Langganan</span>
+                            {% if langganan.aktif %}
+                                <span class="badge badge-pill badge-success-subtle text-success px-2 py-1">
+                                    <i class="fas fa-check-circle mr-1"></i> Aktif
+                                </span>
+                            {% else %}
+                                <span class="badge badge-pill badge-secondary-subtle text-muted px-2 py-1">
+                                    <i class="fas fa-times-circle mr-1"></i> Nonaktif
+                                </span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

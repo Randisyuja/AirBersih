@@ -1,46 +1,98 @@
 {% extends "base.html" %}
-{% block content %}
 {% load static %}
 {% load rupiah_filters %}
 
-    <div class="container-fluid">
+{% block title %}Daftar Langganan - Jogo Tirto{% endblock %}
 
-        <!-- DataTales Example -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h1 class="h3 mb-3 text-gray-800">Daftar Langganan</h1>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                        <tr>
-                            <th>Pelanggan</th>
-                            <th>Jenis Layanan</th>
-                            <th>Harga</th>
-                            <th>Status</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for l in langganan_list %}
-                            <tr>
-                                <td>{{ l.pelanggan.nama }}</td>
-                                <td>{{ l.jenis_layanan.nama_jenis }}</td>
-                                <td>{{ l.jenis_layanan.tarif|rupiah }}</td>
-                                <td>{{ l.aktif|yesno:"Aktif,Tidak Aktif" }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="5">Belum ada data langganan</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+{% block content %}
+<div class="page-content pb-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Data Langganan Layanan</h1>
+            <p class="text-muted small mb-0">Hubungan pemetaan pelanggan dengan fasilitas yang dilanggani beserta tarifnya</p>
         </div>
-
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'langganan_create' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+                <i class="fas fa-plus mr-1"></i> Tambah Langganan
+            </a>
+        </div>
     </div>
 
-
+    <!-- Data Card -->
+    <div class="card data-card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive p-3">
+                <table class="table modern-table table-hover align-middle mb-0" id="dataTable" width="100%">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">No</th>
+                            <th>Nama Pelanggan</th>
+                            <th>Jenis Layanan</th>
+                            <th class="text-right">Tarif Iuran</th>
+                            <th class="text-center">Status Langganan</th>
+                            <th class="text-center" style="width: 140px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in langganan_list %}
+                        <tr>
+                            <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="font-weight-bold text-slate-800">{{ l.pelanggan.nama }}</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-home mr-1"></i>{{ l.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
+                                    {{ l.jenis_layanan.nama_jenis }}
+                                </span>
+                            </td>
+                            <td class="text-right font-weight-bold text-slate-800" style="font-size: 0.95rem;">
+                                {{ l.jenis_layanan.tarif|rupiah }}
+                            </td>
+                            <td class="text-center">
+                                {% if l.aktif %}
+                                    <span class="badge badge-pill badge-success-subtle text-success px-2 py-1">
+                                        <i class="fas fa-check-circle mr-1"></i> Aktif
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-pill badge-secondary-subtle text-muted px-2 py-1">
+                                        <i class="fas fa-times-circle mr-1"></i> Nonaktif
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'langganan_detail' l.pk %}" class="btn btn-light border text-info" title="Detail Langganan" style="border-radius: 6px 0 0 6px;">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'langganan_update' l.pk %}" class="btn btn-light border text-primary" title="Edit Langganan">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Langganan" 
+                                            data-toggle="modal" data-target="#deleteModal" 
+                                            data-url="{% url 'langganan_delete' l.pk %}" 
+                                            data-nama="Langganan {{ l.pelanggan.nama }} ({{ l.jenis_layanan.nama_jenis }})"
+                                            style="border-radius: 0 6px 6px 0;">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-link fa-3x mb-2 text-slate-300 d-block"></i>
+                                Belum ada relasi langganan terdaftar.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
