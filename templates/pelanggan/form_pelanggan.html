@@ -208,7 +208,8 @@ $(document).ready(function() {
         placeholder: '-- Ketik RT atau Nomor Rumah --',
         allowClear: true,
         width: '100%',
-        dropdownAutoWidth: true,
+        dropdownAutoWidth: false,
+        dropdownParent: $('#id_rumah').closest('.select2-wrapper'),
         language: {
             noResults: function() {
                 return "Data rumah tidak ditemukan. Klik tombol '+ Tambah Rumah Baru' di samping.";

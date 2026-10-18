@@ -158,7 +158,8 @@
             placeholder: '-- Ketik Nama, RT, atau Nomor Rumah --',
             allowClear: true,
             width: '100%',
-            dropdownAutoWidth: true,
+            dropdownAutoWidth: false,
+            dropdownParent: $('#id_pelanggan').closest('.select2-wrapper'),
             language: {
                 noResults: function () {
                     return "Data pelanggan/warga tidak ditemukan.";
@@ -171,13 +172,23 @@
             placeholder: '-- Pilih atau Ketik Jenis Layanan --',
             allowClear: true,
             width: '100%',
-            dropdownAutoWidth: true,
+            dropdownAutoWidth: false,
+            dropdownParent: $('#id_jenis_layanan').closest('.select2-wrapper'),
             language: {
                 noResults: function () {
                     return "Jenis layanan tidak ditemukan.";
                 }
             }
         });
+
+        // Pastikan wrapper yang sedang aktif memiliki stacking context tertinggi (z-index)
+        $('#id_pelanggan, #id_jenis_layanan')
+            .on('select2:open', function () {
+                $(this).closest('.select2-wrapper').css('z-index', 1055);
+            })
+            .on('select2:close', function () {
+                $(this).closest('.select2-wrapper').css('z-index', '');
+            });
 
         // 3. Auto-populate Tarif saat Jenis Layanan dipilih
         $('#id_jenis_layanan').on('change select2:select', function () {
