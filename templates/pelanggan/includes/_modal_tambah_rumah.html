@@ -1,0 +1,53 @@
+<!-- Modal Tambah Rumah Baru Cepat (Tanpa Keluar Halaman) -->
+<div class="modal fade" id="modalTambahRumah" tabindex="-1" role="dialog" aria-labelledby="modalTambahRumahLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar-circle mr-2 shadow-sm" style="width: 34px; height: 34px;">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold mb-0" id="modalTambahRumahLabel" style="font-size: 1.05rem;">
+                            Tambah Kavling Rumah Baru
+                        </h5>
+                        <small class="text-muted" style="font-size: 0.75rem;">Input data rumah langsung ke dalam database</small>
+                    </div>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnCloseModalRumah">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <form id="formTambahRumahModal" method="post">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div id="modalRumahAlert" class="alert alert-danger d-none py-2 px-3 mb-3 small" style="border-radius: 8px;"></div>
+
+                    <div class="form-group mb-3">
+                        <label for="modal_rt" class="form-label font-weight-bold text-slate-700 small mb-1">
+                            Nomor RT <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="rt" id="modal_rt" class="form-control" placeholder="Contoh: 05 atau 01" required maxlength="5">
+                        <small class="text-muted">Masukkan nomor RT (misal: 01, 02, 05).</small>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label for="modal_no_rumah" class="form-label font-weight-bold text-slate-700 small mb-1">
+                            Nomor Rumah / Blok <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="no_rumah" id="modal_no_rumah" class="form-control" placeholder="Contoh: A12, B03, atau No 15" required maxlength="10">
+                        <small class="text-muted">Nomor identitas rumah atau blok hunian kavling.</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer px-4 py-3 border-0">
+                    <button type="button" class="btn btn-secondary px-3" data-dismiss="modal" style="border-radius: 8px;" id="btnBatalRumahModal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm" id="btnSimpanRumahModal" style="border-radius: 8px; font-weight: 600;">
+                        <i class="fas fa-save mr-1"></i> Simpan &amp; Pilih Rumah
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

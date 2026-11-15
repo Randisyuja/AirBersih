@@ -9,10 +9,14 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
-            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Data Langganan Layanan</h1>
-            <p class="text-muted small mb-0">Hubungan pemetaan pelanggan dengan fasilitas yang dilanggani beserta tarifnya</p>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Data Langganan & Kartu Member QR</h1>
+            <p class="text-muted small mb-0">Pemetaan pelanggan dengan fasilitas layanan, kode member unik, serta cetak Kartu QR Pelanggan</p>
         </div>
-        <div class="mt-3 mt-md-0 d-flex gap-2">
+        <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
+            {% url 'export_langganan' as export_url %}
+            {% url 'import_langganan' as import_url %}
+            {% url 'template_langganan' as template_langganan %}
+            {% include "includes/_excel_actions.html" with export_url=export_url import_url=import_url template_url=template_langganan modal_id="langganan" title="Data Langganan" %}
             <a href="{% url 'langganan_create' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
                 <i class="fas fa-plus mr-1"></i> Tambah Langganan
             </a>
@@ -26,12 +30,13 @@
                 <table class="table modern-table table-hover align-middle mb-0" id="dataTable" width="100%">
                     <thead>
                         <tr>
-                            <th style="width: 60px;">No</th>
-                            <th>Nama Pelanggan</th>
+                            <th style="width: 50px;">No</th>
+                            <th>Kode Member / QR</th>
+                            <th>Nama Pelanggan & Rumah</th>
                             <th>Jenis Layanan</th>
                             <th class="text-right">Tarif Iuran</th>
-                            <th class="text-center">Status Langganan</th>
-                            <th class="text-center" style="width: 140px;">Aksi</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center" style="width: 190px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,9 +44,29 @@
                         <tr>
                             <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
                             <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge badge-light border font-mono px-2 py-1 mr-2" style="font-size: 0.82rem;">
+                                        <i class="fas fa-qrcode text-primary mr-1"></i>{{ l.kode_pelanggan|default:"-" }}
+                                    </span>
+                                    <button type="button" class="btn btn-sm btn-secondary px-2 py-1 btn-preview-qr-member"
+                                            title="Preview QR & Kartu Member"
+                                            data-kode="{{ l.kode_pelanggan|default:'-' }}"
+                                            data-nama="{{ l.pelanggan.nama }}"
+                                            data-rumah="RT {{ l.pelanggan.rumah.rt|default:'-' }} / No. {{ l.pelanggan.rumah.no_rumah|default:'-' }}"
+                                            data-hp="{{ l.pelanggan.no_hp|default:'-' }}"
+                                            data-layanan="{{ l.jenis_layanan.layanan.nama_layanan }} - {{ l.jenis_layanan.nama_jenis }}"
+                                            data-harga="{{ l.harga|rupiah }}"
+                                            data-qr-url="{% url 'langganan_qr_svg' l.pk %}"
+                                            data-card-url="{% url 'cetak_kartu_member' l.pk %}">
+                                        <i class="fas fa-id-card text-primary mr-1"></i> Kartu QR
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
                                 <div class="font-weight-bold text-slate-800">{{ l.pelanggan.nama }}</div>
                                 <small class="text-muted">
-                                    <i class="fas fa-home mr-1"></i>{{ l.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
+                                    <i class="fas fa-home mr-1"></i>RT {{ l.pelanggan.rumah.rt|default:"-" }} / No. {{ l.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
+                                    {% if l.pelanggan.no_hp %}&bull; <i class="fas fa-phone-alt ml-1 mr-1"></i>{{ l.pelanggan.no_hp }}{% endif %}
                                 </small>
                             </td>
                             <td>
@@ -49,8 +74,8 @@
                                     {{ l.jenis_layanan.nama_jenis }}
                                 </span>
                             </td>
-                            <td class="text-right font-weight-bold text-slate-800" style="font-size: 0.95rem;">
-                                {{ l.jenis_layanan.tarif|rupiah }}
+                            <td class="text-right font-weight-bold text-slate-800 tabular-nums" style="font-size: 0.95rem;">
+                                {{ l.harga|rupiah }}
                             </td>
                             <td class="text-center">
                                 {% if l.aktif %}
@@ -65,15 +90,20 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'langganan_detail' l.pk %}" class="btn btn-light border text-info" title="Detail Langganan" style="border-radius: 6px 0 0 6px;">
+                                    <a href="{% url 'cetak_kartu_member' l.pk %}?autoprint=1" target="_blank"
+                                       class="btn btn-light border text-primary" title="Cetak Kartu Member QR"
+                                       id="btnPrintMemberCard_{{ l.pk }}" style="border-radius: 6px 0 0 6px;">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{% url 'langganan_detail' l.pk %}" class="btn btn-light border text-info" title="Detail Langganan">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{% url 'langganan_update' l.pk %}" class="btn btn-light border text-primary" title="Edit Langganan">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Langganan" 
-                                            data-toggle="modal" data-target="#deleteModal" 
-                                            data-url="{% url 'langganan_delete' l.pk %}" 
+                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Langganan"
+                                            data-toggle="modal" data-target="#deleteModal"
+                                            data-url="{% url 'langganan_delete' l.pk %}"
                                             data-nama="Langganan {{ l.pelanggan.nama }} ({{ l.jenis_layanan.nama_jenis }})"
                                             style="border-radius: 0 6px 6px 0;">
                                         <i class="fas fa-trash-alt"></i>
@@ -83,7 +113,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="fas fa-link fa-3x mb-2 text-slate-300 d-block"></i>
                                 Belum ada relasi langganan terdaftar.
                             </td>
@@ -95,4 +125,79 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Preview Kartu Member & QR Code -->
+<div class="modal fade" id="modalPreviewQrMember" tabindex="-1" role="dialog" aria-labelledby="modalPreviewQrMemberLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center">
+                <h5 class="modal-title font-weight-bold text-main mb-0" id="modalPreviewQrMemberLabel">
+                    <i class="fas fa-id-card text-primary mr-2"></i> Kartu Member / Pelanggan QR
+                </h5>
+                <button type="button" class="close text-main" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="p-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                        <div>
+                            <div class="font-weight-bold text-main">JOGO TIRTO</div>
+                            <small class="text-muted">Kartu Member Iuran Air &amp; WiFi</small>
+                        </div>
+                        <span class="badge badge-primary font-mono px-2 py-1" id="qrModalKode">-</span>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-7">
+                            <div class="small text-muted">Nama Pelanggan</div>
+                            <div class="font-weight-bold text-main mb-2" id="qrModalNama">-</div>
+                            <div class="small text-muted">Alamat Rumah</div>
+                            <div class="font-weight-bold text-main mb-2" id="qrModalRumah">-</div>
+                            <div class="small text-muted">Nomor HP</div>
+                            <div class="font-mono text-main mb-2" id="qrModalHp">-</div>
+                            <div class="small text-muted">Paket &amp; Tarif</div>
+                            <div class="font-weight-bold text-primary" id="qrModalLayanan">-</div>
+                        </div>
+                        <div class="col-5 text-center">
+                            <div class="p-2 rounded bg-white d-inline-block border">
+                                <img id="qrModalImg" src="" alt="QR Code Member" style="width: 120px; height: 120px; display: block;">
+                            </div>
+                            <div class="small font-mono text-muted mt-1">Scan saat bayar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+                <div>
+                    <a href="#" id="qrModalViewBtn" target="_blank" class="btn btn-secondary btn-sm mr-1">
+                        <i class="fas fa-external-link-alt mr-1"></i> Halaman Kartu
+                    </a>
+                    <a href="#" id="qrModalPrintBtn" target="_blank" class="btn btn-primary btn-sm">
+                        <i class="fas fa-print mr-1"></i> Cetak Kartu Member
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-preview-qr-member');
+        if (!btn) return;
+        document.getElementById('qrModalKode').textContent = btn.getAttribute('data-kode');
+        document.getElementById('qrModalNama').textContent = btn.getAttribute('data-nama');
+        document.getElementById('qrModalRumah').textContent = btn.getAttribute('data-rumah');
+        document.getElementById('qrModalHp').textContent = btn.getAttribute('data-hp');
+        document.getElementById('qrModalLayanan').textContent = btn.getAttribute('data-layanan') + ' (' + btn.getAttribute('data-harga') + ')';
+        document.getElementById('qrModalImg').src = btn.getAttribute('data-qr-url');
+        var cardUrl = btn.getAttribute('data-card-url');
+        document.getElementById('qrModalViewBtn').href = cardUrl;
+        document.getElementById('qrModalPrintBtn').href = cardUrl + '?autoprint=1';
+        if (window.jQuery) $('#modalPreviewQrMember').modal('show');
+    });
+});
+</script>
 {% endblock %}

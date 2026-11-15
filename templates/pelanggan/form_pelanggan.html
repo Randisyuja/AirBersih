@@ -8,16 +8,17 @@
 <style>
     .select2-container .select2-selection--single {
         height: 44px !important;
-        border: 1.5px solid var(--slate-300) !important;
+        border: 1px solid var(--border-subtle) !important;
         border-radius: 8px 0 0 8px !important;
         display: flex !important;
         align-items: center !important;
         padding-left: 0.75rem !important;
+        background-color: var(--surface-1) !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: 44px !important;
         font-size: 0.92rem !important;
-        color: var(--slate-800) !important;
+        color: var(--text-main) !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 42px !important;
@@ -30,11 +31,11 @@
         padding: 0 1.1rem;
         display: inline-flex;
         align-items: center;
-        border: 1.5px solid var(--primary);
+        border: 1px solid var(--accent);
     }
     .btn-tambah-rumah-modal:hover {
-        background-color: var(--primary);
-        color: #ffffff;
+        background-color: var(--accent);
+        color: var(--accent-fg);
     }
 </style>
 {% endblock %}
@@ -44,13 +45,13 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
-            <h1 class="h3 font-weight-bold text-slate-800 mb-1">
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1" id="formPelangganTitle">
                 {% if object %}Edit Data Pelanggan{% else %}Registrasi Pelanggan Baru{% endif %}
             </h1>
             <p class="text-muted small mb-0">Isi formulir data identitas warga dan asosiasi hunian rumah</p>
         </div>
         <div class="mt-3 mt-md-0">
-            <a href="{% url 'daftar_pelanggan' %}" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+            <a href="{% url 'daftar_pelanggan' %}" class="btn btn-outline-secondary btn-sm px-3 shadow-sm" style="border-radius: 8px;" id="btnKembaliPelanggan">
                 <i class="fas fa-arrow-left mr-1"></i> Kembali ke Daftar
             </a>
         </div>
@@ -59,7 +60,7 @@
     <!-- Form Card -->
     <div class="row">
         <div class="col-lg-8 col-xl-7">
-            <div class="card data-card border-0 shadow-sm">
+            <div class="card data-card border-0 shadow-sm" id="cardFormPelanggan">
                 <div class="card-header bg-white py-3 px-4 border-bottom">
                     <h6 class="m-0 font-weight-bold text-slate-800">
                         <i class="fas fa-user-edit text-primary mr-2"></i> Formulir Pelanggan
@@ -69,7 +70,7 @@
                     <!-- Alert Feedback Dinamis -->
                     <div id="rumahSuccessAlert" class="alert alert-success alert-dismissible fade show d-none py-2 px-3 mb-3 small" role="alert" style="border-radius: 8px;">
                         <i class="fas fa-check-circle mr-1"></i> <span id="rumahSuccessText"></span>
-                        <button type="button" class="close py-2" data-dismiss="alert" aria-label="Close">
+                        <button type="button" class="close py-2" data-dismiss="alert" aria-label="Close" id="btnCloseSuccessAlert">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -128,10 +129,10 @@
                         <hr class="my-4">
 
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'daftar_pelanggan' %}" class="btn btn-secondary px-3 mr-2" style="border-radius: 8px;">
+                            <a href="{% url 'daftar_pelanggan' %}" class="btn btn-secondary px-3 mr-2" style="border-radius: 8px;" id="btnBatalPelanggan">
                                 Batal
                             </a>
-                            <button type="submit" class="btn btn-primary px-4 shadow-sm" style="border-radius: 8px; font-weight: 600;">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm" style="border-radius: 8px; font-weight: 600;" id="btnSubmitPelanggan">
                                 <i class="fas fa-save mr-1"></i> Simpan Pelanggan
                             </button>
                         </div>
@@ -142,137 +143,10 @@
     </div>
 </div>
 
-<!-- ==========================================================================
-     MODAL TAMBAH RUMAH BARU CEPAT (TANPA KELUAR HALAMAN)
-     ========================================================================== -->
-<div class="modal fade" id="modalTambahRumah" tabindex="-1" role="dialog" aria-labelledby="modalTambahRumahLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header bg-gradient-primary text-white py-3 px-4">
-                <div class="d-flex align-items-center">
-                    <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center mr-2 shadow-sm" style="width: 34px; height: 34px;">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <div>
-                        <h5 class="modal-title font-weight-bold text-white mb-0" id="modalTambahRumahLabel" style="font-size: 1.05rem;">
-                            Tambah Kavling Rumah Baru
-                        </h5>
-                        <small class="text-white-50" style="font-size: 0.75rem;">Input data rumah langsung ke dalam database</small>
-                    </div>
-                </div>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.85;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            
-            <form id="formTambahRumahModal" method="post">
-                {% csrf_token %}
-                <div class="modal-body p-4">
-                    <div id="modalRumahAlert" class="alert alert-danger d-none py-2 px-3 mb-3 small" style="border-radius: 8px;"></div>
-
-                    <div class="form-group mb-3">
-                        <label for="modal_rt" class="form-label font-weight-bold text-slate-700 small mb-1">
-                            Nomor RT <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" name="rt" id="modal_rt" class="form-control" placeholder="Contoh: 05 atau 01" required maxlength="5">
-                        <small class="text-muted">Masukkan nomor RT (misal: 01, 02, 05).</small>
-                    </div>
-
-                    <div class="form-group mb-2">
-                        <label for="modal_no_rumah" class="form-label font-weight-bold text-slate-700 small mb-1">
-                            Nomor Rumah / Blok <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" name="no_rumah" id="modal_no_rumah" class="form-control" placeholder="Contoh: A12, B03, atau No 15" required maxlength="10">
-                        <small class="text-muted">Nomor identitas rumah atau blok hunian kavling.</small>
-                    </div>
-                </div>
-
-                <div class="modal-footer bg-light px-4 py-3 border-0">
-                    <button type="button" class="btn btn-secondary px-3" data-dismiss="modal" style="border-radius: 8px;">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm" id="btnSimpanRumahModal" style="border-radius: 8px; font-weight: 600;">
-                        <i class="fas fa-save mr-1"></i> Simpan &amp; Pilih Rumah
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Modal Tambah Rumah Baru Cepat -->
+{% include "pelanggan/includes/_modal_tambah_rumah.html" %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
-<script>
-$(document).ready(function() {
-    // 1. Inisialisasi Select2 Searchable Dropdown
-    var $selectRumah = $('#id_rumah').select2({
-        placeholder: '-- Ketik RT atau Nomor Rumah --',
-        allowClear: true,
-        width: '100%',
-        dropdownAutoWidth: false,
-        dropdownParent: $('#id_rumah').closest('.select2-wrapper'),
-        language: {
-            noResults: function() {
-                return "Data rumah tidak ditemukan. Klik tombol '+ Tambah Rumah Baru' di samping.";
-            }
-        }
-    });
-
-    // 2. Submit AJAX Penambahan Rumah Baru via Modal
-    $('#formTambahRumahModal').on('submit', function(e) {
-        e.preventDefault();
-        var $form = $(this);
-        var $btn = $('#btnSimpanRumahModal');
-        var $alert = $('#modalRumahAlert');
-
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
-        $alert.addClass('d-none').empty();
-
-        $.ajax({
-            url: "{% url 'tambah_rumah_ajax' %}",
-            type: "POST",
-            data: $form.serialize(),
-            headers: {
-                "X-CSRFToken": $('[name=csrfmiddlewaretoken]').val()
-            },
-            success: function(response) {
-                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Simpan &amp; Pilih Rumah');
-                
-                if (response.status === 'success') {
-                    // Buat option baru di select2 dan langsung pilih
-                    var newOption = new Option(response.text, response.id, true, true);
-                    $selectRumah.append(newOption).trigger('change');
-
-                    // Tutup modal dan reset form modal
-                    $('#modalTambahRumah').modal('hide');
-                    $form[0].reset();
-
-                    // Tampilkan notifikasi banner sukses di halaman pelanggan
-                    $('#rumahSuccessText').html('Rumah <strong>' + response.text + '</strong> berhasil ditambahkan dan otomatis dipilih.');
-                    $('#rumahSuccessAlert').removeClass('d-none');
-                }
-            },
-            error: function(xhr) {
-                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Simpan &amp; Pilih Rumah');
-                var errorMsg = 'Gagal menyimpan data rumah.';
-                if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    var errArr = [];
-                    $.each(xhr.responseJSON.errors, function(field, messages) {
-                        errArr.push('<strong>' + field.toUpperCase() + ':</strong> ' + messages.join(', '));
-                    });
-                    errorMsg = errArr.join('<br>');
-                } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                }
-                $alert.html(errorMsg).removeClass('d-none');
-            }
-        });
-    });
-
-    // Reset alert saat modal dibuka
-    $('#modalTambahRumah').on('show.bs.modal', function () {
-        $('#modalRumahAlert').addClass('d-none').empty();
-        $('#modal_rt').focus();
-    });
-});
-</script>
+{% include "pelanggan/includes/_form_scripts.html" %}
 {% endblock %}

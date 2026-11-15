@@ -9,6 +9,20 @@ class Pelanggan(models.Model):
     rumah = models.OneToOneField(Rumah, on_delete=models.PROTECT, null=True, related_name="penghuni")
     nama = models.CharField(max_length=100)
     no_hp = models.CharField(max_length=20, blank=True, null=True)
+    barcode = models.CharField(
+        max_length=64,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Barcode / Kode Pelanggan",
+    )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.barcode:
+            self.barcode = f"PLG{self.pk:05d}"
+            Pelanggan.objects.filter(pk=self.pk).update(barcode=self.barcode)
 
     def __str__(self):
         if self.rumah:
@@ -21,9 +35,23 @@ class Langganan(models.Model):
     jenis_layanan = models.ForeignKey(JenisLayanan, on_delete=models.CASCADE)
     harga = models.IntegerField(blank=False, null=False)
     aktif = models.BooleanField(default=True)
+    kode_pelanggan = models.CharField(
+        max_length=64,
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Kode Member / Pelanggan",
+    )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.kode_pelanggan:
+            self.kode_pelanggan = f"MBR{self.pk:05d}"
+            Langganan.objects.filter(pk=self.pk).update(kode_pelanggan=self.kode_pelanggan)
 
     def __str__(self):
-        return f"{self.pelanggan.nama} - {self.jenis_layanan.nama_jenis}"
+        return f"{self.pelanggan.nama} - {self.jenis_layanan.nama_jenis} ({self.kode_pelanggan or '-'})"
 
 
 class Tagihan(models.Model):

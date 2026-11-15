@@ -1,0 +1,76 @@
+{% load static %}
+<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+<script>
+$(document).ready(function() {
+    // 1. Inisialisasi Select2 Searchable Dropdown
+    var $selectRumah = $('#id_rumah').select2({
+        placeholder: '-- Ketik RT atau Nomor Rumah --',
+        allowClear: true,
+        width: '100%',
+        dropdownAutoWidth: false,
+        dropdownParent: $('#id_rumah').closest('.select2-wrapper'),
+        language: {
+            noResults: function() {
+                return "Data rumah tidak ditemukan. Klik tombol '+ Tambah Rumah Baru' di samping.";
+            }
+        }
+    });
+
+    // 2. Submit AJAX Penambahan Rumah Baru via Modal
+    $('#formTambahRumahModal').on('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $btn = $('#btnSimpanRumahModal');
+        var $alert = $('#modalRumahAlert');
+
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
+        $alert.addClass('d-none').empty();
+
+        $.ajax({
+            url: "{% url 'tambah_rumah_ajax' %}",
+            type: "POST",
+            data: $form.serialize(),
+            headers: {
+                "X-CSRFToken": $('[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(response) {
+                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Simpan &amp; Pilih Rumah');
+                
+                if (response.status === 'success') {
+                    // Buat option baru di select2 dan langsung pilih
+                    var newOption = new Option(response.text, response.id, true, true);
+                    $selectRumah.append(newOption).trigger('change');
+
+                    // Tutup modal dan reset form modal
+                    $('#modalTambahRumah').modal('hide');
+                    $form[0].reset();
+
+                    // Tampilkan notifikasi banner sukses di halaman pelanggan
+                    $('#rumahSuccessText').html('Rumah <strong>' + response.text + '</strong> berhasil ditambahkan dan otomatis dipilih.');
+                    $('#rumahSuccessAlert').removeClass('d-none');
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Simpan &amp; Pilih Rumah');
+                var errorMsg = 'Gagal menyimpan data rumah.';
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    var errArr = [];
+                    $.each(xhr.responseJSON.errors, function(field, messages) {
+                        errArr.push('<strong>' + field.toUpperCase() + ':</strong> ' + messages.join(', '));
+                    });
+                    errorMsg = errArr.join('<br>');
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                $alert.html(errorMsg).removeClass('d-none');
+            }
+        });
+    });
+
+    // Reset alert saat modal dibuka
+    $('#modalTambahRumah').on('show.bs.modal', function () {
+        $('#modalRumahAlert').addClass('d-none').empty();
+        $('#modal_rt').focus();
+    });
+});
+</script>

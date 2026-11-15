@@ -6,18 +6,26 @@ from apps.layanan.models import JenisLayanan
 class PelangganForm(forms.ModelForm):
     class Meta:
         model = Pelanggan
-        fields = ["rumah", "nama", "no_hp"]
+        fields = ["rumah", "nama", "no_hp", "barcode"]
         widgets = {
             "rumah": forms.Select(attrs={"class": "form-control", "id": "id_rumah"}),
             "nama": forms.TextInput(attrs={"class": "form-control", "placeholder": "Masukkan nama lengkap pelanggan"}),
             "no_hp": forms.TextInput(attrs={"class": "form-control", "placeholder": "Contoh: 08123456789"}),
+            "barcode": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Kosongkan untuk generate otomatis (misal: PLG00001)"
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["barcode"].required = False
 
 
 class LanggananForm(forms.ModelForm):
     class Meta:
         model = Langganan
-        fields = ["pelanggan", "jenis_layanan", "harga", "aktif"]
+        fields = ["pelanggan", "jenis_layanan", "harga", "aktif", "kode_pelanggan"]
         widgets = {
             "pelanggan": forms.Select(attrs={"class": "form-control", "id": "id_pelanggan"}),
             "jenis_layanan": forms.Select(attrs={"class": "form-control", "id": "id_jenis_layanan"}),
@@ -31,12 +39,18 @@ class LanggananForm(forms.ModelForm):
                 choices=[(True, "Aktif (Ya)"), (False, "Tidak Aktif (Tidak)")],
                 attrs={"class": "form-control", "id": "id_aktif", "style": "border-radius: 8px; border-color: var(--slate-300); height: 44px;"}
             ),
+            "kode_pelanggan": forms.TextInput(attrs={
+                "class": "form-control font-mono",
+                "id": "id_kode_pelanggan",
+                "placeholder": "Kosongkan untuk generate otomatis (misal: MBR00001)"
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["pelanggan"].queryset = Pelanggan.objects.select_related("rumah").all()
         self.fields["jenis_layanan"].queryset = JenisLayanan.objects.select_related("layanan").all()
+        self.fields["kode_pelanggan"].required = False
         if not self.instance.pk:
             self.fields["aktif"].initial = True
 

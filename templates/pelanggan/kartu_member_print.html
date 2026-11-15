@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+{% load rupiah_filters %}
+
+{% block title %}Cetak Kartu Member {{ langganan.kode_pelanggan }} - Jogo Tirto{% endblock %}
+
+{% block extra_css %}
+<style>
+    .member-card-print-area {
+        max-width: 440px;
+        margin: 0 auto;
+        border: 2px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        background: var(--surface-1);
+        padding: 24px;
+    }
+    .qr-frame {
+        width: 150px;
+        height: 150px;
+        background: var(--surface-2);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    @media print {
+        body * { visibility: hidden; }
+        #printableMemberCard, #printableMemberCard * { visibility: visible; }
+        #printableMemberCard {
+            position: fixed;
+            left: 16px;
+            top: 16px;
+            width: 86mm;
+            border: 1px solid var(--border-subtle);
+            padding: 16px;
+        }
+        .no-print { display: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content pb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom no-print">
+        <div>
+            <h1 class="h3 font-weight-bold text-main mb-1">Kartu Member / Pelanggan Iuran</h1>
+            <p class="text-muted small mb-0">Cetak kartu member dilengkapi QR Code untuk pembayaran cepat di loket</p>
+        </div>
+        <div class="d-flex">
+            <a href="{% url 'daftar_langganan' %}" class="btn btn-secondary btn-sm mr-2">
+                <i class="fas fa-arrow-left mr-1"></i> Kembali
+            </a>
+            <button type="button" class="btn btn-primary btn-sm" id="btnPrintMemberCard" onclick="window.print()">
+                <i class="fas fa-print mr-1"></i> Cetak Kartu Member
+            </button>
+        </div>
+    </div>
+
+    <div class="member-card-print-area" id="printableMemberCard">
+        <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom">
+            <div class="d-flex align-items-center">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" style="width: 34px; height: 34px; object-fit: contain;" class="mr-2">
+                <div>
+                    <div class="font-weight-bold text-main" style="font-size: 1rem; line-height: 1.1;">JOGO TIRTO</div>
+                    <small class="text-muted">KARTU MEMBER WARGA RT 05 / RW 09</small>
+                </div>
+            </div>
+            <span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1 font-weight-bold">
+                {{ jenis_layanan.layanan.nama_layanan }}
+            </span>
+        </div>
+
+        <div class="row align-items-center">
+            <div class="col-7">
+                <div class="mb-2">
+                    <span class="stat-label d-block">Kode Member / Pelanggan</span>
+                    <span class="font-mono font-weight-bold text-primary" style="font-size: 1.05rem;" id="cardKodePelanggan">
+                        {{ langganan.kode_pelanggan }}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <span class="stat-label d-block">Nama Pelanggan</span>
+                    <span class="font-weight-bold text-main" id="cardNamaPelanggan">{{ pelanggan.nama }}</span>
+                </div>
+                <div class="mb-2">
+                    <span class="stat-label d-block">Alamat Rumah</span>
+                    <span class="text-main font-weight-medium" id="cardAlamatRumah">
+                        {% if rumah %}RT {{ rumah.rt }} / No. {{ rumah.no_rumah }}{% else %}-{% endif %}
+                    </span>
+                </div>
+                <div class="mb-2">
+                    <span class="stat-label d-block">Nomor HP / WhatsApp</span>
+                    <span class="text-main font-mono" id="cardNoHp">{{ pelanggan.no_hp|default:"-" }}</span>
+                </div>
+                <div>
+                    <span class="stat-label d-block">Paket Layanan &amp; Tarif</span>
+                    <span class="text-main font-weight-bold">{{ jenis_layanan.nama_jenis }} ({{ langganan.harga|rupiah }}/bln)</span>
+                </div>
+            </div>
+            <div class="col-5 d-flex flex-column align-items-center">
+                <div class="qr-frame">
+                    <img src="{% url 'langganan_qr_svg' langganan.pk %}" alt="QR {{ langganan.kode_pelanggan }}" style="width: 132px; height: 132px;">
+                </div>
+                <small class="text-muted font-mono mt-2">{{ langganan.kode_pelanggan }}</small>
+            </div>
+        </div>
+
+        <div class="mt-3 pt-2 border-top text-center small text-muted">
+            Tunjukkan QR Code ini kepada petugas kasir saat membayar iuran bulanan.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if autoprint %}
+<script>
+    window.addEventListener('load', function () {
+        setTimeout(function () { window.print(); }, 350);
+    });
+</script>
+{% endif %}
+{% endblock %}

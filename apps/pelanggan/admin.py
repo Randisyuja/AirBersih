@@ -11,13 +11,14 @@ class LanggananInline(admin.TabularInline):
 @admin.register(Pelanggan)
 class PelangganAdmin(admin.ModelAdmin):
     list_display = (
+        'barcode',
         'nama',
         'rumah',
         'status_rumah',
         'no_hp',
     )
 
-    search_fields = ('nama', 'rumah__no_rumah')
+    search_fields = ('nama', 'rumah__no_rumah', 'barcode')
     list_filter = ('rumah__rt',)
 
     autocomplete_fields = ('rumah',)
