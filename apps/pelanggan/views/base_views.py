@@ -48,6 +48,7 @@ class DaftarPelanggan(LoginRequiredMixin, ListView):
                         | Q(rumah__rt__icontains=term)
                         | Q(rumah__no_rumah__icontains=term)
                         | Q(no_hp__icontains=term)
+                        | Q(barcode__icontains=term)
                     )
             queryset = queryset.filter(query_filter)
         return queryset
@@ -97,6 +98,19 @@ class DaftarLangganan(LoginRequiredMixin, ListView):
     model = Langganan
     template_name = "pelanggan/daftar_langganan.html"
     context_object_name = "langganan_list"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "pelanggan",
+                "pelanggan__rumah",
+                "jenis_layanan",
+                "jenis_layanan__layanan",
+            )
+            .order_by("pelanggan__nama")
+        )
 
 
 class DetailLangganan(LoginRequiredMixin, DetailView):

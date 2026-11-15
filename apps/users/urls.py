@@ -11,6 +11,11 @@ from apps.users.views import (
     DeleteKasir,
     laporan_recent,
 )
+from apps.users.views.excel_views import (
+    export_users_excel,
+    import_users_excel,
+    template_users_excel,
+)
 
 urlpatterns = [
     # Dashboard & Auth
@@ -25,7 +30,13 @@ urlpatterns = [
 
     # Manajemen Users / Kasir
     path("users/", DaftarKasir.as_view(), name="daftar_users"),
+    path("users/export/", export_users_excel, name="export_users"),
+    path("users/import/", import_users_excel, name="import_users"),
+    path("users/template/", template_users_excel, name="template_users"),
     path("kasir/", DaftarKasir.as_view(), name="daftar_kasir"),
+    path("kasir/export/", export_users_excel, name="export_kasir"),
+    path("kasir/import/", import_users_excel, name="import_kasir"),
+    path("kasir/template/", template_users_excel, name="template_kasir"),
     path("users/tambah/", TambahKasir.as_view(), name="tambah_users"),
     path("kasir/tambah/", TambahKasir.as_view(), name="tambah_kasir"),
     path("users/<int:pk>/edit/", UpdateKasir.as_view(), name="update_users"),

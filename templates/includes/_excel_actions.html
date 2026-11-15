@@ -1,0 +1,63 @@
+{% comment %}
+Reusable partial for Excel Export & Import actions + Bootstrap 4 Upload Modal.
+Usage:
+  {% include "includes/_excel_actions.html" with export_url=export_url import_url=import_url template_url=template_url modal_id="rumah" title="Data Rumah" %}
+{% endcomment %}
+
+<a href="{{ export_url }}" id="btn-export-{{ modal_id }}" class="btn btn-success btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+    <i class="fas fa-file-excel mr-1"></i> Download Excel
+</a>
+
+<button type="button" id="btn-import-{{ modal_id }}" class="btn btn-outline-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;" data-toggle="modal" data-target="#modal-import-{{ modal_id }}">
+    <i class="fas fa-file-upload mr-1"></i> Import Excel
+</button>
+
+{% if template_url %}
+<a href="{{ template_url }}" id="btn-template-{{ modal_id }}" class="btn btn-outline-info btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+    <i class="fas fa-file-download mr-1"></i> Template Excel
+</a>
+{% endif %}
+
+<!-- Modal Import Excel -->
+<div class="modal fade" id="modal-import-{{ modal_id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel-{{ modal_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title font-weight-bold text-slate-800" id="modalLabel-{{ modal_id }}">
+                    <i class="fas fa-file-excel text-success mr-2"></i>Import Excel {{ title|default:"Data" }}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{{ import_url }}" enctype="multipart/form-data" id="form-import-{{ modal_id }}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group mb-2">
+                        <label for="input-file-{{ modal_id }}" class="font-weight-bold small text-slate-700">
+                            Pilih File Excel (.xlsx)
+                        </label>
+                        <input type="file" name="file" id="input-file-{{ modal_id }}" class="form-control-file" accept=".xlsx" required>
+                        <small class="form-text text-muted mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Gunakan file hasil <strong>Download Excel</strong> atau template format agar nama kolom sesuai.
+                        </small>
+                        {% if template_url %}
+                        <div class="mt-2">
+                            <a href="{{ template_url }}" id="btn-modal-template-{{ modal_id }}" class="text-info font-weight-bold small">
+                                <i class="fas fa-file-download mr-1"></i> Download Template Excel
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light" style="border-radius: 0 0 12px 12px;">
+                    <button type="button" class="btn btn-light btn-sm px-3" data-dismiss="modal">Batal</button>
+                    <button type="submit" id="btn-submit-import-{{ modal_id }}" class="btn btn-primary btn-sm px-3">
+                        <i class="fas fa-upload mr-1"></i> Upload &amp; Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

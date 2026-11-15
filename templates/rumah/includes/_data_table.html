@@ -1,0 +1,103 @@
+<!-- Data Card -->
+<div class="card data-card border-0 shadow-sm" id="cardDaftarRumah" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-slate-800">
+            <i class="fas fa-home text-primary mr-2"></i>Daftar Unit Rumah & Kavling
+        </h6>
+        <span class="badge badge-light border text-muted px-2 py-1 font-weight-normal small" id="rumahCountBadge">
+            Total: <strong>{{ rumah_list|length }}</strong> Unit
+        </span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive p-3">
+            <table class="table modern-table table-hover align-middle mb-0" id="rumahTable" width="100%">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th>Rukun Tetangga (RT)</th>
+                        <th>Nomor Rumah</th>
+                        <th>Status Hunian & Penghuni</th>
+                        <th class="text-center" style="width: 120px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="rumahTableBody">
+                {% for rumah in rumah_list %}
+                    <tr class="rumah-row"
+                        data-rt="{{ rumah.rt|lower }}"
+                        data-norumah="{{ rumah.no_rumah|lower }}"
+                        data-penghuni="{% if rumah.penghuni %}{{ rumah.penghuni.nama|lower }}{% endif %}">
+                        <td class="row-num font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                        <td>
+                            <span class="badge badge-pill badge-primary-subtle text-primary font-weight-bold px-2 py-1">
+                                RT {{ rumah.rt }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="font-weight-bold text-slate-800" style="font-size: 0.95rem;">
+                                <i class="fas fa-map-marker-alt text-danger mr-1"></i> No. {{ rumah.no_rumah }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if rumah.penghuni %}
+                                <div class="d-flex align-items-center">
+                                    <span class="badge badge-pill badge-success-subtle text-success px-2 py-1 mr-2">
+                                        <i class="fas fa-door-closed mr-1"></i> Dihuni
+                                    </span>
+                                    <span class="text-slate-800 font-weight-bold small">
+                                        <i class="fas fa-user text-muted mr-1"></i>{{ rumah.penghuni.nama }}
+                                    </span>
+                                </div>
+                            {% else %}
+                                <span class="badge badge-pill badge-warning-subtle text-warning px-2 py-1">
+                                    <i class="fas fa-door-open mr-1"></i> Kosong
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'edit_rumah' rumah.pk %}" class="btn btn-light border text-primary" title="Edit Rumah" style="border-radius: 6px 0 0 6px;" id="btnEditRumah_{{ rumah.pk }}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-light border text-danger" title="Hapus Rumah" 
+                                        id="btnDeleteRumah_{{ rumah.pk }}"
+                                        data-toggle="modal" data-target="#deleteModal" 
+                                        data-url="{% url 'hapus_rumah' rumah.pk %}" 
+                                        data-nama="Rumah RT {{ rumah.rt }} No {{ rumah.no_rumah }}"
+                                        style="border-radius: 0 6px 6px 0;">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-search fa-3x mb-3 text-slate-300 d-block"></i>
+                            {% if query %}
+                                <h6 class="font-weight-bold text-slate-700">Unit Rumah Tidak Ditemukan</h6>
+                                <p class="small text-muted mb-3">Tidak ditemukan unit rumah dengan kata kunci <strong>"{{ query }}"</strong>.</p>
+                                <a href="{% url 'daftar_rumah' %}" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 6px;" id="btnShowAllRumah">
+                                    <i class="fas fa-redo-alt mr-1"></i> Tampilkan Semua Unit Rumah
+                                </a>
+                            {% else %}
+                                <h6 class="font-weight-bold text-slate-700">Belum Ada Data Rumah</h6>
+                                <p class="small text-muted mb-0">Silakan tambahkan data rumah baru melalui tombol di atas.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr id="noLiveMatchRumahRow" style="display: none;">
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="fas fa-search fa-3x mb-3 text-slate-300 d-block"></i>
+                        <h6 class="font-weight-bold text-slate-700">Hasil Pencarian Kosong</h6>
+                        <p class="small text-muted mb-2">Tidak ada data kavling/rumah di halaman ini yang cocok dengan kata kunci tersebut.</p>
+                        <button type="button" class="btn btn-sm btn-outline-primary px-3" id="btnResetLiveFilterRumah" style="border-radius: 6px;">
+                            <i class="fas fa-undo mr-1"></i> Bersihkan Kolom Pencarian
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

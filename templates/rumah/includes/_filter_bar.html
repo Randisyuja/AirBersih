@@ -1,0 +1,57 @@
+<!-- Search Bar & Filter Card -->
+<div class="card border-0 shadow-sm mb-3" id="cardFilterRumah" style="border-radius: 12px;">
+    <div class="card-body p-3">
+        <form method="get" action="{% url 'daftar_rumah' %}" id="searchRumahForm" class="m-0">
+            <div class="row align-items-center">
+                <div class="col-lg-7 col-md-8 mb-2 mb-md-0">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white border-right-0" style="border-radius: 8px 0 0 8px;">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                        </div>
+                        <input type="text" 
+                               name="q" 
+                               id="searchRumahInput" 
+                               class="form-control border-left-0 border-right-0" 
+                               value="{{ query }}" 
+                               placeholder="Ketik Nomor RT (contoh: 05), Nomor Rumah (contoh: D3NO2), atau Nama Warga..." 
+                               autocomplete="off"
+                               style="font-size: 0.9rem;"
+                               aria-label="Cari Rumah dan Kavling">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-white border border-left-0 text-muted" id="btnClearLiveSearchRumah" title="Kosongkan kolom pencarian" style="display: {% if query %}inline-block{% else %}none{% endif %};">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                            <button type="submit" class="btn btn-primary px-4 font-weight-bold" style="border-radius: 0 8px 8px 0;" id="btnSubmitSearchRumah">
+                                <i class="fas fa-search mr-1"></i> Cari
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-4 text-md-right">
+                    <div class="d-inline-flex align-items-center small text-muted flex-wrap">
+                        <span class="mr-2"><i class="fas fa-filter text-primary mr-1"></i>Pencarian:</span>
+                        <span class="badge badge-light border text-slate-700 mr-1 px-2 py-1">RT</span>
+                        <span class="badge badge-light border text-slate-700 mr-1 px-2 py-1">No. Rumah</span>
+                        <span class="badge badge-light border text-slate-700 px-2 py-1">Nama Penghuni</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Active Search Filter Badge -->
+{% if query %}
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between mb-3 shadow-sm" id="alertActiveSearchRumah" style="border-radius: 8px;">
+    <div class="small">
+        <i class="fas fa-search text-primary mr-2"></i>
+        Ditemukan <strong>{{ total_count }}</strong> unit rumah untuk kata kunci: 
+        <span class="badge badge-primary px-2 py-1 font-weight-bold ml-1">"{{ query }}"</span>
+    </div>
+    <a href="{% url 'daftar_rumah' %}" class="btn btn-sm btn-outline-primary py-0 px-2 font-weight-medium" style="border-radius: 6px;" id="btnResetSearchBadgeRumah">
+        <i class="fas fa-undo mr-1"></i> Reset Pencarian
+    </a>
+</div>
+{% endif %}
