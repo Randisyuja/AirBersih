@@ -53,4 +53,4 @@ EXPOSE 8000
 
 # Set entrypoint and default container command
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-3} airBersih.wsgi:application"]
+CMD ["sh", "-c", "gunicorn --reload --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-3} airBersih.wsgi:application"]

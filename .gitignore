@@ -48,6 +48,8 @@ media/
 .vscode/
 .idea/
 *.iml
+.agents/
+.note/
 
 # ==========================
 # 🧪 Testing & Coverage
