@@ -1,0 +1,83 @@
+{% load rupiah_filters %}
+{% load dict_extras %}
+
+<!-- Stat KPI Cards Row -->
+<div class="row">
+    <!-- Pemasukan Bulan Ini -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-0 shadow-sm h-100 py-3 px-3" id="cardPemasukanBulanIni" style="border-left: 4px solid var(--primary) !important;">
+            <div class="card-body p-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-xs font-weight-bold text-primary text-uppercase letter-spacing mb-1 d-block">
+                            Pemasukan Bulan Ini
+                        </span>
+                        <h3 class="font-weight-bold text-slate-900 mb-0" style="font-size: 1.45rem;">
+                            {{ uang_bulan_ini|rupiah }}
+                        </h3>
+                        <span class="badge badge-pill badge-primary-subtle text-primary mt-2" style="font-size: 0.75rem;">
+                            <i class="fas fa-calendar-check mr-1"></i> Bulan Berjalan
+                        </span>
+                    </div>
+                    <div class="stat-icon-wrapper" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255, 71, 37, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.35rem;">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pemasukan Tahun Ini -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-0 shadow-sm h-100 py-3 px-3" id="cardKasTahunIni" style="border-left: 4px solid var(--accent-emerald) !important;">
+            <div class="card-body p-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-xs font-weight-bold text-success text-uppercase letter-spacing mb-1 d-block">
+                            Total Kas Tahun Ini
+                        </span>
+                        <h3 class="font-weight-bold text-slate-900 mb-0" style="font-size: 1.45rem;">
+                            {{ uang_tahun_ini|rupiah }}
+                        </h3>
+                        <span class="badge badge-pill badge-success-subtle text-success mt-2" style="font-size: 0.75rem;">
+                            <i class="fas fa-chart-line mr-1"></i> Akumulasi Tahunan
+                        </span>
+                    </div>
+                    <div class="stat-icon-wrapper" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; color: var(--accent-emerald); font-size: 1.35rem;">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tunggakan Tiap Layanan -->
+    {% for item in layanan %}
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-0 shadow-sm h-100 py-3 px-3" id="cardTunggakan_{{ item }}" style="border-left: 4px solid var(--accent-amber) !important;">
+            <div class="card-body p-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-xs font-weight-bold text-warning text-uppercase letter-spacing mb-1 d-block">
+                            Tunggakan {{ item }}
+                        </span>
+                        <h3 class="font-weight-bold text-slate-900 mb-0" style="font-size: 1.45rem;">
+                            {{ status_layanan|get_item:item }} <span class="text-muted" style="font-size: 0.9rem; font-weight: 500;">Rumah</span>
+                        </h3>
+                        <span class="badge badge-pill badge-warning-subtle text-warning mt-2" style="font-size: 0.75rem;">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Belum Membayar
+                        </span>
+                    </div>
+                    <div class="stat-icon-wrapper" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(245, 158, 11, 0.12); display: flex; align-items: center; justify-content: center; color: var(--accent-amber); font-size: 1.35rem;">
+                        {% if item == 'AIR' %}
+                            <i class="fas fa-tint"></i>
+                        {% else %}
+                            <i class="fas fa-wifi"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

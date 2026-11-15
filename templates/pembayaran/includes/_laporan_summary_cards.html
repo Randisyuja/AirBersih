@@ -1,0 +1,65 @@
+{% load rupiah_filters %}
+<!-- Revenue & Subscriber Summary KPI Cards -->
+<div class="row mb-4" id="laporanSummaryCardsRow">
+    <!-- Card 1: Total Pemasukan Tahunan -->
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card stat-card h-100" id="cardTotalPemasukanTahunan">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">Total Pemasukan Tahun {{ tahun }}</div>
+                    <div class="stat-value tabular-nums" id="valTotalPemasukanTahunan">
+                        {{ total_pemasukan_tahunan|rupiah }}
+                    </div>
+                    <div class="stat-caption">
+                        <i class="fas fa-coins text-primary mr-1"></i> Akumulasi kas masuk layanan {{ layanan }}
+                    </div>
+                </div>
+                <div class="stat-icon-box" style="background: var(--color-success-bg); color: var(--color-success);">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Pemasukan Bulan Terpilih / Filter -->
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card stat-card h-100" id="cardPemasukanBulanTerpilih">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">
+                        Pemasukan Periode: <span id="labelBulanTerpilih" class="text-primary">{{ selected_bulan_label }}</span>
+                    </div>
+                    <div class="stat-value tabular-nums" id="valPemasukanBulanTerpilih">
+                        {{ selected_month_revenue|rupiah }}
+                    </div>
+                    <div class="stat-caption">
+                        <i class="fas fa-calendar-check text-primary mr-1"></i> Sesuai filter bulan yang dipilih
+                    </div>
+                </div>
+                <div class="stat-icon-box" style="background: var(--color-info-bg); color: var(--color-info);">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Total Pelanggan Aktif -->
+    <div class="col-md-4">
+        <div class="card stat-card h-100" id="cardTotalPelangganLayanan">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">Pelanggan Aktif {{ layanan }}</div>
+                    <div class="stat-value tabular-nums" id="valTotalPelangganLayanan">
+                        {{ data_laporan|length }} Warga
+                    </div>
+                    <div class="stat-caption">
+                        <i class="fas fa-users text-primary mr-1"></i> Terdaftar pada matriks {{ tahun }}
+                    </div>
+                </div>
+                <div class="stat-icon-box" style="background: var(--surface-2); color: var(--accent);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

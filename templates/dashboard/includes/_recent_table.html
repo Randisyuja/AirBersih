@@ -1,0 +1,81 @@
+{% load rupiah_filters %}
+
+<div class="col-xl-8 col-lg-7 mb-4">
+    <div class="card data-card border-0 shadow-sm h-100" id="cardRiwayatPembayaran">
+        <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-primary-subtle text-primary p-2 mr-3" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div>
+                    <h6 class="m-0 font-weight-bold text-slate-800">Riwayat Pembayaran Terbaru</h6>
+                    <span class="text-muted small">Transaksi yang telah terverifikasi lunas (bukan tagihan)</span>
+                </div>
+            </div>
+            <a href="{% url 'daftar_pembayaran' %}" class="btn btn-sm btn-link text-primary font-weight-semibold p-0" id="linkSemuaPembayaranRecent">
+                Lihat Selengkapnya &rarr;
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive p-3" id="laporan-container">
+                <table class="table modern-table table-hover align-middle mb-0" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Pelanggan</th>
+                            <th>No. Rumah</th>
+                            <th>Layanan</th>
+                            <th>Periode</th>
+                            <th>Waktu Bayar</th>
+                            <th class="text-right">Nominal</th>
+                            <th class="text-center">Struk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for bayar in recent %}
+                        <tr>
+                            <td class="text-muted font-weight-medium" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="font-weight-bold text-slate-800">{{ bayar.pelanggan.nama }}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
+                                    <i class="fas fa-home text-muted mr-1"></i>{{ bayar.pelanggan.rumah.no_rumah|default:"-" }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1 font-weight-semibold">
+                                    {{ bayar.jenis_layanan.layanan.nama_layanan|default:bayar.jenis_layanan.nama_jenis }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-slate-700 font-weight-medium">{{ bayar.bulan }}/{{ bayar.tahun }}</span>
+                            </td>
+                            <td class="text-muted small">
+                                <i class="far fa-calendar-alt mr-1"></i>{{ bayar.tgl_pembayaran|date:"d-m-Y H:i"|default:"-" }}
+                            </td>
+                            <td class="text-right font-weight-bold text-success">
+                                {{ bayar.jumlah_bayar|rupiah }}
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'cetak_struk_thermal' bayar.id_pembayaran %}?autoprint=1" target="_blank"
+                                   class="btn btn-sm btn-secondary px-2 py-1" title="Cetak Struk Thermal"
+                                   id="btnRecentStruk_{{ bayar.id_pembayaran }}">
+                                    <i class="fas fa-print text-primary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-3x mb-2 text-slate-300 d-block"></i>
+                                Belum ada riwayat transaksi pembayaran terbaru.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

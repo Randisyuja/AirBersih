@@ -1,0 +1,102 @@
+{% load static %}
+<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        // 1. Inisialisasi Select2 pada Pilih Pelanggan
+        var $selectPelanggan = $('#id_pelanggan').select2({
+            placeholder: '-- Ketik Nama, RT, atau No Rumah --',
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: false,
+            dropdownParent: $('#id_pelanggan').closest('.select2-wrapper'),
+            language: {
+                noResults: function () {
+                    return "Data pelanggan/warga tidak ditemukan.";
+                }
+            }
+        });
+
+        // 2. Inisialisasi Select2 pada Jenis Layanan
+        var $selectLayanan = $('#id_jenis_layanan').select2({
+            placeholder: '-- Pilih Jenis Layanan --',
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: false,
+            dropdownParent: $('#id_jenis_layanan').closest('.select2-wrapper'),
+            language: {
+                noResults: function () {
+                    return "Jenis layanan tidak ditemukan.";
+                }
+            }
+        });
+
+        // 3. Inisialisasi Select2 pada Periode Bulan
+        var $selectBulan = $('#id_bulan').select2({
+            placeholder: '-- Ketik Bulan (misal: 10 atau Oktober) --',
+            allowClear: true,
+            width: '100%',
+            dropdownAutoWidth: false,
+            dropdownParent: $('#id_bulan').closest('.select2-wrapper'),
+            language: {
+                noResults: function () {
+                    return "Periode bulan tidak ditemukan.";
+                }
+            }
+        });
+
+        // Pastikan wrapper yang sedang aktif memiliki stacking context tertinggi (z-index)
+        $('#id_pelanggan, #id_jenis_layanan, #id_bulan')
+            .on('select2:open', function () {
+                $(this).closest('.select2-wrapper').css('z-index', 1055);
+            })
+            .on('select2:close', function () {
+                $(this).closest('.select2-wrapper').css('z-index', '');
+            });
+
+        // 4. Dynamic Service Loader based on chosen Customer
+        $('#id_pelanggan').on('change select2:select', function () {
+            var pelangganId = $(this).val();
+            if (!pelangganId) {
+                $selectLayanan.empty().append('<option value="">--- Pilih Jenis Layanan ---</option>').trigger('change');
+                return;
+            }
+            $.ajax({
+                url: "{% url 'ajax_load_jenis_layanan' %}",
+                data: {
+                    "pelanggan_id": pelangganId
+                },
+                success: function (data) {
+                    $selectLayanan.empty();
+                    $selectLayanan.append('<option value="">--- Pilih Jenis Layanan ---</option>');
+                    $.each(data, function (index, item) {
+                        $selectLayanan.append(new Option(item.nama, item.id));
+                    });
+                    if (window._pendingScanSub && String(window._pendingScanSub.jenis_layanan_id)) {
+                        $selectLayanan.val(String(window._pendingScanSub.jenis_layanan_id));
+                        if (window._pendingScanSub.next_bulan) {
+                            $selectBulan.val(String(window._pendingScanSub.next_bulan)).trigger('change');
+                        }
+                        window._pendingScanSub = null;
+                    }
+                    $selectLayanan.trigger('change');
+                }
+            });
+        });
+
+        // 5. AJAX table page loader for pagination
+        function loadPage(url) {
+            $.ajax({
+                url: url,
+                success: function (data) {
+                    $("#laporan-container").html(data.html);
+                }
+            });
+        }
+
+        $(document).on("click", ".page-ajax", function (e) {
+            e.preventDefault();
+            var url = $(this).attr("href");
+            loadPage("/laporan-recent/" + url);
+        });
+    });
+</script>

@@ -1,0 +1,44 @@
+<!-- Filter Bar: Year & Interactive Month Filter -->
+<div class="card mb-4" id="cardLaporanFilterBar">
+    <div class="card-body py-3 px-4">
+        <form method="get" action="{% url 'laporan_tahunan' layanan=layanan %}" id="laporanFilterForm" class="d-flex flex-wrap align-items-center justify-content-between">
+            <div class="d-flex flex-wrap align-items-center">
+                <div class="d-flex align-items-center mr-3 mb-2 mb-sm-0">
+                    <label for="id_tahun" class="mr-2 mb-0 small font-weight-bold text-main">
+                        <i class="fas fa-calendar-alt text-primary mr-1"></i> Tahun:
+                    </label>
+                    <div style="min-width: 110px;">
+                        {{ form.tahun }}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mr-3 mb-2 mb-sm-0">
+                    <label for="filterBulanSelect" class="mr-2 mb-0 small font-weight-bold text-main">
+                        <i class="fas fa-filter text-primary mr-1"></i> Filter Bulan:
+                    </label>
+                    <select name="bulan" id="filterBulanSelect" class="form-control form-control-sm" style="min-width: 170px;">
+                        <option value="" {% if not selected_bulan %}selected{% endif %}>Semua Bulan (Jan - Des)</option>
+                        {% for num, label in bulan_choices %}
+                            <option value="{{ num }}" {% if selected_bulan == num %}selected{% endif %}>
+                                Bulan {{ num }} - {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="d-flex align-items-center mb-2 mb-sm-0">
+                    <button type="submit" class="btn btn-sm btn-primary mr-2" id="btnFilterLaporan">
+                        <i class="fas fa-sync-alt mr-1"></i> Tampilkan
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="btnResetBulanFilter" title="Tampilkan Semua Bulan">
+                        <i class="fas fa-undo mr-1"></i> Reset Bulan
+                    </button>
+                </div>
+            </div>
+
+            <div class="small text-muted mt-2 mt-md-0">
+                <i class="fas fa-info-circle text-primary mr-1"></i> Pilih bulan untuk menyorot grafik &amp; kolom matriks secara instan
+            </div>
+        </form>
+    </div>
+</div>

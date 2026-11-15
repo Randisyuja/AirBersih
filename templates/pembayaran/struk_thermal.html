@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static %}
+{% load rupiah_filters %}
+
+{% block title %}Struk Pembayaran {{ no_struk }} - Jogo Tirto{% endblock %}
+
+{% block extra_css %}
+<style>
+    .thermal-receipt-box {
+        width: 300px;
+        margin: 0 auto;
+        padding: 16px;
+        background: var(--surface-1);
+        color: var(--text-main);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 1.45;
+    }
+    .thermal-divider {
+        border-top: 1px dashed var(--border-subtle);
+        margin: 8px 0;
+    }
+    .thermal-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+    @media print {
+        @page { size: 58mm auto; margin: 0; }
+        body * { visibility: hidden; }
+        #thermalReceiptPrintArea, #thermalReceiptPrintArea * { visibility: visible; }
+        #thermalReceiptPrintArea {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 58mm;
+            border: none;
+            padding: 4mm;
+            box-shadow: none;
+        }
+        .no-print { display: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content pb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom no-print">
+        <div>
+            <h1 class="h3 font-weight-bold text-main mb-1">Struk Pembayaran Thermal (58mm / 80mm)</h1>
+            <p class="text-muted small mb-0">Siap dicetak langsung ke printer kasir thermal Bluetooth / USB</p>
+        </div>
+        <div class="d-flex">
+            <a href="{% url 'daftar_pembayaran' %}" class="btn btn-secondary btn-sm mr-2">
+                <i class="fas fa-arrow-left mr-1"></i> Daftar Pembayaran
+            </a>
+            <button type="button" class="btn btn-primary btn-sm" id="btnPrintThermalReceipt" onclick="window.print()">
+                <i class="fas fa-print mr-1"></i> Print Struk Thermal
+            </button>
+        </div>
+    </div>
+
+    <div class="thermal-receipt-box" id="thermalReceiptPrintArea">
+        <div class="text-center mb-2">
+            <div class="font-weight-bold" style="font-size: 14px;">JOGO TIRTO</div>
+            <div class="small text-muted">SIAP AIR BERSIH &amp; WIFI WARGA</div>
+            <div class="small text-muted">RT 05 / RW 09</div>
+        </div>
+
+        <div class="thermal-divider"></div>
+
+        <div class="thermal-row">
+            <span>No. Struk:</span>
+            <strong id="receiptNoStruk">{{ no_struk }}</strong>
+        </div>
+        <div class="thermal-row">
+            <span>Tanggal:</span>
+            <span>{{ pembayaran.tgl_pembayaran|date:"d/m/Y H:i"|default:"-" }}</span>
+        </div>
+        <div class="thermal-row">
+            <span>Kasir:</span>
+            <span>{{ pembayaran.kasir.username|default:"Sistem" }}</span>
+        </div>
+
+        <div class="thermal-divider"></div>
+
+        <div class="thermal-row">
+            <span>Kode Member:</span>
+            <strong id="receiptKodeMember">{{ kode_member }}</strong>
+        </div>
+        <div class="thermal-row">
+            <span>Pelanggan:</span>
+            <strong id="receiptNamaPelanggan">{{ pelanggan.nama }}</strong>
+        </div>
+        <div class="thermal-row">
+            <span>Rumah:</span>
+            <span>{% if rumah %}RT {{ rumah.rt }} / {{ rumah.no_rumah }}{% else %}-{% endif %}</span>
+        </div>
+        <div class="thermal-row">
+            <span>No. HP:</span>
+            <span>{{ pelanggan.no_hp|default:"-" }}</span>
+        </div>
+
+        <div class="thermal-divider"></div>
+
+        <div class="mb-1">
+            <div class="font-weight-bold">{{ jenis_layanan.layanan.nama_layanan }} - {{ jenis_layanan.nama_jenis }}</div>
+            <div class="thermal-row">
+                <span>Periode {{ nama_bulan }} {{ pembayaran.tahun }}</span>
+                <strong>{{ pembayaran.jumlah_bayar|rupiah }}</strong>
+            </div>
+        </div>
+
+        <div class="thermal-divider"></div>
+
+        <div class="thermal-row" style="font-size: 14px;">
+            <strong>TOTAL BAYAR</strong>
+            <strong id="receiptTotalBayar">{{ pembayaran.jumlah_bayar|rupiah }}</strong>
+        </div>
+        <div class="thermal-row">
+            <span>Status:</span>
+            <strong>{{ pembayaran.status_bayar|upper }}</strong>
+        </div>
+
+        <div class="thermal-divider"></div>
+
+        <div class="text-center mt-2">
+            <img src="{% url 'pembayaran_qr_svg' pembayaran.pk %}" alt="QR {{ kode_member }}" style="width: 96px; height: 96px;">
+            <div class="small text-muted mt-1">Terima kasih atas pembayaran iuran Anda.</div>
+            <div class="small text-muted">Simpan struk ini sebagai bukti pembayaran sah.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if autoprint %}
+<script>
+    window.addEventListener('load', function () {
+        setTimeout(function () { window.print(); }, 350);
+    });
+</script>
+{% endif %}
+{% endblock %}

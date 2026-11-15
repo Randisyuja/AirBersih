@@ -14,10 +14,13 @@
             <p class="text-muted small mb-0">Catatan mutasi pelunasan tagihan air & iuran warga secara real-time</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
-            <a href="{% url 'export_pembayaran_excel' %}" class="btn btn-outline-success btn-sm px-3 shadow-sm mr-2" style="border-radius: 8px;">
+            <button type="button" class="btn btn-secondary btn-sm px-3 mr-2" id="btnOpenScannerList" data-toggle="modal" data-target="#barcodeScannerModal">
+                <i class="fas fa-barcode mr-1"></i> Scan Barcode
+            </button>
+            <a href="{% url 'export_pembayaran_excel' %}" class="btn btn-secondary btn-sm px-3 mr-2">
                 <i class="fas fa-file-excel mr-1"></i> Export Excel
             </a>
-            <a href="{% url 'tambah_pembayaran' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+            <a href="{% url 'tambah_pembayaran' %}" class="btn btn-primary btn-sm px-3">
                 <i class="fas fa-plus mr-1"></i> Tambah Pembayaran
             </a>
         </div>
@@ -84,7 +87,12 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'edit_pembayaran' pembayaran.id %}" class="btn btn-light border text-primary" title="Edit Transaksi" style="border-radius: 6px 0 0 6px;">
+                                    <a href="{% url 'cetak_struk_thermal' pembayaran.id %}?autoprint=1" target="_blank"
+                                       class="btn btn-light border text-primary" title="Cetak Struk Thermal"
+                                       id="btnStrukThermal_{{ pembayaran.id }}" style="border-radius: 6px 0 0 6px;">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{% url 'edit_pembayaran' pembayaran.id %}" class="btn btn-light border text-info" title="Edit Transaksi">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-light border text-danger" title="Hapus Transaksi" 
@@ -111,4 +119,6 @@
         </div>
     </div>
 </div>
+
+{% include "pembayaran/includes/_barcode_scanner_modal.html" %}
 {% endblock %}

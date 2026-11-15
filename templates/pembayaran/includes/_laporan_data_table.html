@@ -1,0 +1,58 @@
+<!-- Payment Status Matrix Table Card -->
+<div class="card data-card" id="cardLaporanMatrix">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-main">
+            <i class="fas fa-table text-primary mr-2"></i>Matriks Status Pembayaran Warga ({{ tahun }})
+        </h6>
+        <span class="small text-muted font-mono">Total: {{ data_laporan|length }} Pelanggan</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive p-3">
+            <table class="table modern-table table-hover align-middle mb-0 text-center" id="dataTable" width="100%">
+                <thead>
+                    <tr>
+                        <th class="text-left" style="min-width: 160px;">Nama Pelanggan</th>
+                        <th class="text-left" style="min-width: 110px;">No. Rumah</th>
+                        {% for bulan in bulan_labels %}
+                            <th class="month-col-header" data-month="{{ forloop.counter }}" style="min-width: 55px; font-size: 0.8rem;">
+                                {{ bulan }}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in data_laporan %}
+                    <tr>
+                        <td class="text-left font-weight-bold text-main">{{ row.pelanggan }}</td>
+                        <td class="text-left">
+                            <span class="badge badge-light border px-2 py-1 text-main font-weight-bold">
+                                <i class="fas fa-home text-muted mr-1"></i>{{ row.alamat }}
+                            </span>
+                        </td>
+                        {% for status in row.status_bulan %}
+                            <td class="month-col-cell" data-month="{{ forloop.counter }}">
+                                {% if status == "Belum" %}
+                                    <span class="badge badge-pill badge-danger-subtle text-danger" style="font-size: 0.75rem; padding: 0.25rem 0.45rem;">
+                                        Belum
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-pill badge-success-subtle text-success" style="font-size: 0.75rem; padding: 0.25rem 0.45rem;">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="14" class="text-center py-5 text-muted">
+                            <i class="fas fa-file-invoice fa-3x mb-2 text-muted d-block"></i>
+                            Tidak ada data laporan untuk periode tahun ini.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

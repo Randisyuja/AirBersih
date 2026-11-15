@@ -33,13 +33,13 @@
     }
     .select2-container .select2-selection--single {
         height: 44px !important;
-        border: 1.5px solid var(--slate-300) !important;
-        border-radius: 8px !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: var(--radius-md) !important;
         display: flex !important;
         align-items: center !important;
         padding-left: 0.75rem !important;
         padding-right: 2.2rem !important;
-        background-color: #ffffff !important;
+        background-color: var(--surface-1) !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -48,7 +48,7 @@
     .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: 44px !important;
         font-size: 0.92rem !important;
-        color: var(--slate-800) !important;
+        color: var(--text-main) !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -65,8 +65,8 @@
     }
     .select2-container--default.select2-container--focus .select2-selection--single,
     .select2-container--default.select2-container--open .select2-selection--single {
-        border-color: var(--primary) !important;
-        box-shadow: 0 0 0 3px var(--primary-glow) !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 2px rgba(255, 71, 37, 0.25) !important;
     }
     .select2-wrapper .select2-dropdown,
     .select2-dropdown {
@@ -77,6 +77,8 @@
         right: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+        background-color: var(--surface-2) !important;
+        border-color: var(--border-subtle) !important;
     }
     .select2-wrapper .select2-search--dropdown {
         width: 100% !important;
@@ -88,6 +90,9 @@
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        background-color: var(--surface-1) !important;
+        color: var(--text-main) !important;
+        border-color: var(--border-subtle) !important;
     }
     .select2-wrapper .select2-results {
         width: 100% !important;
@@ -111,335 +116,35 @@
     <!-- Header Page -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
-            <h1 class="h3 font-weight-bold text-slate-800 mb-1">Ringkasan Operasional</h1>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-1" id="dashPageTitle">Ringkasan Operasional</h1>
             <p class="text-muted small mb-0">Pantau performa penerimaan kas air & iuran warga secara real-time</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
             <button class="btn btn-outline-primary btn-sm px-3 shadow-sm mr-2" data-toggle="modal" data-target="#yearModal" style="border-radius: 8px;" id="btnGenerateTagihanDash">
                 <i class="fas fa-magic mr-1"></i> Generate Tagihan
             </button>
-            <a href="{% url 'daftar_pembayaran' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+            <a href="{% url 'daftar_pembayaran' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;" id="btnSemuaPembayaranDash">
                 <i class="fas fa-receipt mr-1"></i> Semua Pembayaran
             </a>
         </div>
     </div>
 
     <!-- Stat KPI Cards Row -->
-    <div class="row">
-        <!-- Pemasukan Bulan Ini -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-0 shadow-sm h-100 py-3 px-3" style="border-left: 4px solid var(--primary) !important;">
-                <div class="card-body p-0">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-xs font-weight-bold text-primary text-uppercase letter-spacing mb-1 d-block">
-                                Pemasukan Bulan Ini
-                            </span>
-                            <h3 class="font-weight-bold text-slate-900 mb-0" style="font-size: 1.45rem;">
-                                {{ uang_bulan_ini|rupiah }}
-                            </h3>
-                            <span class="badge badge-pill badge-primary-subtle text-primary mt-2" style="font-size: 0.75rem;">
-                                <i class="fas fa-calendar-check mr-1"></i> Bulan Berjalan
-                            </span>
-                        </div>
-                        <div class="stat-icon-wrapper" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(2, 132, 199, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.35rem;">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pemasukan Tahun Ini -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-0 shadow-sm h-100 py-3 px-3" style="border-left: 4px solid var(--accent-emerald) !important;">
-                <div class="card-body p-0">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-xs font-weight-bold text-success text-uppercase letter-spacing mb-1 d-block">
-                                Total Kas Tahun Ini
-                            </span>
-                            <h3 class="font-weight-bold text-slate-900 mb-0" style="font-size: 1.45rem;">
-                                {{ uang_tahun_ini|rupiah }}
-                            </h3>
-                            <span class="badge badge-pill badge-success-subtle text-success mt-2" style="font-size: 0.75rem;">
-                                <i class="fas fa-chart-line mr-1"></i> Akumulasi Tahunan
-                            </span>
-                        </div>
-                        <div class="stat-icon-wrapper" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; color: var(--accent-emerald); font-size: 1.35rem;">
-                            <i class="fas fa-hand-holding-usd"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tunggakan Tiap Layanan -->
-        {% for item in layanan %}
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card stat-card border-0 shadow-sm h-100 py-3 px-3" style="border-left: 4px solid var(--accent-amber) !important;">
-                <div class="card-body p-0">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-xs font-weight-bold text-warning text-uppercase letter-spacing mb-1 d-block">
-                                Tunggakan {{ item }}
-                            </span>
-                            <h3 class="font-weight-bold text-slate-900 mb-0" style="font-size: 1.45rem;">
-                                {{ status_layanan|get_item:item }} <span class="text-muted" style="font-size: 0.9rem; font-weight: 500;">Rumah</span>
-                            </h3>
-                            <span class="badge badge-pill badge-warning-subtle text-warning mt-2" style="font-size: 0.75rem;">
-                                <i class="fas fa-exclamation-circle mr-1"></i> Belum Membayar
-                            </span>
-                        </div>
-                        <div class="stat-icon-wrapper" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(245, 158, 11, 0.12); display: flex; align-items: center; justify-content: center; color: var(--accent-amber); font-size: 1.35rem;">
-                            {% if item == 'AIR' %}
-                                <i class="fas fa-tint"></i>
-                            {% else %}
-                                <i class="fas fa-wifi"></i>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+    {% include "dashboard/includes/_summary_cards.html" %}
 
     <!-- Main Content Grid -->
     <div class="row">
         <!-- Tabel Pembayaran Terkini -->
-        <div class="col-xl-8 col-lg-7 mb-4">
-            <div class="card data-card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-primary-subtle text-primary p-2 mr-3" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div>
-                            <h6 class="m-0 font-weight-bold text-slate-800">Riwayat Pembayaran Terbaru</h6>
-                            <span class="text-muted small">Transaksi yang telah terverifikasi lunas (bukan tagihan)</span>
-                        </div>
-                    </div>
-                    <a href="{% url 'daftar_pembayaran' %}" class="btn btn-sm btn-link text-primary font-weight-semibold p-0">
-                        Lihat Selengkapnya &rarr;
-                    </a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive p-3" id="laporan-container">
-                        <table class="table modern-table table-hover align-middle mb-0" id="dataTable">
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">No</th>
-                                    <th>Pelanggan</th>
-                                    <th>No. Rumah</th>
-                                    <th>Layanan</th>
-                                    <th>Periode</th>
-                                    <th>Waktu Bayar</th>
-                                    <th class="text-right">Nominal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for bayar in recent %}
-                                <tr>
-                                    <td class="text-muted font-weight-medium" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
-                                    <td>
-                                        <div class="font-weight-bold text-slate-800">{{ bayar.pelanggan.nama }}</div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
-                                            <i class="fas fa-home text-muted mr-1"></i>{{ bayar.pelanggan.rumah.no_rumah|default:"-" }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1 font-weight-semibold">
-                                            {{ bayar.jenis_layanan.layanan.nama_layanan|default:bayar.jenis_layanan.nama_jenis }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="text-slate-700 font-weight-medium">{{ bayar.bulan }}/{{ bayar.tahun }}</span>
-                                    </td>
-                                    <td class="text-muted small">
-                                        <i class="far fa-calendar-alt mr-1"></i>{{ bayar.tgl_pembayaran|date:"d-m-Y H:i"|default:"-" }}
-                                    </td>
-                                    <td class="text-right font-weight-bold text-success">
-                                        {{ bayar.jumlah_bayar|rupiah }}
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fas fa-inbox fa-3x mb-2 text-slate-300 d-block"></i>
-                                        Belum ada riwayat transaksi pembayaran terbaru.
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include "dashboard/includes/_recent_table.html" %}
 
         <!-- Form Loket Pembayaran Cepat -->
-        <div class="col-xl-4 col-lg-5 mb-4">
-            <div class="card data-card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-success-subtle text-success p-2 mr-3" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-cash-register"></i>
-                        </div>
-                        <div>
-                            <h6 class="m-0 font-weight-bold text-slate-800">Loket Bayar Cepat</h6>
-                            <span class="text-muted small">Input pelunasan tagihan instan</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <form method="post" id="formLoketBayar">
-                        {% csrf_token %}
-                        <!-- Field Pilih Pelanggan -->
-                        <div class="form-group mb-3">
-                            <label for="id_pelanggan" class="form-label-modern font-weight-semibold text-slate-700 mb-1">
-                                <i class="fas fa-user mr-1 text-primary"></i> PILIH PELANGGAN <span class="text-danger">*</span>
-                            </label>
-                            <div class="select2-wrapper">
-                                {{ form_pembayaran.pelanggan }}
-                            </div>
-                            <small class="form-text text-muted mt-1">
-                                <i class="fas fa-search mr-1 text-primary"></i> Ketik <strong>Nama</strong>, <strong>RT</strong>, atau <strong>Nomor Rumah</strong>
-                            </small>
-                        </div>
-
-                        <!-- Field Jenis Layanan -->
-                        <div class="form-group mb-3">
-                            <label for="id_jenis_layanan" class="form-label-modern font-weight-semibold text-slate-700 mb-1">
-                                <i class="fas fa-concierge-bell mr-1 text-info"></i> JENIS LAYANAN <span class="text-danger">*</span>
-                            </label>
-                            <div class="select2-wrapper">
-                                {{ form_pembayaran.jenis_layanan }}
-                            </div>
-                            <small class="form-text text-muted mt-1">
-                                <i class="fas fa-search mr-1 text-info"></i> Cari paket layanan aktif pelanggan (Air / WiFi)
-                            </small>
-                        </div>
-
-                        <!-- Field Periode Bulan -->
-                        <div class="form-group mb-4">
-                            <label for="id_bulan" class="form-label-modern font-weight-semibold text-slate-700 mb-1">
-                                <i class="far fa-calendar-alt mr-1 text-warning"></i> PERIODE BULAN <span class="text-danger">*</span>
-                            </label>
-                            <div class="select2-wrapper">
-                                {{ form_pembayaran.bulan }}
-                            </div>
-                            <small class="form-text text-muted mt-1">
-                                <i class="fas fa-search mr-1 text-warning"></i> Ketik angka bulan atau nama bulan (misal: <strong>10</strong> atau <strong>Oktober</strong>)
-                            </small>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block py-2 font-weight-bold shadow-sm" id="btnSubmitBayar" style="border-radius: 10px; font-size: 0.95rem;">
-                            <i class="fas fa-check-circle mr-1"></i> Simpan Pembayaran
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+        {% include "dashboard/includes/_quick_pay_card.html" %}
     </div>
 </div>
+
+{% include "pembayaran/includes/_barcode_scanner_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
-<script>
-    $(document).ready(function () {
-        // 1. Inisialisasi Select2 pada Pilih Pelanggan
-        var $selectPelanggan = $('#id_pelanggan').select2({
-            placeholder: '-- Ketik Nama, RT, atau No Rumah --',
-            allowClear: true,
-            width: '100%',
-            dropdownAutoWidth: false,
-            dropdownParent: $('#id_pelanggan').closest('.select2-wrapper'),
-            language: {
-                noResults: function () {
-                    return "Data pelanggan/warga tidak ditemukan.";
-                }
-            }
-        });
-
-        // 2. Inisialisasi Select2 pada Jenis Layanan
-        var $selectLayanan = $('#id_jenis_layanan').select2({
-            placeholder: '-- Pilih Jenis Layanan --',
-            allowClear: true,
-            width: '100%',
-            dropdownAutoWidth: false,
-            dropdownParent: $('#id_jenis_layanan').closest('.select2-wrapper'),
-            language: {
-                noResults: function () {
-                    return "Jenis layanan tidak ditemukan.";
-                }
-            }
-        });
-
-        // 3. Inisialisasi Select2 pada Periode Bulan
-        var $selectBulan = $('#id_bulan').select2({
-            placeholder: '-- Ketik Bulan (misal: 10 atau Oktober) --',
-            allowClear: true,
-            width: '100%',
-            dropdownAutoWidth: false,
-            dropdownParent: $('#id_bulan').closest('.select2-wrapper'),
-            language: {
-                noResults: function () {
-                    return "Periode bulan tidak ditemukan.";
-                }
-            }
-        });
-
-        // Pastikan wrapper yang sedang aktif memiliki stacking context tertinggi (z-index)
-        $('#id_pelanggan, #id_jenis_layanan, #id_bulan')
-            .on('select2:open', function () {
-                $(this).closest('.select2-wrapper').css('z-index', 1055);
-            })
-            .on('select2:close', function () {
-                $(this).closest('.select2-wrapper').css('z-index', '');
-            });
-
-        // 4. Dynamic Service Loader based on chosen Customer
-        $('#id_pelanggan').on('change select2:select', function () {
-            var pelangganId = $(this).val();
-            if (!pelangganId) {
-                $selectLayanan.empty().append('<option value="">--- Pilih Jenis Layanan ---</option>').trigger('change');
-                return;
-            }
-            $.ajax({
-                url: "{% url 'ajax_load_jenis_layanan' %}",
-                data: {
-                    "pelanggan_id": pelangganId
-                },
-                success: function (data) {
-                    $selectLayanan.empty();
-                    $selectLayanan.append('<option value="">--- Pilih Jenis Layanan ---</option>');
-                    $.each(data, function (index, item) {
-                        $selectLayanan.append(new Option(item.nama, item.id));
-                    });
-                    $selectLayanan.trigger('change');
-                }
-            });
-        });
-
-        // 5. AJAX table page loader for pagination
-        function loadPage(url) {
-            $.ajax({
-                url: url,
-                success: function (data) {
-                    $("#laporan-container").html(data.html);
-                }
-            });
-        }
-
-        $(document).on("click", ".page-ajax", function (e) {
-            e.preventDefault();
-            var url = $(this).attr("href");
-            loadPage("/laporan-recent/" + url);
-        });
-    });
-</script>
+{% include "dashboard/includes/_scripts.html" %}
 {% endblock %}

@@ -1,0 +1,292 @@
+<!-- Reusable Barcode / QR Member Scanner & Instant Dues Payment Modal -->
+<div class="modal fade" id="barcodeScannerModal" tabindex="-1" role="dialog" aria-labelledby="barcodeScannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-box mr-3" style="width: 38px; height: 38px; background: var(--surface-2); color: var(--accent);">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-main mb-0" id="barcodeScannerModalLabel">
+                            Scan QR Kartu Member / Barcode Pelanggan
+                        </h5>
+                        <small class="text-muted">Otomatis mengisi pelanggan, rumah, jenis layanan, serta tarif langganan</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-main" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="form-group mb-3">
+                    <label for="barcodeScanInput" class="form-label-modern">
+                        <i class="fas fa-keyboard text-primary mr-1"></i> Kode Member Langganan / Barcode Pelanggan
+                    </label>
+                    <div class="d-flex flex-column flex-sm-row">
+                        <input type="text" id="barcodeScanInput" class="form-control font-mono mr-sm-2 mb-2 mb-sm-0"
+                               placeholder="Scan atau ketik kode member (contoh: MBR00001 / PLG00001)..." autocomplete="off">
+                        <button type="button" class="btn btn-primary mr-sm-2 mb-2 mb-sm-0" id="btnLookupBarcode" style="white-space: nowrap;">
+                            <i class="fas fa-search mr-1"></i> Cek Data
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btnToggleCameraScan" style="white-space: nowrap;">
+                            <i class="fas fa-camera mr-1"></i> Scan Kamera
+                        </button>
+                    </div>
+                    <small class="form-text text-muted mt-1">
+                        <i class="fas fa-bolt text-primary mr-1"></i> Mendukung kode member langganan (<code>MBR...</code>) maupun kode pelanggan (<code>PLG...</code>).
+                    </small>
+                </div>
+
+                <div id="cameraScanContainer" class="mb-3 p-3 rounded d-none" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small font-weight-bold text-main"><i class="fas fa-video text-primary mr-1"></i> Pemindai Kamera Aktif</span>
+                        <button type="button" class="btn btn-sm btn-secondary" id="btnStopCameraScan"><i class="fas fa-stop mr-1"></i> Matikan</button>
+                    </div>
+                    <div style="position: relative; width: 100%; max-height: 220px; overflow: hidden; border-radius: var(--radius-md); background: var(--bg-canvas);">
+                        <video id="barcodeCameraVideo" playsinline muted style="width: 100%; max-height: 220px; object-fit: cover;"></video>
+                        <canvas id="barcodeCameraCanvas" class="d-none"></canvas>
+                    </div>
+                    <div id="cameraScanStatus" class="small text-muted mt-2">Arahkan kamera ke QR Code Kartu Member pelanggan...</div>
+                </div>
+
+                <div id="barcodeAlertBox" class="alert d-none mb-3" role="alert"></div>
+
+                <div id="barcodeResultContainer" class="d-none">
+                    <div class="p-3 rounded mb-3" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-2">
+                            <div>
+                                <div class="h5 font-weight-bold text-main mb-0" id="scanCustNama">-</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-home mr-1"></i>Rumah: <strong id="scanCustAlamat">-</strong>
+                                    &bull; Kode: <code id="scanCustBarcode" class="font-mono">-</code>
+                                </small>
+                            </div>
+                            <div class="mt-2 mt-sm-0 text-sm-right">
+                                <span class="stat-label d-block">Total Tunggakan</span>
+                                <span class="stat-value tabular-nums text-primary" id="scanTotalDue">Rp 0</span>
+                            </div>
+                        </div>
+                        <div id="scanMatchedSub" class="small font-weight-semibold text-primary mt-1"></div>
+                        <div id="scanCustTariffs" class="mt-2 pt-2 border-top d-flex flex-wrap"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="font-weight-bold text-main mb-0">
+                            <i class="fas fa-file-invoice-dollar text-primary mr-1"></i> Daftar Tagihan Belum Lunas
+                        </h6>
+                        <button type="button" class="btn btn-sm btn-primary d-none" id="btnPayAllDues">
+                            <i class="fas fa-check-double mr-1"></i> Bayar Semua Tagihan
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table modern-table table-sm align-middle mb-0" id="scanDuesTable">
+                            <thead>
+                                <tr>
+                                    <th>Layanan</th>
+                                    <th>Periode</th>
+                                    <th class="text-right">Nominal</th>
+                                    <th class="text-center">Eksekusi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scanDuesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer d-flex justify-content-between">
+                <span class="small text-muted">
+                    <i class="fas fa-print text-primary mr-1"></i> Formulir otomatis terisi &amp; tersedia cetak Struk Thermal setelah bayar
+                </span>
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var activeStream = null, scanTimer = null, currentBarcode = "";
+
+    function formatRp(val) {
+        return "Rp " + (parseInt(val, 10) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function showScanAlert(msg, isError, receiptUrl) {
+        var box = document.getElementById('barcodeAlertBox');
+        if (!box) return;
+        box.className = 'alert mb-3 d-flex justify-content-between align-items-center flex-wrap ' + (isError ? 'alert-danger' : 'alert-success');
+        box.textContent = '';
+        var span = document.createElement('span');
+        span.textContent = msg;
+        box.appendChild(span);
+        if (receiptUrl) {
+            var a = document.createElement('a');
+            a.href = receiptUrl + '?autoprint=1';
+            a.target = '_blank';
+            a.className = 'btn btn-sm btn-primary ml-2';
+            a.id = 'btnPrintReceiptAfterScan';
+            a.innerHTML = '<i class="fas fa-print mr-1"></i> Cetak Struk Thermal';
+            box.appendChild(a);
+        }
+        box.classList.remove('d-none');
+    }
+
+    function autoPopulatePaymentForm(data) {
+        var sub = data.subscription;
+        if (!window.jQuery || !$('#id_pelanggan').length) return;
+        window._pendingScanSub = sub || null;
+        $('#id_pelanggan').val(String(data.customer.id)).trigger('change');
+        if (sub) {
+            if ($('#id_jenis_layanan option[value="' + sub.jenis_layanan_id + '"]').length) {
+                $('#id_jenis_layanan').val(String(sub.jenis_layanan_id)).trigger('change');
+            }
+            if ($('#id_bulan').length && sub.next_bulan) {
+                $('#id_bulan').val(String(sub.next_bulan)).trigger('change');
+            }
+            if ($('#id_tahun').length && sub.next_tahun) {
+                $('#id_tahun').val(String(sub.next_tahun));
+            }
+            if ($('#id_jumlah_bayar').length && sub.harga) {
+                $('#id_jumlah_bayar').val(String(sub.harga));
+            }
+            var info = document.getElementById('quickScanFilledInfo');
+            if (info) {
+                info.textContent = 'Terisi otomatis: ' + data.customer.nama + ' (' + sub.layanan + ' - ' + formatRp(sub.harga) + ')';
+                info.classList.remove('d-none');
+            }
+        }
+    }
+
+    function renderBarcodeData(data) {
+        currentBarcode = (data.subscription && data.subscription.kode_pelanggan) || data.customer.barcode;
+        document.getElementById('barcodeResultContainer').classList.remove('d-none');
+        document.getElementById('scanCustNama').textContent = data.customer.nama;
+        document.getElementById('scanCustAlamat').textContent = 'RT ' + (data.customer.rt || '-') + ' / No. ' + data.customer.alamat;
+        document.getElementById('scanCustBarcode').textContent = currentBarcode;
+        document.getElementById('scanTotalDue').textContent = formatRp(data.total_due);
+
+        var subEl = document.getElementById('scanMatchedSub');
+        if (subEl) {
+            subEl.textContent = data.subscription
+                ? ('Layanan Terpilih: ' + data.subscription.layanan + ' - ' + data.subscription.nama_jenis + ' (' + formatRp(data.subscription.harga) + ')')
+                : '';
+        }
+
+        var tariffsBox = document.getElementById('scanCustTariffs');
+        tariffsBox.innerHTML = '';
+        (data.tariffs || []).forEach(function (t) {
+            var b = document.createElement('span');
+            b.className = 'badge badge-light border mr-2 mb-1 px-2 py-1 font-mono';
+            b.textContent = (t.kode_pelanggan ? '[' + t.kode_pelanggan + '] ' : '') + t.layanan + ' - ' + t.nama_jenis + ' (' + formatRp(t.tarif) + ')';
+            tariffsBox.appendChild(b);
+        });
+
+        var tbody = document.getElementById('scanDuesTableBody');
+        tbody.innerHTML = '';
+        var dues = data.dues || [];
+        document.getElementById('btnPayAllDues').classList.toggle('d-none', dues.length <= 1);
+
+        if (dues.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">Semua tagihan pelanggan ini sudah <strong>Lunas</strong>.</td></tr>';
+        } else {
+            dues.forEach(function (d) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td><span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1">' + d.layanan + ' - ' + (d.nama_jenis || '') + '</span></td>' +
+                    '<td class="font-mono">Bulan ' + d.bulan + ' / ' + d.tahun + '</td>' +
+                    '<td class="text-right font-mono font-weight-bold">' + formatRp(d.jumlah) + '</td>' +
+                    '<td class="text-center"><button type="button" class="btn btn-sm btn-primary btn-pay-single-due" data-id="' + d.id + '"><i class="fas fa-check mr-1"></i> Bayar &amp; Struk</button></td>';
+                tbody.appendChild(tr);
+            });
+        }
+        autoPopulatePaymentForm(data);
+    }
+
+    function lookupBarcode(code) {
+        var clean = (code || '').trim();
+        if (!clean) return showScanAlert('Silakan masukkan atau scan kode QR member / barcode pelanggan.', true);
+        document.getElementById('barcodeAlertBox').classList.add('d-none');
+        fetch("{% url 'scan_barcode_api' %}?code=" + encodeURIComponent(clean), { credentials: 'same-origin' })
+            .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+            .then(function (res) {
+                if (!res.ok || res.body.status === 'error') {
+                    document.getElementById('barcodeResultContainer').classList.add('d-none');
+                    return showScanAlert(res.body.message || 'Kode tidak ditemukan.', true);
+                }
+                renderBarcodeData(res.body);
+            })
+            .catch(function () { showScanAlert('Gagal menghubungi server saat memindai kode.', true); });
+    }
+
+    function submitBarcodePayment(payload) {
+        var csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+        fetch("{% url 'pay_by_barcode_api' %}", {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfEl ? csrfEl.value : '' },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+        .then(function (res) {
+            showScanAlert(res.body.message || (res.ok ? 'Sukses' : 'Gagal'), !res.ok || res.body.status === 'error', res.body.receipt_url);
+            if (res.ok && res.body.data) renderBarcodeData(res.body.data);
+        });
+    }
+
+    function stopCamera() {
+        if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+        if (activeStream) { activeStream.getTracks().forEach(function (t) { t.stop(); }); activeStream = null; }
+        var c = document.getElementById('cameraScanContainer');
+        if (c) c.classList.add('d-none');
+    }
+
+    function startCamera() {
+        var c = document.getElementById('cameraScanContainer'), v = document.getElementById('barcodeCameraVideo'), s = document.getElementById('cameraScanStatus');
+        c.classList.remove('d-none');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            s.textContent = 'Kamera tidak didukung pada browser ini. Gunakan input scanner di atas.';
+            return;
+        }
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function (stream) {
+            activeStream = stream; v.srcObject = stream; v.play();
+            if ('BarcodeDetector' in window) {
+                var detector = new window.BarcodeDetector();
+                scanTimer = setInterval(function () {
+                    detector.detect(v).then(function (codes) {
+                        if (codes.length > 0 && codes[0].rawValue) {
+                            document.getElementById('barcodeScanInput').value = codes[0].rawValue;
+                            stopCamera(); lookupBarcode(codes[0].rawValue);
+                        }
+                    }).catch(function () {});
+                }, 500);
+            }
+        }).catch(function () { s.textContent = 'Izin kamera ditolak atau perangkat kamera tidak ditemukan.'; });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var input = document.getElementById('barcodeScanInput'), lookupBtn = document.getElementById('btnLookupBarcode');
+        if (lookupBtn) lookupBtn.addEventListener('click', function () { lookupBarcode(input.value); });
+        if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); lookupBarcode(input.value); } });
+        var camBtn = document.getElementById('btnToggleCameraScan'), stopBtn = document.getElementById('btnStopCameraScan');
+        if (camBtn) camBtn.addEventListener('click', startCamera);
+        if (stopBtn) stopBtn.addEventListener('click', stopCamera);
+        var payAllBtn = document.getElementById('btnPayAllDues');
+        if (payAllBtn) payAllBtn.addEventListener('click', function () { submitBarcodePayment({ barcode: currentBarcode, pay_all: true }); });
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.btn-pay-single-due');
+            if (btn) submitBarcodePayment({ barcode: currentBarcode, tagihan_id: btn.getAttribute('data-id') });
+        });
+        var quickBtn = document.getElementById('btnQuickBarcodeScan'), quickInput = document.getElementById('quickBarcodeInput');
+        if (quickBtn && quickInput) {
+            quickBtn.addEventListener('click', function () {
+                input.value = quickInput.value;
+                if (window.jQuery) $('#barcodeScannerModal').modal('show');
+                lookupBarcode(quickInput.value);
+            });
+            quickInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); quickBtn.click(); } });
+        }
+    });
+})();
+</script>

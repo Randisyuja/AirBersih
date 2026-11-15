@@ -1,0 +1,153 @@
+{% load static %}
+<script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $("form select").addClass("form-control form-control-sm");
+
+        var monthlyRevenue = {{ monthly_revenue_json|default:"[0,0,0,0,0,0,0,0,0,0,0,0]"|safe }};
+        var bulanLabels = {{ bulan_labels_json|default:'["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"]'|safe }};
+        var annualTotal = {{ total_pemasukan_tahunan|default:0 }};
+        var tahunLaporan = "{{ tahun }}";
+        var selectedMonth = "{{ selected_bulan|default:'' }}";
+
+        function formatRupiah(num) {
+            var n = parseInt(num, 10) || 0;
+            return "Rp " + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function getThemeColors(activeMonthIdx) {
+            var isDark = (document.documentElement.getAttribute('data-theme') || 'dark') === 'dark';
+            var textMuted = isDark ? 'rgba(242, 240, 236, 0.62)' : 'rgba(17, 17, 17, 0.60)';
+            var gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
+            var bgBars = [];
+            for (var i = 0; i < 12; i++) {
+                if (activeMonthIdx === null || activeMonthIdx === i) {
+                    bgBars.push('#FF4725');
+                } else {
+                    bgBars.push(isDark ? 'rgba(255, 71, 37, 0.22)' : 'rgba(255, 71, 37, 0.25)');
+                }
+            }
+            return { textMuted: textMuted, gridColor: gridColor, bgBars: bgBars };
+        }
+
+        var ctx = document.getElementById('monthlyRevenueChart');
+        var revenueChart = null;
+        var initialIdx = selectedMonth ? (parseInt(selectedMonth, 10) - 1) : null;
+
+        if (ctx && typeof Chart !== 'undefined') {
+            var palette = getThemeColors(initialIdx);
+            revenueChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: bulanLabels,
+                    datasets: [{
+                        label: 'Pemasukan (Rp)',
+                        data: monthlyRevenue,
+                        backgroundColor: palette.bgBars,
+                        borderColor: '#FF4725',
+                        borderWidth: 1,
+                        barPercentage: 0.65
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                return ' Pemasukan: ' + formatRupiah(tooltipItem.yLabel);
+                            }
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            gridLines: { display: false },
+                            ticks: { fontColor: palette.textMuted }
+                        }],
+                        yAxes: [{
+                            gridLines: { color: palette.gridColor, zeroLineColor: palette.gridColor },
+                            ticks: {
+                                beginAtZero: true,
+                                fontColor: palette.textMuted,
+                                callback: function (value) { return formatRupiah(value); }
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        function applyMonthFilter(monthVal) {
+            var mInt = monthVal ? parseInt(monthVal, 10) : null;
+            var mIdx = (mInt && mInt >= 1 && mInt <= 12) ? (mInt - 1) : null;
+
+            if (mIdx !== null) {
+                var labelText = 'Bulan ' + bulanLabels[mIdx] + ' ' + tahunLaporan;
+                $('#labelBulanTerpilih').text(labelText);
+                $('#chartActiveFilterBadge').text(labelText);
+                $('#valPemasukanBulanTerpilih').text(formatRupiah(monthlyRevenue[mIdx] || 0));
+                $('.month-col-header, .month-col-cell').each(function () {
+                    var colM = parseInt($(this).attr('data-month'), 10);
+                    $(this).css('opacity', colM === mInt ? '1' : '0.35');
+                });
+            } else {
+                var allLabel = 'Semua Bulan (' + tahunLaporan + ')';
+                $('#labelBulanTerpilih').text(allLabel);
+                $('#chartActiveFilterBadge').text(allLabel);
+                $('#valPemasukanBulanTerpilih').text(formatRupiah(annualTotal));
+                $('.month-col-header, .month-col-cell').css('opacity', '1');
+            }
+
+            if (revenueChart) {
+                var updated = getThemeColors(mIdx);
+                revenueChart.data.datasets[0].backgroundColor = updated.bgBars;
+                revenueChart.options.scales.xAxes[0].ticks.fontColor = updated.textMuted;
+                revenueChart.options.scales.yAxes[0].ticks.fontColor = updated.textMuted;
+                revenueChart.options.scales.yAxes[0].gridLines.color = updated.gridColor;
+                revenueChart.update();
+            }
+        }
+
+        $('#filterBulanSelect').on('change', function () {
+            applyMonthFilter($(this).val());
+        });
+
+        $('#btnResetBulanFilter').on('click', function () {
+            $('#filterBulanSelect').val('').trigger('change');
+        });
+
+        window.addEventListener('themeChanged', function () {
+            applyMonthFilter($('#filterBulanSelect').val());
+        });
+
+        applyMonthFilter(selectedMonth);
+
+        $('#modalPreviewPdf').on('show.bs.modal', function () {
+            var $iframe = $('#pdfPreviewIframe');
+            var pdfUrl = $iframe.data('src');
+            var $spinner = $('#pdfLoadingIndicator');
+            $spinner.removeClass('d-none').addClass('d-flex');
+            if ($iframe.attr('src') !== pdfUrl) {
+                $iframe.attr('src', pdfUrl);
+            }
+            $iframe.off('load').on('load', function () {
+                $spinner.removeClass('d-flex').addClass('d-none');
+            });
+            setTimeout(function () {
+                $spinner.removeClass('d-flex').addClass('d-none');
+            }, 2500);
+        });
+
+        $('#btnPrintPdfModal').on('click', function () {
+            var iframe = document.getElementById('pdfPreviewIframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (e) {
+                    window.open(iframe.getAttribute('src'), '_blank');
+                }
+            }
+        });
+    });
+</script>

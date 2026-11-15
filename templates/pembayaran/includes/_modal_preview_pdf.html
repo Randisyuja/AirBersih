@@ -1,0 +1,72 @@
+<!-- Modal Preview Dokumen Laporan PDF (Landscape A4) -->
+<div class="modal fade" id="modalPreviewPdf" tabindex="-1" role="dialog" aria-labelledby="modalPreviewPdfLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 92vw;">
+        <div class="modal-content" style="height: 90vh; overflow: hidden;">
+            <!-- Modal Header -->
+            <div class="modal-header py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-box mr-3" style="width: 38px; height: 38px; background: var(--color-danger-bg); color: var(--color-danger);">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-main mb-0" id="modalPreviewPdfLabel">
+                            Pratinjau Cetak Laporan {{ layanan }} Tahun {{ tahun }}
+                        </h5>
+                        <small class="text-muted">
+                            Dokumen Resmi Matriks Kas Warga &bull; Format Landscape A4
+                        </small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}" target="_blank"
+                       class="btn btn-sm btn-secondary mr-2"
+                       title="Buka dokumen di tab browser baru">
+                        <i class="fas fa-external-link-alt mr-1"></i> Buka Tab Penuh
+                    </a>
+                    <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}?download=1"
+                       class="btn btn-sm btn-primary mr-2"
+                       title="Unduh berkas PDF">
+                        <i class="fas fa-download mr-1"></i> Unduh PDF
+                    </a>
+                    <button type="button" class="close text-main ml-2" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body (Iframe Preview Container) -->
+            <div class="modal-body p-0 position-relative" style="background-color: var(--bg-canvas); height: calc(90vh - 130px); overflow: hidden;">
+                <div id="pdfLoadingIndicator" class="d-flex flex-column align-items-center justify-content-center h-100 w-100 position-absolute" style="top: 0; left: 0; background: var(--surface-1); z-index: 5;">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="sr-only">Memuat...</span>
+                    </div>
+                    <div class="font-weight-bold text-main">Menyiapkan Pratinjau Dokumen PDF...</div>
+                    <small class="text-muted mt-1">Mengkompilasi data matriks pembayaran warga ke format PDF</small>
+                </div>
+
+                <iframe id="pdfPreviewIframe"
+                        data-src="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}"
+                        src=""
+                        class="w-100 h-100 border-0"
+                        style="min-height: 100%; display: block;">
+                </iframe>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer py-2 px-4 d-flex justify-content-between align-items-center">
+                <div class="small text-muted d-none d-sm-block">
+                    <i class="fas fa-info-circle text-primary mr-1"></i>
+                    Gunakan tombol di bilah dokumen PDF untuk mencetak atau menyimpan dokumen.
+                </div>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-secondary btn-sm mr-2" data-dismiss="modal">
+                        Tutup
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm mr-2" id="btnPrintPdfModal">
+                        <i class="fas fa-print mr-1"></i> Cetak Dokumen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

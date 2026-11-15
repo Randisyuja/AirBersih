@@ -1,0 +1,74 @@
+<div class="col-xl-4 col-lg-5 mb-4">
+    <div class="card data-card h-100" id="cardLoketBayarCepat">
+        <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon-box mr-3" style="width: 36px; height: 36px; background: var(--color-success-bg); color: var(--color-success);">
+                    <i class="fas fa-cash-register"></i>
+                </div>
+                <div>
+                    <h6 class="m-0 font-weight-bold text-main">Loket Bayar Cepat</h6>
+                    <span class="text-muted small">Scan barcode atau pilih pelanggan</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" id="btnOpenScannerDash" data-toggle="modal" data-target="#barcodeScannerModal" title="Buka Pemindai Barcode Kamera / USB">
+                <i class="fas fa-barcode mr-1"></i> Scan
+            </button>
+        </div>
+        <div class="card-body p-4">
+            <!-- Quick Barcode Scan Bar -->
+            <div class="p-3 mb-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                <label for="quickBarcodeInput" class="form-label-modern mb-1">
+                    <i class="fas fa-qrcode text-primary mr-1"></i> SCAN QR KARTU MEMBER / BARCODE
+                </label>
+                <div class="d-flex">
+                    <input type="text" id="quickBarcodeInput" class="form-control form-control-sm font-mono mr-2"
+                           placeholder="Scan MBR00001 / PLG00001..." autocomplete="off">
+                    <button type="button" class="btn btn-sm btn-primary" id="btnQuickBarcodeScan" style="white-space: nowrap;">
+                        <i class="fas fa-qrcode mr-1"></i> Cek
+                    </button>
+                </div>
+                <div id="quickScanFilledInfo" class="small text-success font-weight-semibold mt-2 d-none"></div>
+            </div>
+
+            <form method="post" id="formLoketBayar">
+                {% csrf_token %}
+                <!-- Field Pilih Pelanggan -->
+                <div class="form-group mb-3">
+                    <label for="id_pelanggan" class="form-label-modern mb-1">
+                        <i class="fas fa-user mr-1 text-primary"></i> PILIH PELANGGAN <span class="text-danger">*</span>
+                    </label>
+                    <div class="select2-wrapper">
+                        {{ form_pembayaran.pelanggan }}
+                    </div>
+                    <small class="form-text text-muted mt-1">
+                        <i class="fas fa-search mr-1 text-primary"></i> Ketik <strong>Nama</strong>, <strong>RT</strong>, atau <strong>Nomor Rumah</strong>
+                    </small>
+                </div>
+
+                <!-- Field Jenis Layanan -->
+                <div class="form-group mb-3">
+                    <label for="id_jenis_layanan" class="form-label-modern mb-1">
+                        <i class="fas fa-concierge-bell mr-1 text-primary"></i> JENIS LAYANAN <span class="text-danger">*</span>
+                    </label>
+                    <div class="select2-wrapper">
+                        {{ form_pembayaran.jenis_layanan }}
+                    </div>
+                </div>
+
+                <!-- Field Periode Bulan -->
+                <div class="form-group mb-4">
+                    <label for="id_bulan" class="form-label-modern mb-1">
+                        <i class="far fa-calendar-alt mr-1 text-primary"></i> PERIODE BULAN <span class="text-danger">*</span>
+                    </label>
+                    <div class="select2-wrapper">
+                        {{ form_pembayaran.bulan }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block py-2 font-weight-bold" id="btnSubmitBayar">
+                    <i class="fas fa-check-circle mr-1"></i> Simpan Pembayaran
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

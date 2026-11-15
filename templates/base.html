@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
@@ -10,6 +10,14 @@
     <meta name="author" content="Tim SIAP">
 
     <title>{% block title %}Jogo Tirto - Sistem Pembayaran Warga{% endblock %}</title>
+
+    <!-- FOUC Prevention: Synchronous Theme Setup -->
+    <script>
+        (function () {
+            var theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 
     <!-- Custom Fonts: Plus Jakarta Sans & Font Awesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,7 +62,7 @@
             <!-- End of Main Content -->
 
             <!-- Modern Footer -->
-            <footer class="sticky-footer py-3 border-top" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);">
+            <footer class="sticky-footer py-3 border-top">
                 <div class="container my-auto">
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center small text-muted">
                         <span><strong>Jogo Tirto</strong> &copy; 2026 SIAP RT05 / RW09. Hak Cipta Dilindungi.</span>

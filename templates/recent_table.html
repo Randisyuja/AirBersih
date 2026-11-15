@@ -10,6 +10,7 @@
                 <th>Periode</th>
                 <th>Waktu Bayar</th>
                 <th class="text-right">Nominal</th>
+                <th class="text-center">Struk</th>
             </tr>
         </thead>
         <tbody>
@@ -40,10 +41,16 @@
                 <td class="text-right font-weight-bold text-success" style="font-size: 0.95rem;">
                     {{ bayar.jumlah_bayar|rupiah }}
                 </td>
+                <td class="text-center">
+                    <a href="{% url 'cetak_struk_thermal' bayar.id_pembayaran %}?autoprint=1" target="_blank"
+                       class="btn btn-sm btn-secondary px-2 py-1" title="Cetak Struk Thermal">
+                        <i class="fas fa-print text-primary"></i>
+                    </a>
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="7" class="text-center py-4 text-muted">
+                <td colspan="8" class="text-center py-4 text-muted">
                     <i class="fas fa-inbox fa-2x mb-2 text-slate-300 d-block"></i>
                     Belum ada riwayat transaksi pembayaran.
                 </td>
