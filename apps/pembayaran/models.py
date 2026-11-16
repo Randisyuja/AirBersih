@@ -19,3 +19,7 @@ class Pembayaran(models.Model):
 
     def __str__(self):
         return f"{self.pelanggan.nama} - {self.jenis_layanan} - {self.bulan}/{self.tahun}"
+
+    @property
+    def id(self):
+        return self.id_pembayaran

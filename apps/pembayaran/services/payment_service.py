@@ -52,9 +52,15 @@ def record_payment(
             f"Tagihan ID {tagihan_id} untuk periode {tagihan.bulan}/{tagihan.tahun} sudah lunas."
         )
 
-    amount = jumlah_dibayar if jumlah_dibayar is not None else tagihan.jumlah_bayar
+    amount = jumlah_dibayar if jumlah_dibayar is not None else (tagihan.jumlah_bayar or 0)
     if amount <= 0:
-        raise PaymentValidationError("Jumlah pembayaran harus lebih dari 0.")
+        raise PaymentValidationError(
+            "Jumlah pembayaran harus lebih dari Rp 0. Silakan isi nominal tarif manual terlebih dahulu."
+        )
+
+    if jumlah_dibayar is not None and jumlah_dibayar > 0 and tagihan.jumlah_bayar != amount:
+        tagihan.jumlah_bayar = amount
+        tagihan.save(update_fields=["jumlah_bayar"])
 
     update_tagihan_status(tagihan, StatusChoice.Lunas)
 

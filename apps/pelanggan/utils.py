@@ -16,13 +16,14 @@ def generate_tagihan_setahun(tahun=None):
             ).exists()
 
             if not exists:
+                nominal = langganan.harga if (langganan.harga and langganan.harga > 0) else (langganan.jenis_layanan.tarif or 0)
                 Tagihan.objects.create(
                     pelanggan=langganan.pelanggan,
                     jenis_layanan=langganan.jenis_layanan,
                     bulan=bulan,
                     tahun=tahun,
                     status_tagihan="Belum",
-                    jumlah_bayar=langganan.jenis_layanan.tarif
+                    jumlah_bayar=nominal
                 )
                 count += 1
 

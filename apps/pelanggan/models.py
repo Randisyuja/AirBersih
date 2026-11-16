@@ -33,7 +33,7 @@ class Pelanggan(models.Model):
 class Langganan(models.Model):
     pelanggan = models.ForeignKey(Pelanggan, on_delete=models.CASCADE, related_name="langganan")
     jenis_layanan = models.ForeignKey(JenisLayanan, on_delete=models.CASCADE)
-    harga = models.IntegerField(blank=False, null=False)
+    harga = models.IntegerField(blank=True, null=True, default=0)
     aktif = models.BooleanField(default=True)
     kode_pelanggan = models.CharField(
         max_length=64,
@@ -45,6 +45,8 @@ class Langganan(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        if self.harga is None:
+            self.harga = (self.jenis_layanan.tarif if (self.jenis_layanan_id and self.jenis_layanan.tarif) else 0)
         super().save(*args, **kwargs)
         if not self.kode_pelanggan:
             self.kode_pelanggan = f"MBR{self.pk:05d}"
@@ -61,7 +63,12 @@ class Tagihan(models.Model):
     bulan = models.PositiveSmallIntegerField(choices=BulanChoice.choices)
     tahun = models.PositiveSmallIntegerField()
     status_tagihan = models.CharField(max_length=10, choices=StatusChoice.choices, default="Belum")
-    jumlah_bayar = models.IntegerField()
+    jumlah_bayar = models.IntegerField(default=0, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.jumlah_bayar is None:
+            self.jumlah_bayar = 0
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.pelanggan.nama} - {self.jenis_layanan} - {self.bulan}/{self.tahun}"

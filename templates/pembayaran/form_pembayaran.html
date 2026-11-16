@@ -61,3 +61,49 @@
 
 {% include "pembayaran/includes/_barcode_scanner_modal.html" %}
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var pelangganSelect = document.getElementById('id_pelanggan');
+    var jenisSelect = document.getElementById('id_jenis_layanan');
+    var jumlahInput = document.getElementById('id_jumlah_bayar');
+    var serviceTariffMap = {};
+
+    if (pelangganSelect && jenisSelect) {
+        pelangganSelect.addEventListener('change', function () {
+            var pid = this.value;
+            if (!pid) return;
+            fetch("{% url 'ajax_load_jenis_layanan' %}?pelanggan_id=" + encodeURIComponent(pid), { credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (items) {
+                    serviceTariffMap = {};
+                    jenisSelect.innerHTML = '<option value="">-- Pilih Jenis Layanan --</option>';
+                    items.forEach(function (it) {
+                        serviceTariffMap[String(it.id)] = it.tarif || 0;
+                        var opt = document.createElement('option');
+                        opt.value = it.id;
+                        opt.textContent = it.nama;
+                        jenisSelect.appendChild(opt);
+                    });
+                })
+                .catch(function () {});
+        });
+
+        jenisSelect.addEventListener('change', function () {
+            var jid = String(this.value || '');
+            if (!jumlahInput || !(jid in serviceTariffMap)) return;
+            var tarif = serviceTariffMap[jid];
+            if (tarif && tarif > 0) {
+                jumlahInput.value = tarif;
+                jumlahInput.placeholder = "Nominal pembayaran (Rp)";
+            } else {
+                jumlahInput.value = '';
+                jumlahInput.placeholder = "Isi nominal tarif manual / meteran (Rp)...";
+                jumlahInput.focus();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

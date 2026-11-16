@@ -51,8 +51,16 @@ class LanggananForm(forms.ModelForm):
         self.fields["pelanggan"].queryset = Pelanggan.objects.select_related("rumah").all()
         self.fields["jenis_layanan"].queryset = JenisLayanan.objects.select_related("layanan").all()
         self.fields["kode_pelanggan"].required = False
+        self.fields["harga"].required = False
         if not self.instance.pk:
             self.fields["aktif"].initial = True
+
+    def clean_harga(self):
+        val = self.cleaned_data.get("harga")
+        if val is None:
+            jenis = self.cleaned_data.get("jenis_layanan")
+            return (jenis.tarif if (jenis and jenis.tarif) else 0)
+        return val
 
 
 class TagihanForm(forms.ModelForm):
