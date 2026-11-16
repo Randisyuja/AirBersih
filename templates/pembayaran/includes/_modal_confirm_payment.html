@@ -1,0 +1,58 @@
+<!-- Modal Konfirmasi Pembayaran Tagihan -->
+<div class="modal fade" id="confirmPaymentModal" tabindex="-1" role="dialog" aria-labelledby="confirmPaymentModalLabel" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="background: var(--surface-1); border: 1px solid var(--border-subtle);">
+            <div class="modal-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-box mr-3" style="width: 38px; height: 38px; background: var(--surface-2); color: var(--accent);">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-main mb-0" id="confirmPaymentModalLabel">
+                            Konfirmasi Pembayaran
+                        </h5>
+                        <small class="text-muted" id="confirmPaymentType">Periksa rincian tagihan sebelum membayar</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-main" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="p-3 rounded mb-3" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                    <div class="h6 font-weight-bold text-main mb-1" id="confirmCustName">-</div>
+                    <small class="text-muted" id="confirmCustInfo">-</small>
+                </div>
+                
+                <div class="small font-weight-bold text-muted mb-2 text-uppercase" style="letter-spacing: 0.5px;">Rincian Tagihan:</div>
+                <div class="table-responsive rounded border mb-3" style="max-height: 220px; overflow-y: auto; border-color: var(--border-subtle) !important;">
+                    <table class="table modern-table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Layanan &amp; Periode</th>
+                                <th class="text-right">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="confirmDuesList"></tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                    <span class="font-weight-bold text-main">Total Pembayaran:</span>
+                    <span class="h5 font-weight-bold text-primary mb-0 font-mono" id="confirmTotalAmount">Rp 0</span>
+                </div>
+                <small class="text-muted d-block mt-2">
+                    <i class="fas fa-info-circle text-primary mr-1"></i> Transaksi akan dicatat dan struk pembayaran siap dicetak setelah dikonfirmasi.
+                </small>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i> Batal
+                </button>
+                <button type="button" class="btn btn-primary btn-sm font-weight-bold px-3" id="btnExecuteConfirmPayment">
+                    <i class="fas fa-check mr-1"></i> Ya, Konfirmasi &amp; Bayar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

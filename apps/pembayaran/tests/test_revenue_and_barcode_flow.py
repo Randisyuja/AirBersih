@@ -258,3 +258,37 @@ class RevenueAndBarcodeFlowTests(TestCase):
         )
         self.assertEqual(struk_qr_res.status_code, 200)
         self.assertEqual(struk_qr_res["Content-Type"], "image/svg+xml")
+
+    def test_pay_selected_dues_by_barcode_api(self):
+        """User can select specific tagihan IDs to pay via barcode API."""
+        tagihan_air_mar = Tagihan.objects.create(
+            pelanggan=self.pelanggan,
+            jenis_layanan=self.jenis_air,
+            bulan=3,
+            tahun=2026,
+            jumlah_bayar=30000,
+            status_tagihan=StatusChoice.Belum,
+        )
+        pay_url = reverse("pay_by_barcode_api")
+
+        # Pay only the March bill among the unpaid bills
+        res_pay = self.client.post(
+            pay_url,
+            data=json.dumps(
+                {
+                    "barcode": self.pelanggan.barcode,
+                    "tagihan_ids": [tagihan_air_mar.id_tagihan],
+                }
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(res_pay.status_code, 200)
+        pay_body = res_pay.json()
+        self.assertEqual(pay_body["status"], "success")
+        self.assertIn("1 tagihan terpilih", pay_body["message"])
+
+        tagihan_air_mar.refresh_from_db()
+        self.assertEqual(tagihan_air_mar.status_tagihan, StatusChoice.Lunas)
+        self.tagihan_air_jan.refresh_from_db()
+        self.assertEqual(self.tagihan_air_jan.status_tagihan, StatusChoice.Belum)
+

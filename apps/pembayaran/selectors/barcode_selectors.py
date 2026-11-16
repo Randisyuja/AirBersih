@@ -87,8 +87,15 @@ def get_pending_dues_by_pelanggan(
             nama_jenis=t.jenis_layanan.nama_jenis,
             layanan=t.jenis_layanan.layanan.nama_layanan,
             bulan=t.bulan,
+            nama_bulan=t.get_bulan_display(),
             tahun=t.tahun,
-            jumlah=t.jumlah_bayar,
+            jumlah=t.jumlah_bayar or 0,
+            is_dynamic_tariff=bool(
+                not t.jenis_layanan.tarif
+                or t.jenis_layanan.tarif <= 0
+                or not t.jumlah_bayar
+                or t.jumlah_bayar <= 0
+            ),
         )
         for t in dues_all
     ]

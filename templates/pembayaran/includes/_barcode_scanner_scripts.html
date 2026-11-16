@@ -1,0 +1,297 @@
+<script>
+(function () {
+    var activeStream = null, scanTimer = null, currentBarcode = "", currentCustomerData = null, currentDues = [], pendingPaymentPayload = null;
+    var MONTH_NAMES = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    function formatRp(val) { return "Rp " + (parseInt(val, 10) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+    function showScanAlert(msg, isError) {
+        var box = document.getElementById('barcodeAlertBox');
+        if (!box) return;
+        box.className = 'alert mb-3 ' + (isError ? 'alert-danger' : 'alert-success');
+        box.textContent = msg; box.classList.remove('d-none');
+    }
+    function getCustomAmountsMap() {
+        var map = {};
+        document.querySelectorAll('.due-manual-nominal').forEach(function (inp) {
+            var tid = inp.getAttribute('data-id'), val = parseInt(inp.value, 10) || 0;
+            if (tid && val > 0) map[String(tid)] = val;
+        });
+        return map;
+    }
+    function openSuccessModal(resBody, payload) {
+        var modal = document.getElementById('paymentSuccessModal');
+        if (!modal) return;
+        var custName = resBody.customer_name || (currentCustomerData && currentCustomerData.customer ? currentCustomerData.customer.nama : '-');
+        var duesCount = resBody.settled_count || (payload && payload.tagihan_ids ? payload.tagihan_ids.length : 1);
+        var totalBayar = resBody.settled_total || (payload && payload.total_amount ? payload.total_amount : 0);
+        var nameEl = document.getElementById('successModalCustNama'), countEl = document.getElementById('successModalDuesCount');
+        var totalEl = document.getElementById('successModalTotalBayar'), printBtn = document.getElementById('btnSuccessModalPrintStruk');
+        if (nameEl) nameEl.textContent = custName;
+        if (countEl) countEl.textContent = duesCount + ' Tagihan';
+        if (totalEl) totalEl.textContent = formatRp(totalBayar);
+        if (printBtn && resBody.receipt_url) printBtn.href = resBody.receipt_url + '?autoprint=1';
+        if (window.jQuery) { $('#paymentSuccessModal').modal('show'); setTimeout(function () { $('.modal-backdrop:last').css('z-index', 1065); }, 20); }
+    }
+    function openErrorModal(errorMsg) {
+        var detailEl = document.getElementById('errorModalMessageDetail');
+        if (detailEl) detailEl.textContent = errorMsg || 'Terjadi kesalahan sistem.';
+        if (window.jQuery) { $('#paymentErrorModal').modal('show'); setTimeout(function () { $('.modal-backdrop:last').css('z-index', 1065); }, 20); }
+    }
+    function autoPopulatePaymentForm(data) {
+        var sub = data.subscription;
+        if (!window.jQuery || !$('#id_pelanggan').length) return;
+        window._pendingScanSub = sub || null;
+        $('#id_pelanggan').val(String(data.customer.id)).trigger('change');
+        if (sub) {
+            if ($('#id_jenis_layanan option[value="' + sub.jenis_layanan_id + '"]').length) $('#id_jenis_layanan').val(String(sub.jenis_layanan_id)).trigger('change');
+            if ($('#id_bulan').length && sub.next_bulan) $('#id_bulan').val(String(sub.next_bulan)).trigger('change');
+            if ($('#id_tahun').length && sub.next_tahun) $('#id_tahun').val(String(sub.next_tahun));
+            if ($('#id_jumlah_bayar').length && sub.harga) $('#id_jumlah_bayar').val(String(sub.harga));
+        }
+    }
+    function updateSelectedDuesUI() {
+        var checkboxes = document.querySelectorAll('.due-item-checkbox'), checkedBoxes = document.querySelectorAll('.due-item-checkbox:checked');
+        var count = checkedBoxes.length, total = 0;
+        checkedBoxes.forEach(function (cb) { total += parseInt(cb.getAttribute('data-nominal'), 10) || 0; });
+        var countEl = document.getElementById('selectedDuesCount'), totalEl = document.getElementById('selectedDuesTotal'), checkAll = document.getElementById('checkAllDues');
+        if (countEl) countEl.textContent = count;
+        if (totalEl) totalEl.textContent = formatRp(total);
+        if (checkAll) { checkAll.checked = (checkboxes.length > 0 && count === checkboxes.length); checkAll.indeterminate = (count > 0 && count < checkboxes.length); }
+        var sumAll = currentDues.reduce(function (acc, d) { return acc + (parseInt(d.jumlah, 10) || 0); }, 0);
+        var totalDueEl = document.getElementById('scanTotalDue');
+        if (totalDueEl) totalDueEl.textContent = formatRp(sumAll);
+    }
+    function openConfirmModal(paymentTypeLabel, payload, items, totalAmount) {
+        if (!items || items.length === 0) return;
+        for (var i = 0; i < items.length; i++) {
+            if (!items[i].nominal || items[i].nominal <= 0) {
+                showScanAlert('Silakan isi nominal tarif manual (lebih dari Rp 0) untuk tagihan: ' + items[i].desc, true);
+                var inp = document.querySelector('.due-manual-nominal[data-id="' + items[i].id + '"]');
+                if (inp) inp.focus();
+                return;
+            }
+        }
+        payload.custom_amounts = getCustomAmountsMap();
+        pendingPaymentPayload = payload;
+        pendingPaymentPayload.total_amount = totalAmount;
+        var typeEl = document.getElementById('confirmPaymentType');
+        if (typeEl) typeEl.textContent = paymentTypeLabel;
+        if (currentCustomerData && currentCustomerData.customer) {
+            var custNameEl = document.getElementById('confirmCustName'), custInfoEl = document.getElementById('confirmCustInfo');
+            if (custNameEl) custNameEl.textContent = currentCustomerData.customer.nama;
+            if (custInfoEl) custInfoEl.textContent = 'Rumah: RT ' + (currentCustomerData.customer.rt || '-') + ' / No. ' + currentCustomerData.customer.alamat + ' • Kode: ' + currentBarcode;
+        }
+        var listTbody = document.getElementById('confirmDuesList');
+        if (listTbody) {
+            listTbody.innerHTML = '';
+            items.forEach(function (item) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + item.desc + '</td><td class="text-right font-mono font-weight-bold">' + formatRp(item.nominal) + '</td>';
+                listTbody.appendChild(tr);
+            });
+        }
+        var totalEl = document.getElementById('confirmTotalAmount');
+        if (totalEl) totalEl.textContent = formatRp(totalAmount);
+        if (window.jQuery) {
+            $('#confirmPaymentModal').modal('show');
+            setTimeout(function () { $('.modal-backdrop:last').css('z-index', 1055); }, 15);
+        }
+    }
+    function renderBarcodeData(data) {
+        currentCustomerData = data;
+        currentBarcode = (data.subscription && data.subscription.kode_pelanggan) || data.customer.barcode;
+        document.getElementById('barcodeResultContainer').classList.remove('d-none');
+        document.getElementById('scanCustNama').textContent = data.customer.nama;
+        document.getElementById('scanCustAlamat').textContent = 'RT ' + (data.customer.rt || '-') + ' / No. ' + data.customer.alamat;
+        document.getElementById('scanCustBarcode').textContent = currentBarcode;
+        document.getElementById('scanTotalDue').textContent = formatRp(data.total_due);
+        var subEl = document.getElementById('scanMatchedSub');
+        if (subEl) subEl.textContent = data.subscription ? ('Layanan Terpilih: ' + data.subscription.layanan + ' - ' + data.subscription.nama_jenis + ' (' + (data.subscription.harga > 0 ? formatRp(data.subscription.harga) : 'Tarif Manual/Meteran') + ')') : '';
+        var tariffsBox = document.getElementById('scanCustTariffs');
+        tariffsBox.innerHTML = '';
+        (data.tariffs || []).forEach(function (t) {
+            var b = document.createElement('span');
+            b.className = 'badge badge-light border mr-2 mb-1 px-2 py-1 font-mono';
+            b.textContent = (t.kode_pelanggan ? '[' + t.kode_pelanggan + '] ' : '') + t.layanan + ' - ' + t.nama_jenis + ' (' + (t.tarif > 0 ? formatRp(t.tarif) : 'Meteran') + ')';
+            tariffsBox.appendChild(b);
+        });
+        currentDues = data.dues || [];
+        var dues = currentDues, tbody = document.getElementById('scanDuesTableBody');
+        tbody.innerHTML = '';
+        var checkAll = document.getElementById('checkAllDues');
+        if (checkAll) { checkAll.checked = false; checkAll.indeterminate = false; }
+        var payAllBtn = document.getElementById('btnPayAllDues');
+        if (payAllBtn) payAllBtn.classList.toggle('d-none', dues.length <= 1);
+        if (dues.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> Semua tagihan pelanggan ini sudah <strong>Lunas</strong>.</td></tr>';
+        } else {
+            dues.forEach(function (d) {
+                var mName = d.nama_bulan || MONTH_NAMES[d.bulan] || '';
+                var mLabel = mName ? ('Bulan ' + d.bulan + ' (' + mName + ')') : ('Bulan ' + d.bulan);
+                var desc = d.layanan + ' (' + (d.nama_jenis || '') + ') - ' + mLabel + ' / ' + d.tahun;
+                var isDyn = d.is_dynamic_tariff || !d.jumlah || d.jumlah <= 0;
+                var nomCell = isDyn
+                    ? ('<div class="input-group input-group-sm ml-auto" style="max-width: 155px;"><div class="input-group-prepend"><span class="input-group-text font-mono px-2">Rp</span></div><input type="number" class="form-control font-mono text-right due-manual-nominal" data-id="' + d.id + '" min="1" step="500" value="' + (d.jumlah > 0 ? d.jumlah : '') + '" placeholder="Isi tarif..."></div>')
+                    : formatRp(d.jumlah);
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td class="text-center"><input type="checkbox" class="due-item-checkbox" data-id="' + d.id + '" data-nominal="' + (d.jumlah || 0) + '" data-desc="' + desc + '" style="cursor: pointer; width: 16px; height: 16px;"></td>' +
+                    '<td><span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1">' + d.layanan + ' - ' + (d.nama_jenis || '') + '</span></td>' +
+                    '<td class="font-mono"><span class="font-weight-semibold">' + mLabel + '</span> / ' + d.tahun + '</td>' +
+                    '<td class="text-right font-mono font-weight-bold">' + nomCell + '</td>' +
+                    '<td class="text-center"><button type="button" class="btn btn-sm btn-primary btn-pay-single-due" data-id="' + d.id + '" data-nominal="' + (d.jumlah || 0) + '" data-desc="' + desc + '"><i class="fas fa-check mr-1"></i> Bayar &amp; Struk</button></td>';
+                tbody.appendChild(tr);
+            });
+        }
+        updateSelectedDuesUI();
+        autoPopulatePaymentForm(data);
+    }
+    function lookupBarcode(code) {
+        var clean = (code || '').trim();
+        if (!clean) return showScanAlert('Silakan masukkan atau scan kode QR member / barcode pelanggan.', true);
+        document.getElementById('barcodeAlertBox').classList.add('d-none');
+        fetch("{% url 'scan_barcode_api' %}?code=" + encodeURIComponent(clean), { credentials: 'same-origin' })
+            .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+            .then(function (res) {
+                if (!res.ok || res.body.status === 'error') {
+                    document.getElementById('barcodeResultContainer').classList.add('d-none');
+                    return showScanAlert(res.body.message || 'Kode tidak ditemukan.', true);
+                }
+                renderBarcodeData(res.body);
+            })
+            .catch(function () { showScanAlert('Gagal menghubungi server saat memindai kode.', true); });
+    }
+    window.openBarcodeScannerWithCode = function (code) {
+        var input = document.getElementById('barcodeScanInput');
+        if (input) input.value = code || '';
+        if (window.jQuery) { $('.modal.show').not('#barcodeScannerModal').modal('hide'); $('#barcodeScannerModal').modal('show'); }
+        if (code) lookupBarcode(code);
+    };
+    function submitBarcodePayment(payload, onComplete) {
+        var csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+        fetch("{% url 'pay_by_barcode_api' %}", {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfEl ? csrfEl.value : '' },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+        .then(function (res) {
+            if (res.ok && res.body.status === 'success') {
+                openSuccessModal(res.body, payload);
+                if (res.body.data) renderBarcodeData(res.body.data);
+                if (typeof window.refreshDashboardWidgets === 'function') window.refreshDashboardWidgets();
+            } else { openErrorModal(res.body.message || 'Gagal memproses pembayaran.'); }
+        })
+        .catch(function (err) { openErrorModal('Kendala jaringan: ' + (err.message || 'Network Error')); })
+        .finally(function () { if (typeof onComplete === 'function') onComplete(); });
+    }
+    function stopCamera() {
+        if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+        if (activeStream) { activeStream.getTracks().forEach(function (t) { t.stop(); }); activeStream = null; }
+        var c = document.getElementById('cameraScanContainer'); if (c) c.classList.add('d-none');
+    }
+    function startCamera() {
+        var c = document.getElementById('cameraScanContainer'), v = document.getElementById('barcodeCameraVideo'), s = document.getElementById('cameraScanStatus');
+        c.classList.remove('d-none');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { s.textContent = 'Kamera tidak didukung browser ini.'; return; }
+        s.textContent = 'Menghubungkan ke kamera...';
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', aspectRatio: { ideal: 1.0 }, width: { ideal: 480 }, height: { ideal: 480 } } })
+        .then(function (stream) {
+            activeStream = stream; v.srcObject = stream; v.setAttribute('playsinline', true); v.play();
+            s.textContent = 'Arahkan kamera ke QR Code Kartu Member / Barcode pelanggan...';
+            var canvas = document.getElementById('barcodeCameraCanvas'), ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
+            scanTimer = setInterval(function () {
+                if (!activeStream || v.readyState !== v.HAVE_ENOUGH_DATA || !ctx) return;
+                canvas.width = v.videoWidth; canvas.height = v.videoHeight;
+                ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+                var decoded = null;
+                if (window.jsQR) {
+                    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    var qrResult = window.jsQR(imgData.data, canvas.width, canvas.height, { inversionAttempts: "dontInvert" });
+                    if (qrResult && qrResult.data) decoded = qrResult.data;
+                }
+                if (decoded) { stopCamera(); document.getElementById('barcodeScanInput').value = decoded; lookupBarcode(decoded); }
+            }, 300);
+        })
+        .catch(function (err) { s.textContent = 'Gagal mengakses kamera: ' + (err.message || 'Izin ditolak'); });
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        var input = document.getElementById('barcodeScanInput'), lookupBtn = document.getElementById('btnLookupBarcode');
+        if (lookupBtn) lookupBtn.addEventListener('click', function () { lookupBarcode(input.value); });
+        if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); lookupBarcode(input.value); } });
+        var camBtn = document.getElementById('btnToggleCameraScan'), stopBtn = document.getElementById('btnStopCameraScan');
+        if (camBtn) camBtn.addEventListener('click', startCamera);
+        if (stopBtn) stopBtn.addEventListener('click', stopCamera);
+        var checkAll = document.getElementById('checkAllDues'), btnReset = document.getElementById('btnResetSelectedDues');
+        function selectAll(state) { document.querySelectorAll('.due-item-checkbox').forEach(function (cb) { cb.checked = state; }); updateSelectedDuesUI(); }
+        if (checkAll) checkAll.addEventListener('change', function () { selectAll(checkAll.checked); });
+        if (btnReset) btnReset.addEventListener('click', function () { selectAll(false); });
+        document.addEventListener('change', function (e) { if (e.target && e.target.classList.contains('due-item-checkbox')) updateSelectedDuesUI(); });
+        document.addEventListener('input', function (e) {
+            if (e.target && e.target.classList.contains('due-manual-nominal')) {
+                var tid = parseInt(e.target.getAttribute('data-id'), 10), val = parseInt(e.target.value, 10) || 0;
+                var cb = document.querySelector('.due-item-checkbox[data-id="' + tid + '"]'), btn = document.querySelector('.btn-pay-single-due[data-id="' + tid + '"]');
+                if (cb) cb.setAttribute('data-nominal', val);
+                if (btn) btn.setAttribute('data-nominal', val);
+                currentDues.forEach(function (d) { if (d.id === tid) d.jumlah = val; });
+                updateSelectedDuesUI();
+            }
+        });
+        var paySelectedBtn = document.getElementById('btnPaySelectedDues');
+        if (paySelectedBtn) {
+            paySelectedBtn.addEventListener('click', function () {
+                var checkedBoxes = document.querySelectorAll('.due-item-checkbox:checked');
+                if (checkedBoxes.length === 0) return showScanAlert('Centang setidaknya 1 bulan tagihan untuk dibayar.', true);
+                var items = [], tagihanIds = [], total = 0;
+                checkedBoxes.forEach(function (cb) {
+                    var tid = parseInt(cb.getAttribute('data-id'), 10), nom = parseInt(cb.getAttribute('data-nominal'), 10) || 0;
+                    tagihanIds.push(tid); items.push({ id: tid, desc: cb.getAttribute('data-desc') || '', nominal: nom }); total += nom;
+                });
+                openConfirmModal('Bayar Pilihan (' + items.length + ' Bulan)', { barcode: currentBarcode, tagihan_ids: tagihanIds }, items, total);
+            });
+        }
+        var payAllBtn = document.getElementById('btnPayAllDues');
+        if (payAllBtn) {
+            payAllBtn.addEventListener('click', function () {
+                if (!currentDues || currentDues.length === 0) return;
+                var items = currentDues.map(function (d) {
+                    var mName = d.nama_bulan || MONTH_NAMES[d.bulan] || '';
+                    var mLabel = mName ? ('Bulan ' + d.bulan + ' (' + mName + ')') : ('Bulan ' + d.bulan);
+                    return { id: d.id, desc: d.layanan + ' (' + (d.nama_jenis || '') + ') - ' + mLabel + ' / ' + d.tahun, nominal: d.jumlah };
+                });
+                var total = items.reduce(function (sum, item) { return sum + (parseInt(item.nominal, 10) || 0); }, 0);
+                openConfirmModal('Bayar Semua Tagihan (' + items.length + ' Bulan)', { barcode: currentBarcode, pay_all: true }, items, total);
+            });
+        }
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.btn-pay-single-due');
+            if (btn) {
+                var tid = parseInt(btn.getAttribute('data-id'), 10), nom = parseInt(btn.getAttribute('data-nominal'), 10) || 0;
+                var desc = btn.getAttribute('data-desc') || ('Tagihan ID ' + tid);
+                openConfirmModal('Bayar & Struk (' + desc + ')', { barcode: currentBarcode, tagihan_id: tid, jumlah_bayar: nom }, [{ id: tid, desc: desc, nominal: nom }], nom);
+            }
+        });
+        var execBtn = document.getElementById('btnExecuteConfirmPayment');
+        if (execBtn) {
+            execBtn.addEventListener('click', function () {
+                if (!pendingPaymentPayload) return;
+                var origText = execBtn.innerHTML;
+                execBtn.disabled = true; execBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memproses...';
+                if (window.jQuery) $('#confirmPaymentModal').modal('hide');
+                submitBarcodePayment(pendingPaymentPayload, function () {
+                    execBtn.disabled = false; execBtn.innerHTML = origText; pendingPaymentPayload = null;
+                });
+            });
+        }
+        if (window.jQuery) {
+            $(document).on('hidden.bs.modal', '#confirmPaymentModal, #paymentSuccessModal, #paymentErrorModal', function () {
+                if ($('#barcodeScannerModal').hasClass('show')) $('body').addClass('modal-open');
+            });
+        }
+        var quickBtn = document.getElementById('btnQuickBarcodeScan'), quickInput = document.getElementById('quickBarcodeInput');
+        if (quickBtn && quickInput) {
+            quickBtn.addEventListener('click', function () { window.openBarcodeScannerWithCode(quickInput.value); });
+            quickInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); quickBtn.click(); } });
+        }
+    });
+})();
+</script>

@@ -1,6 +1,6 @@
 <!-- Reusable Barcode / QR Member Scanner & Instant Dues Payment Modal -->
 <div class="modal fade" id="barcodeScannerModal" tabindex="-1" role="dialog" aria-labelledby="barcodeScannerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
@@ -19,7 +19,7 @@
                 </button>
             </div>
 
-            <div class="modal-body p-4">
+            <div class="modal-body p-4" style="max-height: calc(85vh - 130px); overflow-y: auto;">
                 <div class="form-group mb-3">
                     <label for="barcodeScanInput" class="form-label-modern">
                         <i class="fas fa-keyboard text-primary mr-1"></i> Kode Member Langganan / Barcode Pelanggan
@@ -44,16 +44,18 @@
                         <span class="small font-weight-bold text-main"><i class="fas fa-video text-primary mr-1"></i> Pemindai Kamera Aktif</span>
                         <button type="button" class="btn btn-sm btn-secondary" id="btnStopCameraScan"><i class="fas fa-stop mr-1"></i> Matikan</button>
                     </div>
-                    <div style="position: relative; width: 100%; max-height: 220px; overflow: hidden; border-radius: var(--radius-md); background: var(--bg-canvas);">
-                        <video id="barcodeCameraVideo" playsinline muted style="width: 100%; max-height: 220px; object-fit: cover;"></video>
+                    <div style="position: relative; width: 250px; height: 250px; max-width: 100%; aspect-ratio: 1 / 1; margin: 0 auto; overflow: hidden; border-radius: var(--radius-md); background: var(--bg-canvas); border: 2px solid var(--border-subtle);">
+                        <video id="barcodeCameraVideo" playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
                         <canvas id="barcodeCameraCanvas" class="d-none"></canvas>
+                        <div style="position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px; border: 2px dashed rgba(255, 255, 255, 0.7); border-radius: 8px; pointer-events: none;"></div>
                     </div>
-                    <div id="cameraScanStatus" class="small text-muted mt-2">Arahkan kamera ke QR Code Kartu Member pelanggan...</div>
+                    <div id="cameraScanStatus" class="small text-muted mt-2 text-center">Arahkan kamera ke QR Code Kartu Member pelanggan...</div>
                 </div>
 
                 <div id="barcodeAlertBox" class="alert d-none mb-3" role="alert"></div>
 
                 <div id="barcodeResultContainer" class="d-none">
+                    <!-- Customer Information Box -->
                     <div class="p-3 rounded mb-3" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-2">
                             <div>
@@ -65,26 +67,38 @@
                             </div>
                             <div class="mt-2 mt-sm-0 text-sm-right">
                                 <span class="stat-label d-block">Total Tunggakan</span>
-                                <span class="stat-value tabular-nums text-primary" id="scanTotalDue">Rp 0</span>
+                                <span class="stat-value tabular-nums text-primary font-weight-bold" id="scanTotalDue" style="font-size: 1.3rem;">Rp 0</span>
                             </div>
                         </div>
                         <div id="scanMatchedSub" class="small font-weight-semibold text-primary mt-1"></div>
                         <div id="scanCustTariffs" class="mt-2 pt-2 border-top d-flex flex-wrap"></div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <!-- Clean Action Header with Selection Buttons -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2 pb-1 border-bottom">
                         <h6 class="font-weight-bold text-main mb-0">
                             <i class="fas fa-file-invoice-dollar text-primary mr-1"></i> Daftar Tagihan Belum Lunas
                         </h6>
-                        <button type="button" class="btn btn-sm btn-primary d-none" id="btnPayAllDues">
-                            <i class="fas fa-check-double mr-1"></i> Bayar Semua Tagihan
-                        </button>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnResetSelectedDues" title="Reset Pilihan">
+                                <i class="fas fa-undo mr-1"></i> Reset
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary font-weight-bold" id="btnPaySelectedDues">
+                                <i class="fas fa-check-circle mr-1"></i> Bayar Pilihan (<span id="selectedDuesCount">0</span>) - <span id="selectedDuesTotal">Rp 0</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-success d-none font-weight-bold" id="btnPayAllDues">
+                                <i class="fas fa-check-double mr-1"></i> Bayar Semua
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
                         <table class="table modern-table table-sm align-middle mb-0" id="scanDuesTable">
                             <thead>
                                 <tr>
+                                    <th style="width: 44px;" class="text-center">
+                                        <input type="checkbox" id="checkAllDues" title="Pilih Semua Tagihan" style="cursor: pointer; width: 18px; height: 18px;">
+                                    </th>
                                     <th>Layanan</th>
                                     <th>Periode</th>
                                     <th class="text-right">Nominal</th>
@@ -99,7 +113,7 @@
 
             <div class="modal-footer d-flex justify-content-between">
                 <span class="small text-muted">
-                    <i class="fas fa-print text-primary mr-1"></i> Formulir otomatis terisi &amp; tersedia cetak Struk Thermal setelah bayar
+                    <i class="fas fa-print text-primary mr-1"></i> Tersedia dialog konfirmasi sebelum bayar &amp; cetak Struk Thermal setelah transaksi
                 </span>
                 <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
             </div>
@@ -107,186 +121,6 @@
     </div>
 </div>
 
-<script>
-(function () {
-    var activeStream = null, scanTimer = null, currentBarcode = "";
-
-    function formatRp(val) {
-        return "Rp " + (parseInt(val, 10) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
-
-    function showScanAlert(msg, isError, receiptUrl) {
-        var box = document.getElementById('barcodeAlertBox');
-        if (!box) return;
-        box.className = 'alert mb-3 d-flex justify-content-between align-items-center flex-wrap ' + (isError ? 'alert-danger' : 'alert-success');
-        box.textContent = '';
-        var span = document.createElement('span');
-        span.textContent = msg;
-        box.appendChild(span);
-        if (receiptUrl) {
-            var a = document.createElement('a');
-            a.href = receiptUrl + '?autoprint=1';
-            a.target = '_blank';
-            a.className = 'btn btn-sm btn-primary ml-2';
-            a.id = 'btnPrintReceiptAfterScan';
-            a.innerHTML = '<i class="fas fa-print mr-1"></i> Cetak Struk Thermal';
-            box.appendChild(a);
-        }
-        box.classList.remove('d-none');
-    }
-
-    function autoPopulatePaymentForm(data) {
-        var sub = data.subscription;
-        if (!window.jQuery || !$('#id_pelanggan').length) return;
-        window._pendingScanSub = sub || null;
-        $('#id_pelanggan').val(String(data.customer.id)).trigger('change');
-        if (sub) {
-            if ($('#id_jenis_layanan option[value="' + sub.jenis_layanan_id + '"]').length) {
-                $('#id_jenis_layanan').val(String(sub.jenis_layanan_id)).trigger('change');
-            }
-            if ($('#id_bulan').length && sub.next_bulan) {
-                $('#id_bulan').val(String(sub.next_bulan)).trigger('change');
-            }
-            if ($('#id_tahun').length && sub.next_tahun) {
-                $('#id_tahun').val(String(sub.next_tahun));
-            }
-            if ($('#id_jumlah_bayar').length && sub.harga) {
-                $('#id_jumlah_bayar').val(String(sub.harga));
-            }
-            var info = document.getElementById('quickScanFilledInfo');
-            if (info) {
-                info.textContent = 'Terisi otomatis: ' + data.customer.nama + ' (' + sub.layanan + ' - ' + formatRp(sub.harga) + ')';
-                info.classList.remove('d-none');
-            }
-        }
-    }
-
-    function renderBarcodeData(data) {
-        currentBarcode = (data.subscription && data.subscription.kode_pelanggan) || data.customer.barcode;
-        document.getElementById('barcodeResultContainer').classList.remove('d-none');
-        document.getElementById('scanCustNama').textContent = data.customer.nama;
-        document.getElementById('scanCustAlamat').textContent = 'RT ' + (data.customer.rt || '-') + ' / No. ' + data.customer.alamat;
-        document.getElementById('scanCustBarcode').textContent = currentBarcode;
-        document.getElementById('scanTotalDue').textContent = formatRp(data.total_due);
-
-        var subEl = document.getElementById('scanMatchedSub');
-        if (subEl) {
-            subEl.textContent = data.subscription
-                ? ('Layanan Terpilih: ' + data.subscription.layanan + ' - ' + data.subscription.nama_jenis + ' (' + formatRp(data.subscription.harga) + ')')
-                : '';
-        }
-
-        var tariffsBox = document.getElementById('scanCustTariffs');
-        tariffsBox.innerHTML = '';
-        (data.tariffs || []).forEach(function (t) {
-            var b = document.createElement('span');
-            b.className = 'badge badge-light border mr-2 mb-1 px-2 py-1 font-mono';
-            b.textContent = (t.kode_pelanggan ? '[' + t.kode_pelanggan + '] ' : '') + t.layanan + ' - ' + t.nama_jenis + ' (' + formatRp(t.tarif) + ')';
-            tariffsBox.appendChild(b);
-        });
-
-        var tbody = document.getElementById('scanDuesTableBody');
-        tbody.innerHTML = '';
-        var dues = data.dues || [];
-        document.getElementById('btnPayAllDues').classList.toggle('d-none', dues.length <= 1);
-
-        if (dues.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">Semua tagihan pelanggan ini sudah <strong>Lunas</strong>.</td></tr>';
-        } else {
-            dues.forEach(function (d) {
-                var tr = document.createElement('tr');
-                tr.innerHTML = '<td><span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1">' + d.layanan + ' - ' + (d.nama_jenis || '') + '</span></td>' +
-                    '<td class="font-mono">Bulan ' + d.bulan + ' / ' + d.tahun + '</td>' +
-                    '<td class="text-right font-mono font-weight-bold">' + formatRp(d.jumlah) + '</td>' +
-                    '<td class="text-center"><button type="button" class="btn btn-sm btn-primary btn-pay-single-due" data-id="' + d.id + '"><i class="fas fa-check mr-1"></i> Bayar &amp; Struk</button></td>';
-                tbody.appendChild(tr);
-            });
-        }
-        autoPopulatePaymentForm(data);
-    }
-
-    function lookupBarcode(code) {
-        var clean = (code || '').trim();
-        if (!clean) return showScanAlert('Silakan masukkan atau scan kode QR member / barcode pelanggan.', true);
-        document.getElementById('barcodeAlertBox').classList.add('d-none');
-        fetch("{% url 'scan_barcode_api' %}?code=" + encodeURIComponent(clean), { credentials: 'same-origin' })
-            .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
-            .then(function (res) {
-                if (!res.ok || res.body.status === 'error') {
-                    document.getElementById('barcodeResultContainer').classList.add('d-none');
-                    return showScanAlert(res.body.message || 'Kode tidak ditemukan.', true);
-                }
-                renderBarcodeData(res.body);
-            })
-            .catch(function () { showScanAlert('Gagal menghubungi server saat memindai kode.', true); });
-    }
-
-    function submitBarcodePayment(payload) {
-        var csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
-        fetch("{% url 'pay_by_barcode_api' %}", {
-            method: 'POST', credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfEl ? csrfEl.value : '' },
-            body: JSON.stringify(payload)
-        })
-        .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
-        .then(function (res) {
-            showScanAlert(res.body.message || (res.ok ? 'Sukses' : 'Gagal'), !res.ok || res.body.status === 'error', res.body.receipt_url);
-            if (res.ok && res.body.data) renderBarcodeData(res.body.data);
-        });
-    }
-
-    function stopCamera() {
-        if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
-        if (activeStream) { activeStream.getTracks().forEach(function (t) { t.stop(); }); activeStream = null; }
-        var c = document.getElementById('cameraScanContainer');
-        if (c) c.classList.add('d-none');
-    }
-
-    function startCamera() {
-        var c = document.getElementById('cameraScanContainer'), v = document.getElementById('barcodeCameraVideo'), s = document.getElementById('cameraScanStatus');
-        c.classList.remove('d-none');
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            s.textContent = 'Kamera tidak didukung pada browser ini. Gunakan input scanner di atas.';
-            return;
-        }
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function (stream) {
-            activeStream = stream; v.srcObject = stream; v.play();
-            if ('BarcodeDetector' in window) {
-                var detector = new window.BarcodeDetector();
-                scanTimer = setInterval(function () {
-                    detector.detect(v).then(function (codes) {
-                        if (codes.length > 0 && codes[0].rawValue) {
-                            document.getElementById('barcodeScanInput').value = codes[0].rawValue;
-                            stopCamera(); lookupBarcode(codes[0].rawValue);
-                        }
-                    }).catch(function () {});
-                }, 500);
-            }
-        }).catch(function () { s.textContent = 'Izin kamera ditolak atau perangkat kamera tidak ditemukan.'; });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        var input = document.getElementById('barcodeScanInput'), lookupBtn = document.getElementById('btnLookupBarcode');
-        if (lookupBtn) lookupBtn.addEventListener('click', function () { lookupBarcode(input.value); });
-        if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); lookupBarcode(input.value); } });
-        var camBtn = document.getElementById('btnToggleCameraScan'), stopBtn = document.getElementById('btnStopCameraScan');
-        if (camBtn) camBtn.addEventListener('click', startCamera);
-        if (stopBtn) stopBtn.addEventListener('click', stopCamera);
-        var payAllBtn = document.getElementById('btnPayAllDues');
-        if (payAllBtn) payAllBtn.addEventListener('click', function () { submitBarcodePayment({ barcode: currentBarcode, pay_all: true }); });
-        document.addEventListener('click', function (e) {
-            var btn = e.target.closest('.btn-pay-single-due');
-            if (btn) submitBarcodePayment({ barcode: currentBarcode, tagihan_id: btn.getAttribute('data-id') });
-        });
-        var quickBtn = document.getElementById('btnQuickBarcodeScan'), quickInput = document.getElementById('quickBarcodeInput');
-        if (quickBtn && quickInput) {
-            quickBtn.addEventListener('click', function () {
-                input.value = quickInput.value;
-                if (window.jQuery) $('#barcodeScannerModal').modal('show');
-                lookupBarcode(quickInput.value);
-            });
-            quickInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); quickBtn.click(); } });
-        }
-    });
-})();
-</script>
+{% include "pembayaran/includes/_modal_confirm_payment.html" %}
+{% include "pembayaran/includes/_modal_payment_result.html" %}
+{% include "pembayaran/includes/_barcode_scanner_scripts.html" %}

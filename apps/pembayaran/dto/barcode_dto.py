@@ -49,6 +49,8 @@ class DueDTO:
     jumlah: int
     jenis_layanan_id: Optional[int] = None
     nama_jenis: str = ""
+    nama_bulan: str = ""
+    is_dynamic_tariff: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -57,8 +59,10 @@ class DueDTO:
             "nama_jenis": self.nama_jenis,
             "layanan": self.layanan,
             "bulan": self.bulan,
+            "nama_bulan": self.nama_bulan,
             "tahun": self.tahun,
             "jumlah": self.jumlah,
+            "is_dynamic_tariff": self.is_dynamic_tariff,
         }
 
 
