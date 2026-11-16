@@ -27,6 +27,11 @@
                     title="Buka Pratinjau Dokumen PDF Laporan">
                 <i class="fas fa-file-pdf mr-1"></i> Cetak / Preview PDF
             </button>
+            <a href="{% url 'export_laporan_tahunan_excel' layanan=layanan tahun=tahun %}"
+               class="btn btn-outline-success btn-sm mr-2"
+               title="Unduh Laporan Tahunan format Excel (.xlsx)" id="btnDownloadAnnualExcel">
+                <i class="fas fa-file-excel mr-1"></i> Unduh Excel
+            </a>
             <a href="{% url 'export_pembayaran_pdf' layanan=layanan tahun=tahun %}?download=1"
                class="btn btn-primary btn-sm"
                title="Unduh langsung file PDF" id="btnDirectDownloadPdf">

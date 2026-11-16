@@ -34,11 +34,19 @@ def generate_laporan_pembayaran_pdf(
         ]
         matrix_rows = get_service_payment_matrix(layanan=nama_layanan, tahun=tahun)
         for row in matrix_rows:
-            status_cells = [
-                "Lunas" if st == "Lunas" else ""
-                for st in row["status_bulan"]
-            ]
-            data.append([row["pelanggan"], row["alamat"], *status_cells])
+            nominals = row.get("nominal_bulan") or []
+            status_list = row.get("status_bulan") or []
+            cells = []
+            for i in range(12):
+                nom = nominals[i] if i < len(nominals) else 0
+                st = status_list[i] if i < len(status_list) else ""
+                if nom > 0:
+                    cells.append(f"{nom:,.0f}".replace(",", "."))
+                elif st == "Lunas":
+                    cells.append("Lunas")
+                else:
+                    cells.append("-")
+            data.append([row["pelanggan"], row["alamat"], *cells])
 
     if total_pemasukan is None:
         total_pemasukan = get_total_pemasukan_tahunan(nama_layanan, tahun)

@@ -26,6 +26,9 @@
         </div>
     </div>
 
+    <!-- Search & Filter Bar -->
+    {% include "pembayaran/includes/_daftar_filter_bar.html" %}
+
     <!-- Data Card -->
     <div class="card data-card border-0 shadow-sm">
         <div class="card-body p-0">
@@ -35,7 +38,8 @@
                         <tr>
                             <th>No</th>
                             <th>Pelanggan</th>
-                            <th>Layanan</th>
+                            <th>Rumah</th>
+                            <th>Layanan & Paket</th>
                             <th>Periode</th>
                             <th>Status</th>
                             <th>Tgl Bayar</th>
@@ -50,18 +54,21 @@
                             <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
                             <td>
                                 <div class="font-weight-bold text-slate-800">{{ pembayaran.pelanggan.nama }}</div>
-                                <small class="text-muted">
-                                    <i class="fas fa-home mr-1"></i>{{ pembayaran.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
-                                </small>
+                                <small class="text-muted font-mono">{{ pembayaran.pelanggan.barcode|default:"-" }}</small>
                             </td>
                             <td>
-                                <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
-                                    {{ pembayaran.jenis_layanan.nama_jenis|default:pembayaran.jenis_layanan }}
+                                <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
+                                    <i class="fas fa-home mr-1 text-muted"></i>RT {{ pembayaran.pelanggan.rumah.rt|default:"-" }} / No. {{ pembayaran.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
                                 </span>
                             </td>
                             <td>
-                                <span class="font-weight-semibold text-slate-700">{{ pembayaran.bulan }}</span>
-                                <small class="text-muted">/ {{ pembayaran.tahun }}</small>
+                                <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
+                                    {{ pembayaran.jenis_layanan.layanan.nama_layanan }} - {{ pembayaran.jenis_layanan.nama_jenis }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="font-weight-semibold text-slate-800">{{ pembayaran.get_bulan_display }}</span>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">Bulan {{ pembayaran.bulan }} / {{ pembayaran.tahun }}</small>
                             </td>
                             <td>
                                 {% if pembayaran.status_bayar == 'Lunas' or pembayaran.status_bayar == '1' or 'Lunas' in pembayaran.get_status_bayar_display %}
@@ -87,17 +94,17 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'cetak_struk_thermal' pembayaran.id %}?autoprint=1" target="_blank"
+                                    <a href="{% url 'cetak_struk_thermal' pembayaran.id_pembayaran %}?autoprint=1" target="_blank"
                                        class="btn btn-light border text-primary" title="Cetak Struk Thermal"
-                                       id="btnStrukThermal_{{ pembayaran.id }}" style="border-radius: 6px 0 0 6px;">
+                                       id="btnStrukThermal_{{ pembayaran.id_pembayaran }}" style="border-radius: 6px 0 0 6px;">
                                         <i class="fas fa-print"></i>
                                     </a>
-                                    <a href="{% url 'edit_pembayaran' pembayaran.id %}" class="btn btn-light border text-info" title="Edit Transaksi">
+                                    <a href="{% url 'edit_pembayaran' pembayaran.id_pembayaran %}" class="btn btn-light border text-info" title="Edit Transaksi">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-light border text-danger" title="Hapus Transaksi" 
                                             data-toggle="modal" data-target="#deleteModal" 
-                                            data-url="{% url 'hapus_pembayaran' pembayaran.id %}" 
+                                            data-url="{% url 'hapus_pembayaran' pembayaran.id_pembayaran %}" 
                                             data-nama="Pembayaran {{ pembayaran.pelanggan.nama }} ({{ pembayaran.bulan }}/{{ pembayaran.tahun }})"
                                             style="border-radius: 0 6px 6px 0;">
                                         <i class="fas fa-trash-alt"></i>
@@ -107,9 +114,9 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="fas fa-receipt fa-3x mb-2 text-slate-300 d-block"></i>
-                                Belum ada catatan transaksi pembayaran.
+                                Belum ada catatan transaksi pembayaran yang sesuai filter.
                             </td>
                         </tr>
                     {% endfor %}

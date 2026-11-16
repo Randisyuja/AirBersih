@@ -10,6 +10,7 @@ from apps.pembayaran.views.base_views import (
     load_jenis_layanan,
 )
 from apps.pembayaran.views.export_views import (
+    export_laporan_tahunan_excel_view,
     export_pembayaran_excel,
     export_pembayaran_pdf,
 )
@@ -27,6 +28,7 @@ __all__ = [
     "pay_by_barcode_api",
     "export_pembayaran_excel",
     "export_pembayaran_pdf",
+    "export_laporan_tahunan_excel_view",
     "laporan_tahunan",
     "cetak_struk_thermal",
     "pembayaran_qr_svg",

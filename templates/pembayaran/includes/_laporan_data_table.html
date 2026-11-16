@@ -1,4 +1,39 @@
-<!-- Payment Status Matrix Table Card -->
+<!-- Payment Status Matrix Table Card (with Frozen Nama Pelanggan & No. Rumah Columns) -->
+<style>
+    #cardLaporanMatrix .matrix-freeze-table {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
+    #cardLaporanMatrix .sticky-col-1 {
+        position: sticky !important;
+        left: 0 !important;
+        min-width: 175px !important;
+        max-width: 175px !important;
+        width: 175px !important;
+        z-index: 3 !important;
+        background-color: var(--surface-1) !important;
+    }
+    #cardLaporanMatrix .sticky-col-2 {
+        position: sticky !important;
+        left: 175px !important;
+        min-width: 120px !important;
+        max-width: 120px !important;
+        width: 120px !important;
+        z-index: 3 !important;
+        background-color: var(--surface-1) !important;
+        border-right: 2px solid var(--border-subtle) !important;
+        box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.25);
+    }
+    #cardLaporanMatrix thead th.sticky-col-1,
+    #cardLaporanMatrix thead th.sticky-col-2 {
+        z-index: 4 !important;
+        background-color: var(--surface-2) !important;
+    }
+    #cardLaporanMatrix tbody tr:hover td.sticky-col-1,
+    #cardLaporanMatrix tbody tr:hover td.sticky-col-2 {
+        background-color: var(--surface-2) !important;
+    }
+</style>
 <div class="card data-card" id="cardLaporanMatrix">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-main">
@@ -8,13 +43,13 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive p-3">
-            <table class="table modern-table table-hover align-middle mb-0 text-center" id="dataTable" width="100%">
+            <table class="table modern-table matrix-freeze-table table-hover align-middle mb-0 text-center" id="dataTable" width="100%">
                 <thead>
                     <tr>
-                        <th class="text-left" style="min-width: 160px;">Nama Pelanggan</th>
-                        <th class="text-left" style="min-width: 110px;">No. Rumah</th>
+                        <th class="text-left sticky-col-1">Nama Pelanggan</th>
+                        <th class="text-left sticky-col-2">No. Rumah</th>
                         {% for bulan in bulan_labels %}
-                            <th class="month-col-header" data-month="{{ forloop.counter }}" style="min-width: 55px; font-size: 0.8rem;">
+                            <th class="month-col-header" data-month="{{ forloop.counter }}" style="min-width: 65px; font-size: 0.8rem;">
                                 {{ bulan }}
                             </th>
                         {% endfor %}
@@ -23,8 +58,8 @@
                 <tbody>
                 {% for row in data_laporan %}
                     <tr>
-                        <td class="text-left font-weight-bold text-main">{{ row.pelanggan }}</td>
-                        <td class="text-left">
+                        <td class="text-left font-weight-bold text-main sticky-col-1">{{ row.pelanggan }}</td>
+                        <td class="text-left sticky-col-2">
                             <span class="badge badge-light border px-2 py-1 text-main font-weight-bold">
                                 <i class="fas fa-home text-muted mr-1"></i>{{ row.alamat }}
                             </span>

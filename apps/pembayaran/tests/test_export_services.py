@@ -3,11 +3,13 @@
 import io
 import openpyxl
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 from apps.layanan.models import JenisLayanan, Layanan
-from apps.pelanggan.models import Pelanggan
+from apps.pelanggan.models import Langganan, Pelanggan
 from apps.pembayaran.choices import StatusChoice
 from apps.pembayaran.exports.excel_export import (
+    export_laporan_tahunan_excel,
     export_pembayaran_to_excel,
     generate_pembayaran_excel,
 )
@@ -37,6 +39,12 @@ class PembayaranExportServiceTests(TestCase):
             layanan=self.layanan,
             nama_jenis="Warga",
             tarif=25000,
+        )
+        self.langganan = Langganan.objects.create(
+            pelanggan=self.pelanggan,
+            jenis_layanan=self.jenis,
+            harga=25000,
+            aktif=True,
         )
         self.pembayaran = Pembayaran.objects.create(
             pelanggan=self.pelanggan,
@@ -100,3 +108,38 @@ class PembayaranExportServiceTests(TestCase):
         self.assertIsInstance(buffer, io.BytesIO)
         content = buffer.getvalue()
         self.assertTrue(content.startswith(b"%PDF"))
+
+    def test_annual_report_excel_export_contains_payment_nominals(self):
+        """Annual report Excel export fills month columns with actual payment nominals, not 'Lunas'."""
+        buffer = export_laporan_tahunan_excel(layanan="AIR", tahun=2026)
+        self.assertIsInstance(buffer, io.BytesIO)
+        wb = openpyxl.load_workbook(buffer)
+        ws = wb.active
+        self.assertEqual(ws.title, "AIR_2026")
+
+        # Row 3 contains headers: No, Nama Pelanggan, No. Rumah, Jan, Feb, ... Total
+        header_vals = [cell.value for cell in ws[3]]
+        self.assertEqual(header_vals[0], "No")
+        self.assertEqual(header_vals[1], "Nama Pelanggan")
+        self.assertEqual(header_vals[3], "Jan")
+        self.assertEqual(header_vals[4], "Feb")
+
+        # Row 4 contains Hasan's data: Jan should be 25000 (nominal), Feb should be 0
+        row_vals = [cell.value for cell in ws[4]]
+        self.assertEqual(row_vals[1], "Hasan")
+        self.assertEqual(row_vals[2], "A-01")
+        self.assertEqual(row_vals[3], 25000)  # Month 1 paid nominal
+        self.assertEqual(row_vals[4], 0)      # Month 2 unpaid
+        self.assertEqual(row_vals[15], 25000) # Total row
+
+    def test_annual_report_excel_view_endpoint(self):
+        """HTTP endpoint /pembayaran/export/excel/<layanan>/<tahun>/ returns 200 with Excel content."""
+        self.client.force_login(self.kasir)
+        url = reverse("export_laporan_tahunan_excel", kwargs={"layanan": "AIR", "tahun": 2026})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertIn("Laporan_Pembayaran_AIR_2026.xlsx", response["Content-Disposition"])

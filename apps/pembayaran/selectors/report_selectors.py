@@ -25,19 +25,24 @@ def get_service_payment_matrix(layanan: str, tahun: int) -> List[Dict[str, Any]]
         return []
 
     pelanggan_ids = [p.id_pelanggan for p in pelanggan_aktif]
-    paid_pairs = set(
-        Pembayaran.objects.filter(
-            jenis_layanan__layanan__nama_layanan__iexact=nama_layanan,
-            pelanggan_id__in=pelanggan_ids,
-            tahun=tahun,
-            status_bayar=StatusChoice.Lunas,
-        ).values_list("pelanggan_id", "bulan")
-    )
+    paid_records: Dict[tuple, int] = {}
+    for p in Pembayaran.objects.filter(
+        jenis_layanan__layanan__nama_layanan__iexact=nama_layanan,
+        pelanggan_id__in=pelanggan_ids,
+        tahun=tahun,
+        status_bayar=StatusChoice.Lunas,
+    ).values("pelanggan_id", "bulan", "jumlah_bayar"):
+        key = (p["pelanggan_id"], p["bulan"])
+        paid_records[key] = paid_records.get(key, 0) + int(p["jumlah_bayar"] or 0)
 
     data_laporan: List[Dict[str, Any]] = []
     for pelanggan in pelanggan_aktif:
         status_bulan = [
-            "Lunas" if (pelanggan.id_pelanggan, bulan) in paid_pairs else "Belum"
+            "Lunas" if (pelanggan.id_pelanggan, bulan) in paid_records else "Belum"
+            for bulan in range(1, 13)
+        ]
+        nominal_bulan = [
+            paid_records.get((pelanggan.id_pelanggan, bulan), 0)
             for bulan in range(1, 13)
         ]
         alamat = pelanggan.rumah.no_rumah if pelanggan.rumah else "-"
@@ -47,6 +52,7 @@ def get_service_payment_matrix(layanan: str, tahun: int) -> List[Dict[str, Any]]
                 "alamat": alamat,
                 "barcode": pelanggan.barcode or "-",
                 "status_bulan": status_bulan,
+                "nominal_bulan": nominal_bulan,
             }
         )
 

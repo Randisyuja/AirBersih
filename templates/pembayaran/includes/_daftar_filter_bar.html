@@ -1,0 +1,70 @@
+<!-- Search & Filter Bar for Daftar Pembayaran -->
+<div class="card border-0 shadow-sm mb-4" id="cardDaftarPembayaranFilter" style="border-radius: 12px;">
+    <div class="card-body py-3 px-4">
+        <form method="get" action="{% url 'daftar_pembayaran' %}" id="formFilterDaftarPembayaran">
+            <div class="form-row align-items-end">
+                <div class="col-lg-3 col-md-6 mb-2 mb-lg-0">
+                    <label for="searchPembayaranInput" class="small font-weight-bold text-main mb-1">
+                        <i class="fas fa-search text-primary mr-1"></i> Cari (Nama / Rumah / Layanan):
+                    </label>
+                    <input type="text" name="q" id="searchPembayaranInput" value="{{ q }}"
+                           class="form-control form-control-sm"
+                           placeholder="Nama, No. Rumah, RT, Layanan...">
+                </div>
+
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-2 mb-lg-0">
+                    <label for="filterLayananSelect" class="small font-weight-bold text-main mb-1">
+                        <i class="fas fa-layer-group text-primary mr-1"></i> Layanan:
+                    </label>
+                    <select name="layanan" id="filterLayananSelect" class="form-control form-control-sm">
+                        <option value="">Semua Layanan</option>
+                        {% for l in layanan_options %}
+                            <option value="{{ l.nama_layanan }}" {% if selected_layanan == l.nama_layanan %}selected{% endif %}>
+                                {{ l.nama_layanan }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-3 col-sm-6 mb-2 mb-lg-0">
+                    <label for="filterJenisLayananSelect" class="small font-weight-bold text-main mb-1">
+                        <i class="fas fa-tags text-primary mr-1"></i> Jenis Layanan:
+                    </label>
+                    <select name="jenis_layanan" id="filterJenisLayananSelect" class="form-control form-control-sm">
+                        <option value="">Semua Paket</option>
+                        {% for j in jenis_layanan_options %}
+                            <option value="{{ j.id_jenis }}" {% if selected_jenis_layanan == j.id_jenis|stringformat:"s" %}selected{% endif %}>
+                                {{ j.layanan.nama_layanan }} - {{ j.nama_jenis }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-2 mb-lg-0">
+                    <label for="filterTglMulai" class="small font-weight-bold text-main mb-1">
+                        <i class="far fa-calendar-alt text-primary mr-1"></i> Dari Tanggal:
+                    </label>
+                    <input type="date" name="tgl_mulai" id="filterTglMulai" value="{{ tgl_mulai }}"
+                           class="form-control form-control-sm">
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-2 mb-lg-0">
+                    <label for="filterTglAkhir" class="small font-weight-bold text-main mb-1">
+                        <i class="far fa-calendar-check text-primary mr-1"></i> Sampai Tanggal:
+                    </label>
+                    <input type="date" name="tgl_akhir" id="filterTglAkhir" value="{{ tgl_akhir }}"
+                           class="form-control form-control-sm">
+                </div>
+
+                <div class="col-lg-1 col-md-4 col-sm-12 d-flex align-items-center justify-content-end gap-2 mt-2 mt-lg-0">
+                    <button type="submit" class="btn btn-sm btn-primary font-weight-bold px-3" id="btnApplyFilterPembayaran" title="Terapkan Pencarian & Filter">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <a href="{% url 'daftar_pembayaran' %}" class="btn btn-sm btn-secondary px-2" id="btnResetFilterPembayaran" title="Reset Filter">
+                        <i class="fas fa-undo"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

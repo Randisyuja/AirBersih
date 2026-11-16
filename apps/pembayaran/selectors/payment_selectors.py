@@ -1,7 +1,8 @@
 """Payment selectors (ADR 002 §1.3 - Read-only query layer)."""
 
 from typing import Any, Dict, List, Optional
-from django.db.models import QuerySet, Sum
+from django.db.models import Q, QuerySet, Sum
+from apps.layanan.models import JenisLayanan, Layanan
 from apps.pelanggan.models import Langganan
 from apps.pembayaran.choices import StatusChoice
 from apps.pembayaran.models import Pembayaran
@@ -9,13 +10,55 @@ from apps.pembayaran.selectors.report_selectors import get_service_payment_matri
 from apps.pembayaran.selectors.revenue_selectors import get_annual_revenue
 
 
-def get_pembayaran_list_queryset() -> QuerySet[Pembayaran]:
-    """Returns all Pembayaran records with preloaded relations to eliminate N+1."""
-    return (
-        Pembayaran.objects.select_related(
-            "pelanggan", "pelanggan__rumah", "jenis_layanan", "kasir"
-        ).order_by("-tahun", "-bulan", "-id_pembayaran")
+def get_pembayaran_list_queryset(
+    q: Optional[str] = None,
+    layanan: Optional[str] = None,
+    jenis_layanan_id: Optional[str] = None,
+    tgl_mulai: Optional[str] = None,
+    tgl_akhir: Optional[str] = None,
+) -> QuerySet[Pembayaran]:
+    """Returns Pembayaran records with preloaded relations and optional search/filter criteria."""
+    qs = Pembayaran.objects.select_related(
+        "pelanggan",
+        "pelanggan__rumah",
+        "jenis_layanan",
+        "jenis_layanan__layanan",
+        "kasir",
     )
+
+    if q and q.strip():
+        clean_q = q.strip()
+        qs = qs.filter(
+            Q(pelanggan__nama__icontains=clean_q)
+            | Q(pelanggan__barcode__icontains=clean_q)
+            | Q(pelanggan__rumah__no_rumah__icontains=clean_q)
+            | Q(pelanggan__rumah__rt__icontains=clean_q)
+            | Q(jenis_layanan__nama_jenis__icontains=clean_q)
+            | Q(jenis_layanan__layanan__nama_layanan__icontains=clean_q)
+            | Q(kasir__username__icontains=clean_q)
+        )
+
+    if layanan and layanan.strip():
+        qs = qs.filter(jenis_layanan__layanan__nama_layanan__iexact=layanan.strip())
+
+    if jenis_layanan_id and str(jenis_layanan_id).strip().isdigit():
+        qs = qs.filter(jenis_layanan_id=int(str(jenis_layanan_id).strip()))
+
+    if tgl_mulai and tgl_mulai.strip():
+        qs = qs.filter(tgl_pembayaran__date__gte=tgl_mulai.strip())
+
+    if tgl_akhir and tgl_akhir.strip():
+        qs = qs.filter(tgl_pembayaran__date__lte=tgl_akhir.strip())
+
+    return qs.order_by("-tahun", "-bulan", "-id_pembayaran")
+
+
+def get_all_layanan_options() -> QuerySet[Layanan]:
+    return Layanan.objects.all().order_by("nama_layanan")
+
+
+def get_all_jenis_layanan_options() -> QuerySet[JenisLayanan]:
+    return JenisLayanan.objects.select_related("layanan").order_by("layanan__nama_layanan", "nama_jenis")
 
 
 def get_pembayaran_bulanan_queryset(bulan: int, tahun: int) -> QuerySet[Pembayaran]:

@@ -4,7 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_sameorigin
-from apps.pembayaran.exports.excel_export import export_pembayaran_to_excel
+from apps.pembayaran.exports.excel_export import (
+    export_laporan_tahunan_excel,
+    export_pembayaran_to_excel,
+)
 from apps.pembayaran.exports.pdf_export import generate_laporan_pembayaran_pdf
 
 
@@ -42,5 +45,29 @@ def export_pembayaran_pdf(
     response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
     response["Content-Disposition"] = (
         f'{disposition_type}; filename="Laporan_Pembayaran_{nama_layanan}_{tahun_int}.pdf"'
+    )
+    return response
+
+
+@login_required
+def export_laporan_tahunan_excel_view(
+    request: HttpRequest, layanan: str, tahun: int
+) -> HttpResponse:
+    """Exports annual service payment matrix (Air / WiFi) to Excel format with monthly dues nominals."""
+    nama_layanan = layanan.upper()
+    current_year = timezone.now().year
+
+    try:
+        tahun_int = int(tahun) if tahun else current_year
+    except (ValueError, TypeError):
+        tahun_int = current_year
+
+    buffer = export_laporan_tahunan_excel(layanan=nama_layanan, tahun=tahun_int)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = (
+        f'attachment; filename="Laporan_Pembayaran_{nama_layanan}_{tahun_int}.xlsx"'
     )
     return response

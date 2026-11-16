@@ -7,6 +7,7 @@ from apps.pembayaran.views import (
     cetak_struk_thermal,
     export_pembayaran_excel,
     export_pembayaran_pdf,
+    export_laporan_tahunan_excel_view,
     hapus_pembayaran,
     laporan_tahunan,
     load_jenis_layanan,
@@ -40,6 +41,8 @@ urlpatterns = [
     # Export Excel (mendukung /export/excel/ dan /pembayaran/export/excel/)
     path("export/excel/", export_pembayaran_excel, name="export_pembayaran_excel"),
     path("pembayaran/export/excel/", export_pembayaran_excel),
+    path("export/excel/<str:layanan>/<int:tahun>/", export_laporan_tahunan_excel_view, name="export_laporan_tahunan_excel"),
+    path("pembayaran/export/excel/<str:layanan>/<int:tahun>/", export_laporan_tahunan_excel_view),
 
     # Export PDF (mendukung dengan dan tanpa trailing slash)
     path("export/pdf/<str:layanan>/<int:tahun>/", export_pembayaran_pdf, name="export_pembayaran_pdf"),
