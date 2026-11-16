@@ -33,7 +33,7 @@
                     </span>
                 </td>
                 <td>
-                    <span class="text-slate-700 font-weight-medium">{{ bayar.bulan }}/{{ bayar.tahun }}</span>
+                    <span class="text-slate-700 font-weight-medium">{{ bayar.get_bulan_display }} ({{ bayar.bulan }}/{{ bayar.tahun }})</span>
                 </td>
                 <td class="text-muted small">
                     <i class="far fa-calendar-alt mr-1"></i>{{ bayar.tgl_pembayaran|date:"d-m-Y H:i"|default:"-" }}

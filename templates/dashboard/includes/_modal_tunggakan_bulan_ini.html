@@ -1,0 +1,94 @@
+{% load rupiah_filters %}
+{% load dict_extras %}
+
+<!-- Modal Daftar Pelanggan Belum Bayar Bulan Ini per Layanan -->
+{% for item in layanan %}
+<div class="modal fade" id="modalTunggakan_{{ item.nama_layanan }}" tabindex="-1" role="dialog" aria-labelledby="modalTunggakanLabel_{{ item.nama_layanan }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-box mr-3" style="width: 38px; height: 38px; background: rgba(245, 158, 11, 0.15); color: var(--accent-amber);">
+                        {% if item.nama_layanan == 'AIR' %}<i class="fas fa-tint"></i>{% else %}<i class="fas fa-wifi"></i>{% endif %}
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-main mb-0" id="modalTunggakanLabel_{{ item.nama_layanan }}">
+                            Daftar Tunggakan {{ item.nama_layanan }} - Bulan {{ nama_bulan_ini }} {{ tahun }}
+                        </h5>
+                        <small class="text-muted">Daftar warga/pelanggan yang belum melunasi iuran {{ item.nama_layanan }} pada bulan berjalan</small>
+                    </div>
+                </div>
+                <button type="button" class="close text-main" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" style="max-height: calc(80vh - 130px); overflow-y: auto;">
+                {% with unpaid_list=daftar_tunggakan_layanan|get_item:item.nama_layanan %}
+                {% if unpaid_list %}
+                <div class="table-responsive">
+                    <table class="table modern-table table-hover table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 45px;">No</th>
+                                <th>Nama Pelanggan</th>
+                                <th>No. Rumah</th>
+                                <th>Paket Layanan</th>
+                                <th class="text-right">Nominal Tagihan</th>
+                                <th class="text-center" style="width: 130px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in unpaid_list %}
+                            <tr>
+                                <td class="text-muted font-mono">{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="font-weight-bold text-main">{{ t.pelanggan.nama }}</div>
+                                    <small class="text-muted font-mono">{{ t.pelanggan.barcode|default:"-" }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-light border px-2 py-1 text-main font-weight-bold">
+                                        <i class="fas fa-home text-muted mr-1"></i>RT {{ t.pelanggan.rumah.rt|default:"-" }} / No. {{ t.pelanggan.rumah.no_rumah|default:"-" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1">
+                                        {{ t.jenis_layanan.nama_jenis }}
+                                    </span>
+                                </td>
+                                <td class="text-right font-mono font-weight-bold text-warning">
+                                    {% if t.jumlah_bayar and t.jumlah_bayar > 0 %}
+                                        {{ t.jumlah_bayar|rupiah }}
+                                    {% else %}
+                                        <span class="badge badge-pill badge-warning-subtle text-warning">Tarif Manual/Meteran</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-primary font-weight-bold"
+                                            onclick="window.openBarcodeScannerWithCode('{{ t.pelanggan.barcode }}')">
+                                        <i class="fas fa-cash-register mr-1"></i> Bayar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-success">
+                    <i class="fas fa-check-circle fa-3x mb-2 d-block"></i>
+                    <h6 class="font-weight-bold mb-1">Semua Pelanggan Sudah Lunas!</h6>
+                    <p class="small text-muted mb-0">Tidak ada tunggakan {{ item.nama_layanan }} untuk bulan {{ nama_bulan_ini }} {{ tahun }}.</p>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <span class="small text-muted">
+                    <i class="fas fa-info-circle text-primary mr-1"></i> Klik tombol <strong>Bayar</strong> untuk langsung memproses pembayaran pelanggan tersebut.
+                </span>
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

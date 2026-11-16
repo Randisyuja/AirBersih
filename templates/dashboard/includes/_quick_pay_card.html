@@ -7,68 +7,42 @@
                 </div>
                 <div>
                     <h6 class="m-0 font-weight-bold text-main">Loket Bayar Cepat</h6>
-                    <span class="text-muted small">Scan barcode atau pilih pelanggan</span>
+                    <span class="text-muted small">Scan QR kartu member atau kode pelanggan</span>
                 </div>
             </div>
-            <button type="button" class="btn btn-sm btn-secondary" id="btnOpenScannerDash" data-toggle="modal" data-target="#barcodeScannerModal" title="Buka Pemindai Barcode Kamera / USB">
-                <i class="fas fa-barcode mr-1"></i> Scan
-            </button>
         </div>
-        <div class="card-body p-4">
-            <!-- Quick Barcode Scan Bar -->
-            <div class="p-3 mb-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
-                <label for="quickBarcodeInput" class="form-label-modern mb-1">
-                    <i class="fas fa-qrcode text-primary mr-1"></i> SCAN QR KARTU MEMBER / BARCODE
-                </label>
-                <div class="d-flex">
-                    <input type="text" id="quickBarcodeInput" class="form-control form-control-sm font-mono mr-2"
-                           placeholder="Scan MBR00001 / PLG00001..." autocomplete="off">
-                    <button type="button" class="btn btn-sm btn-primary" id="btnQuickBarcodeScan" style="white-space: nowrap;">
-                        <i class="fas fa-qrcode mr-1"></i> Cek
-                    </button>
-                </div>
-                <div id="quickScanFilledInfo" class="small text-success font-weight-semibold mt-2 d-none"></div>
-            </div>
-
-            <form method="post" id="formLoketBayar">
-                {% csrf_token %}
-                <!-- Field Pilih Pelanggan -->
-                <div class="form-group mb-3">
-                    <label for="id_pelanggan" class="form-label-modern mb-1">
-                        <i class="fas fa-user mr-1 text-primary"></i> PILIH PELANGGAN <span class="text-danger">*</span>
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+            <div>
+                <!-- Quick Barcode Scan Bar -->
+                <div class="p-3 mb-3 rounded" style="background: var(--surface-2); border: 1px solid var(--border-subtle);">
+                    <label for="quickBarcodeInput" class="form-label-modern mb-2">
+                        <i class="fas fa-qrcode text-primary mr-1"></i> SCAN QR KARTU MEMBER / BARCODE
                     </label>
-                    <div class="select2-wrapper">
-                        {{ form_pembayaran.pelanggan }}
+                    <div class="d-flex mb-2">
+                        <input type="text" id="quickBarcodeInput" class="form-control font-mono mr-2"
+                               placeholder="Scan MBR00001 / PLG00001..." autocomplete="off">
+                        <button type="button" class="btn btn-primary px-3 font-weight-bold" id="btnQuickBarcodeScan" style="white-space: nowrap;">
+                            <i class="fas fa-qrcode mr-1"></i> Cek
+                        </button>
                     </div>
-                    <small class="form-text text-muted mt-1">
-                        <i class="fas fa-search mr-1 text-primary"></i> Ketik <strong>Nama</strong>, <strong>RT</strong>, atau <strong>Nomor Rumah</strong>
+                    <small class="text-muted d-block">
+                        <i class="fas fa-bolt text-primary mr-1"></i> Ketik atau scan kode member (<code>MBR...</code>) maupun kode pelanggan (<code>PLG...</code>), lalu tekan <strong>Enter</strong> atau klik <strong>Cek</strong>.
                     </small>
+                    <div id="quickScanFilledInfo" class="small text-success font-weight-semibold mt-2 d-none"></div>
                 </div>
 
-                <!-- Field Jenis Layanan -->
-                <div class="form-group mb-3">
-                    <label for="id_jenis_layanan" class="form-label-modern mb-1">
-                        <i class="fas fa-concierge-bell mr-1 text-primary"></i> JENIS LAYANAN <span class="text-danger">*</span>
-                    </label>
-                    <div class="select2-wrapper">
-                        {{ form_pembayaran.jenis_layanan }}
+                <!-- Panduan Singkat Loket -->
+                <div class="p-3 rounded" style="background: var(--surface-2); border: 1px dashed var(--border-subtle);">
+                    <div class="small font-weight-bold text-main mb-2">
+                        <i class="fas fa-info-circle text-primary mr-1"></i> Alur Pembayaran Loket:
                     </div>
+                    <ol class="small text-muted pl-3 mb-0" style="line-height: 1.6;">
+                        <li>Scan QR Kartu Member atau masukkan kode pelanggan pada kolom di atas lalu klik <strong>Cek</strong>.</li>
+                        <li>Pilih bulan tagihan yang ingin dibayar (untuk layanan <strong>Meteran/Dinamis</strong>, isi nominal tarif manual pada kolom nominal).</li>
+                        <li>Konfirmasi rincian pembayaran dan cetak <strong>Struk Thermal</strong>.</li>
+                    </ol>
                 </div>
-
-                <!-- Field Periode Bulan -->
-                <div class="form-group mb-4">
-                    <label for="id_bulan" class="form-label-modern mb-1">
-                        <i class="far fa-calendar-alt mr-1 text-primary"></i> PERIODE BULAN <span class="text-danger">*</span>
-                    </label>
-                    <div class="select2-wrapper">
-                        {{ form_pembayaran.bulan }}
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block py-2 font-weight-bold" id="btnSubmitBayar">
-                    <i class="fas fa-check-circle mr-1"></i> Simpan Pembayaran
-                </button>
-            </form>
+            </div>
         </div>
     </div>
 </div>

@@ -12,10 +12,10 @@ from apps.pelanggan.models import Langganan, Pelanggan, Tagihan
 from apps.pembayaran.models import Pembayaran
 from django.http import JsonResponse
 from apps.pelanggan.forms import TagihanUpdate
-from apps.pembayaran.choices import StatusChoice
+from apps.pembayaran.choices import BulanChoice, StatusChoice
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from apps.users.forms import PenggunaForm, LoginForm
+from apps.users.forms import KasirCreationForm, LoginForm, PenggunaForm
 from django.db.models import Sum
 from apps.layanan.models import JenisLayanan, Layanan
 
@@ -30,17 +30,27 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         layanan = Layanan.objects.all()
 
         context["status_layanan"] = {}
+        context["daftar_tunggakan_layanan"] = {}
 
         for i in layanan:
-            context["status_layanan"][i] = (
+            tunggakan_qs = (
                 Tagihan.objects.filter(
-                    jenis_layanan__layanan__nama_layanan=i,
+                    jenis_layanan__layanan__nama_layanan=i.nama_layanan,
                     bulan=bulan,
                     tahun=tahun,
-                    status_tagihan=StatusChoice.Belum
+                    status_tagihan=StatusChoice.Belum,
                 )
-                .select_related("pelanggan", "pelanggan__rumah")
-                .count())
+                .select_related(
+                    "pelanggan",
+                    "pelanggan__rumah",
+                    "jenis_layanan",
+                    "jenis_layanan__layanan",
+                )
+                .order_by("pelanggan__nama")
+            )
+            tunggakan_list = list(tunggakan_qs)
+            context["status_layanan"][i] = len(tunggakan_list)
+            context["daftar_tunggakan_layanan"][i.nama_layanan] = tunggakan_list
 
         context["recent"] = (
             Pembayaran.objects.filter(status_bayar=StatusChoice.Lunas)
@@ -49,25 +59,24 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         )
 
         context["uang_bulan_ini"] = (
-                Pembayaran.objects.filter(
-                    bulan=bulan,
-                    tahun=tahun,
-                    status_bayar=StatusChoice.Lunas
-                )
-                .aggregate(total_uang=Sum("jumlah_bayar"))
-                ["total_uang"] or 0
+            Pembayaran.objects.filter(
+                bulan=bulan,
+                tahun=tahun,
+                status_bayar=StatusChoice.Lunas,
+            ).aggregate(total_uang=Sum("jumlah_bayar"))["total_uang"]
+            or 0
         )
 
         context["uang_tahun_ini"] = (
-                Pembayaran.objects.filter(
-                    tahun=tahun,
-                    status_bayar=StatusChoice.Lunas
-                )
-                .aggregate(total_uang=Sum("jumlah_bayar"))
-                ["total_uang"] or 0
+            Pembayaran.objects.filter(
+                tahun=tahun,
+                status_bayar=StatusChoice.Lunas,
+            ).aggregate(total_uang=Sum("jumlah_bayar"))["total_uang"]
+            or 0
         )
 
         context["bulan"] = bulan
+        context["nama_bulan_ini"] = BulanChoice(bulan).label if bulan in BulanChoice.values else str(bulan)
         context["tahun"] = tahun
         context["layanan"] = layanan
         context["form_pembayaran"] = TagihanUpdate()
@@ -140,13 +149,6 @@ class TambahKasir(LoginRequiredMixin, CreateView):
     template_name = "users/form_users.html"
     success_url = reverse_lazy("daftar_users")
 
-    def form_valid(self, form):
-        # pastikan password disimpan dengan benar (hash)
-        kasir = form.save(commit=False)
-        kasir.set_password(form.cleaned_data["password"])
-        kasir.save()
-        return super().form_valid(form)
-
 
 class UpdateKasir(LoginRequiredMixin, UpdateView):
     model = Kasir
@@ -204,22 +206,63 @@ class UserLogoutView(LogoutView):
 
 class SignUpView(CreateView):
     model = User
-    form_class = UserCreationForm  # bisa custom form kalau mau tambah field
+    form_class = KasirCreationForm
     template_name = "users/signup.html"
-    success_url = reverse_lazy("login")  # setelah daftar, ke login
+    success_url = reverse_lazy("login")
 
 
 @login_required()
 def laporan_recent(request):
-    from django.template.loader import render_to_string
     from django.core.paginator import Paginator
+    from django.template.loader import render_to_string
+
+    bulan = timezone.now().month
+    tahun = timezone.now().year
+
     pembayaran_list = (
         Pembayaran.objects.filter(status_bayar=StatusChoice.Lunas)
         .select_related("pelanggan", "pelanggan__rumah", "jenis_layanan", "jenis_layanan__layanan", "kasir")
         .order_by("-tgl_pembayaran", "-id_pembayaran")
     )
+    first_payment = pembayaran_list.first()
+    latest_id = first_payment.id_pembayaran if first_payment else 0
+
     paginator = Paginator(pembayaran_list, 10)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
     html = render_to_string("recent_table.html", {"recent": page_obj}, request=request)
-    return JsonResponse({"html": html})
+
+    uang_bulan_ini = (
+        Pembayaran.objects.filter(
+            bulan=bulan,
+            tahun=tahun,
+            status_bayar=StatusChoice.Lunas,
+        ).aggregate(total_uang=Sum("jumlah_bayar"))["total_uang"]
+        or 0
+    )
+    uang_tahun_ini = (
+        Pembayaran.objects.filter(
+            tahun=tahun,
+            status_bayar=StatusChoice.Lunas,
+        ).aggregate(total_uang=Sum("jumlah_bayar"))["total_uang"]
+        or 0
+    )
+
+    tunggakan_counts = {}
+    for l_obj in Layanan.objects.all():
+        tunggakan_counts[l_obj.nama_layanan] = Tagihan.objects.filter(
+            jenis_layanan__layanan__nama_layanan=l_obj.nama_layanan,
+            bulan=bulan,
+            tahun=tahun,
+            status_tagihan=StatusChoice.Belum,
+        ).count()
+
+    return JsonResponse(
+        {
+            "html": html,
+            "latest_id": latest_id,
+            "uang_bulan_ini": uang_bulan_ini,
+            "uang_tahun_ini": uang_tahun_ini,
+            "tunggakan_counts": tunggakan_counts,
+        }
+    )
