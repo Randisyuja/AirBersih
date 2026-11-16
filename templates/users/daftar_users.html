@@ -11,12 +11,12 @@
             <h1 class="h3 font-weight-bold text-slate-800 mb-1">Manajemen Petugas & Pengguna</h1>
             <p class="text-muted small mb-0">Kelola akun kasir, kredensial login, dan otorisasi sistem</p>
         </div>
-        <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
+        <div class="mt-3 mt-md-0 d-flex flex-wrap align-items-center gap-2">
             {% url 'export_users' as export_url %}
             {% url 'import_users' as import_url %}
             {% url 'template_users' as template_users %}
             {% include "includes/_excel_actions.html" with export_url=export_url import_url=import_url template_url=template_users modal_id="users" title="Data Pengguna / Kasir" %}
-            <a href="{% url 'tambah_users' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+            <a href="{% url 'tambah_users' %}" class="btn btn-primary btn-sm px-3 shadow-sm mb-1" style="border-radius: 8px;">
                 <i class="fas fa-user-plus mr-1"></i> Tambah Pengguna
             </a>
         </div>

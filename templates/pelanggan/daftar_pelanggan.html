@@ -11,12 +11,12 @@
             <h1 class="h3 font-weight-bold text-slate-800 mb-1" id="pelangganPageTitle">Data Pelanggan & Warga</h1>
             <p class="text-muted small mb-0">Kelola informasi identitas warga, nomor kontak, serta penempatan rumah RT 05 & RT 06</p>
         </div>
-        <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
+        <div class="mt-3 mt-md-0 d-flex flex-wrap align-items-center gap-2">
             {% url 'export_pelanggan' as export_url %}
             {% url 'import_pelanggan' as import_url %}
             {% url 'template_pelanggan' as template_pelanggan %}
             {% include "includes/_excel_actions.html" with export_url=export_url import_url=import_url template_url=template_pelanggan modal_id="pelanggan" title="Data Pelanggan" %}
-            <a href="{% url 'tambah_pelanggan' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;" id="btnTambahPelanggan">
+            <a href="{% url 'tambah_pelanggan' %}" class="btn btn-primary btn-sm px-3 shadow-sm mb-1" style="border-radius: 8px;" id="btnTambahPelanggan">
                 <i class="fas fa-user-plus mr-1"></i> Tambah Pelanggan
             </a>
         </div>

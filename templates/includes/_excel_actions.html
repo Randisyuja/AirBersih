@@ -4,16 +4,16 @@ Usage:
   {% include "includes/_excel_actions.html" with export_url=export_url import_url=import_url template_url=template_url modal_id="rumah" title="Data Rumah" %}
 {% endcomment %}
 
-<a href="{{ export_url }}" id="btn-export-{{ modal_id }}" class="btn btn-success btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+<a href="{{ export_url }}" id="btn-export-{{ modal_id }}" class="btn btn-success btn-sm px-3 shadow-sm mr-2 mb-1" style="border-radius: 8px;">
     <i class="fas fa-file-excel mr-1"></i> Download Excel
 </a>
 
-<button type="button" id="btn-import-{{ modal_id }}" class="btn btn-outline-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;" data-toggle="modal" data-target="#modal-import-{{ modal_id }}">
+<button type="button" id="btn-import-{{ modal_id }}" class="btn btn-outline-primary btn-sm px-3 shadow-sm mr-2 mb-1" style="border-radius: 8px;" data-toggle="modal" data-target="#modal-import-{{ modal_id }}">
     <i class="fas fa-file-upload mr-1"></i> Import Excel
 </button>
 
 {% if template_url %}
-<a href="{{ template_url }}" id="btn-template-{{ modal_id }}" class="btn btn-outline-info btn-sm px-3 shadow-sm" style="border-radius: 8px;">
+<a href="{{ template_url }}" id="btn-template-{{ modal_id }}" class="btn btn-outline-info btn-sm px-3 shadow-sm mr-2 mb-1" style="border-radius: 8px;">
     <i class="fas fa-file-download mr-1"></i> Template Excel
 </a>
 {% endif %}
