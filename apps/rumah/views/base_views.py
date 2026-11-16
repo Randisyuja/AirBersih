@@ -1,9 +1,11 @@
-from django.shortcuts import redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from apps.rumah.models import Rumah
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import ProtectedError
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from apps.rumah.forms import RumahForm
+from apps.rumah.models import Rumah
 
 
 class DaftarRumah(LoginRequiredMixin, ListView):
@@ -66,11 +68,22 @@ class UpdateRumah(LoginRequiredMixin, UpdateView):
 
 
 def hapus_rumah(request, pk):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = get_object_or_404(Rumah, pk=pk)
-        data.delete()
-        return redirect('daftar_rumah')
-    return redirect('daftar_rumah')
+        rt_no = f"RT {data.rt} No. {data.no_rumah}"
+        try:
+            data.delete()
+            messages.success(request, f"Data rumah {rt_no} berhasil dihapus.")
+        except ProtectedError as exc:
+            referenced_objects = [str(obj) for obj in getattr(exc, "protected_objects", [])]
+            detail = f" (terhubung dengan: {', '.join(referenced_objects)})" if referenced_objects else ""
+            messages.error(
+                request,
+                f"Gagal menghapus Rumah {rt_no} karena masih terhubung dengan data pelanggan/penghuni aktif{detail}. "
+                f"Silakan hapus atau pindahkan data pelanggan terkait terlebih dahulu.",
+            )
+        return redirect("daftar_rumah")
+    return redirect("daftar_rumah")
 
 
 from django.http import JsonResponse

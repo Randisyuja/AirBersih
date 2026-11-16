@@ -1,9 +1,11 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
-from django.urls import reverse_lazy
-from apps.layanan.models import Layanan, JenisLayanan
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.layanan.forms import LayananForm, JenisLayananForm
+from django.db.models import ProtectedError
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from apps.layanan.forms import JenisLayananForm, LayananForm
+from apps.layanan.models import JenisLayanan, Layanan
 
 
 class DaftarLayanan(LoginRequiredMixin, ListView):
@@ -27,11 +29,22 @@ class UpdateLayanan(LoginRequiredMixin, UpdateView):
 
 
 def hapus_layanan(request, pk):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = get_object_or_404(Layanan, pk=pk)
-        data.delete()
-        return redirect('daftar_layanan')
-    return redirect('daftar_layanan')
+        nama = data.nama_layanan
+        try:
+            data.delete()
+            messages.success(request, f"Layanan '{nama}' berhasil dihapus.")
+        except ProtectedError as exc:
+            referenced = [str(obj) for obj in getattr(exc, "protected_objects", [])]
+            detail = f" (terhubung dengan: {', '.join(referenced)})" if referenced else ""
+            messages.error(
+                request,
+                f"Gagal menghapus Layanan '{nama}' karena masih terhubung dengan data jenis layanan/transaksi aktif{detail}. "
+                f"Silakan hapus sub-layanan terkait terlebih dahulu.",
+            )
+        return redirect("daftar_layanan")
+    return redirect("daftar_layanan")
 
 
 class DaftarJenisLayanan(LoginRequiredMixin, ListView):
@@ -55,9 +68,20 @@ class UpdateJenisLayanan(LoginRequiredMixin, UpdateView):
 
 
 def hapus_jenis_layanan(request, pk):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = get_object_or_404(JenisLayanan, pk=pk)
-        data.delete()
-        return redirect('daftar_jenis_layanan')  # ganti dengan nama url list kamu
-    return redirect('daftar_jenis_layanan')
+        nama = data.nama_jenis
+        try:
+            data.delete()
+            messages.success(request, f"Jenis layanan '{nama}' berhasil dihapus.")
+        except ProtectedError as exc:
+            referenced = [str(obj) for obj in getattr(exc, "protected_objects", [])]
+            detail = f" (terhubung dengan: {', '.join(referenced)})" if referenced else ""
+            messages.error(
+                request,
+                f"Gagal menghapus Jenis Layanan '{nama}' karena masih terhubung dengan langganan/tagihan aktif{detail}. "
+                f"Silakan hapus atau nonaktifkan langganan terkait terlebih dahulu.",
+            )
+        return redirect("daftar_jenis_layanan")
+    return redirect("daftar_jenis_layanan")
 

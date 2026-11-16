@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from apps.pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
 from django.contrib import messages
+from django.db.models import ProtectedError
 from apps.pelanggan.utils import generate_tagihan_setahun
 from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
@@ -87,11 +88,22 @@ class UpdatePelanggan(LoginRequiredMixin, UpdateView):
 
 
 def hapus_pelanggan(request, pk):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = get_object_or_404(Pelanggan, pk=pk)
-        data.delete()
-        return redirect('daftar_pelanggan')
-    return redirect('daftar_pelanggan')
+        nama = data.nama
+        try:
+            data.delete()
+            messages.success(request, f"Pelanggan '{nama}' berhasil dihapus.")
+        except ProtectedError as exc:
+            referenced = [str(obj) for obj in getattr(exc, "protected_objects", [])]
+            detail = f" (terhubung dengan: {', '.join(referenced)})" if referenced else ""
+            messages.error(
+                request,
+                f"Gagal menghapus Pelanggan '{nama}' karena masih terhubung dengan transaksi/tagihan aktif{detail}. "
+                f"Silakan selesaikan data terkait terlebih dahulu.",
+            )
+        return redirect("daftar_pelanggan")
+    return redirect("daftar_pelanggan")
 
 
 class DaftarLangganan(LoginRequiredMixin, ListView):
@@ -134,11 +146,21 @@ class UpdateLangganan(LoginRequiredMixin, UpdateView):
 
 
 def hapus_langganan(request, pk):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = get_object_or_404(Langganan, pk=pk)
-        data.delete()
-        return redirect('daftar_langganan')
-    return redirect('daftar_langganan')
+        label = f"{data.pelanggan.nama} ({data.jenis_layanan})"
+        try:
+            data.delete()
+            messages.success(request, f"Langganan '{label}' berhasil dihapus.")
+        except ProtectedError as exc:
+            referenced = [str(obj) for obj in getattr(exc, "protected_objects", [])]
+            detail = f" (terhubung dengan: {', '.join(referenced)})" if referenced else ""
+            messages.error(
+                request,
+                f"Gagal menghapus Langganan '{label}' karena masih terhubung dengan tagihan/transaksi aktif{detail}.",
+            )
+        return redirect("daftar_langganan")
+    return redirect("daftar_langganan")
 
 
 @login_required()
