@@ -259,6 +259,27 @@ class RevenueAndBarcodeFlowTests(TestCase):
         self.assertEqual(struk_qr_res.status_code, 200)
         self.assertEqual(struk_qr_res["Content-Type"], "image/svg+xml")
 
+    def test_pay_multiple_months_returns_combined_thermal_receipt(self):
+        """Paying multiple dues at once returns a single combined thermal receipt URL (?ids=...)."""
+        pay_url = reverse("pay_by_barcode_api")
+        res = self.client.post(
+            pay_url,
+            data=json.dumps({"barcode": "PLG99001", "pay_all": True}),
+            content_type="application/json",
+        )
+        self.assertEqual(res.status_code, 200)
+        body = res.json()
+        self.assertEqual(body["settled_count"], 2)
+        self.assertEqual(body["settled_total"], 130000)
+        self.assertIn("?ids=", body["receipt_url"])
+
+        struk_res = self.client.get(body["receipt_url"])
+        self.assertEqual(struk_res.status_code, 200)
+        self.assertContains(struk_res, "Januari 2026")
+        self.assertContains(struk_res, "Februari 2026")
+        self.assertContains(struk_res, "130.000")
+        self.assertContains(struk_res, "(2 Item)")
+
     def test_pay_selected_dues_by_barcode_api(self):
         """User can select specific tagihan IDs to pay via barcode API."""
         tagihan_air_mar = Tagihan.objects.create(
