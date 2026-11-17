@@ -158,17 +158,22 @@ def pay_by_barcode_api(request: HttpRequest) -> JsonResponse:
             )
 
         updated_dto = get_customer_dues_by_barcode(barcode)
+        primary_payment = settled_list[0]
         receipt_url = reverse(
-            "cetak_struk_thermal", kwargs={"pk": last_payment.id_pembayaran}
+            "cetak_struk_thermal", kwargs={"pk": primary_payment.id_pembayaran}
         )
+        if len(settled_list) > 1:
+            ids_str = ",".join(str(p.id_pembayaran) for p in settled_list)
+            receipt_url = f"{receipt_url}?ids={ids_str}"
         settled_total = sum(p.jumlah_bayar for p in settled_list)
-        cust_name = last_payment.pelanggan.nama if last_payment.pelanggan else "-"
+        cust_name = primary_payment.pelanggan.nama if primary_payment.pelanggan else "-"
 
         return JsonResponse(
             {
                 "status": "success",
                 "message": msg,
-                "receipt_id": last_payment.id_pembayaran,
+                "receipt_id": primary_payment.id_pembayaran,
+                "receipt_ids": [p.id_pembayaran for p in settled_list],
                 "receipt_url": receipt_url,
                 "customer_name": cust_name,
                 "settled_count": len(settled_list),

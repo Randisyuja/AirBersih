@@ -29,7 +29,10 @@
         if (nameEl) nameEl.textContent = custName;
         if (countEl) countEl.textContent = duesCount + ' Tagihan';
         if (totalEl) totalEl.textContent = formatRp(totalBayar);
-        if (printBtn && resBody.receipt_url) printBtn.href = resBody.receipt_url + '?autoprint=1';
+        if (printBtn && resBody.receipt_url) {
+            var sep = resBody.receipt_url.indexOf('?') !== -1 ? '&' : '?';
+            printBtn.href = resBody.receipt_url + sep + 'autoprint=1';
+        }
         if (window.jQuery) { $('#paymentSuccessModal').modal('show'); setTimeout(function () { $('.modal-backdrop:last').css('z-index', 1065); }, 20); }
     }
     function openErrorModal(errorMsg) {

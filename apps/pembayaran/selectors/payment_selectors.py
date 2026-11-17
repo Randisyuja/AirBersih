@@ -95,6 +95,23 @@ def get_pembayaran_by_id(pk: int) -> Optional[Pembayaran]:
     )
 
 
+def get_pembayaran_by_ids(pks: List[int]) -> List[Pembayaran]:
+    """Retrieves multiple Pembayaran records ordered by period for combined receipt printing."""
+    if not pks:
+        return []
+    return list(
+        Pembayaran.objects.filter(pk__in=pks)
+        .select_related(
+            "pelanggan",
+            "pelanggan__rumah",
+            "jenis_layanan",
+            "jenis_layanan__layanan",
+            "kasir",
+        )
+        .order_by("tahun", "bulan", "id_pembayaran")
+    )
+
+
 def get_active_langganan_by_pelanggan_id(pelanggan_id: int) -> QuerySet[Langganan]:
     """Retrieves active subscriptions for a customer with joined service types."""
     return (

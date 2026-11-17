@@ -7,7 +7,7 @@
 {% block extra_css %}
 <style>
     .thermal-receipt-box {
-        width: 300px;
+        width: 340px;
         margin: 0 auto;
         padding: 16px;
         background: var(--surface-1);
@@ -17,6 +17,9 @@
         font-family: var(--font-mono);
         font-size: 12px;
         line-height: 1.45;
+    }
+    .thermal-receipt-box.paper-58mm {
+        width: 280px;
     }
     .thermal-divider {
         border-top: 1px dashed var(--border-subtle);
@@ -28,17 +31,20 @@
         margin-bottom: 4px;
     }
     @media print {
-        @page { size: 58mm auto; margin: 0; }
+        @page { size: 80mm auto; margin: 0; }
         body * { visibility: hidden; }
         #thermalReceiptPrintArea, #thermalReceiptPrintArea * { visibility: visible; }
         #thermalReceiptPrintArea {
             position: fixed;
             left: 0;
             top: 0;
-            width: 58mm;
+            width: 80mm;
             border: none;
             padding: 4mm;
             box-shadow: none;
+        }
+        #thermalReceiptPrintArea.paper-58mm {
+            width: 58mm;
         }
         .no-print { display: none !important; }
     }
@@ -47,22 +53,50 @@
 
 {% block content %}
 <div class="page-content pb-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom no-print">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3 pb-2 border-bottom no-print gap-2">
         <div>
             <h1 class="h3 font-weight-bold text-main mb-1">Struk Pembayaran Thermal (58mm / 80mm)</h1>
-            <p class="text-muted small mb-0">Siap dicetak langsung ke printer kasir thermal Bluetooth / USB</p>
+            <p class="text-muted small mb-0">Cetak langsung via Bluetooth/USB (ESC/POS) tanpa dialog atau via Print Browser</p>
         </div>
-        <div class="d-flex">
-            <a href="{% url 'daftar_pembayaran' %}" class="btn btn-secondary btn-sm mr-2">
-                <i class="fas fa-arrow-left mr-1"></i> Daftar Pembayaran
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'daftar_pembayaran' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left mr-1"></i> Daftar
             </a>
-            <button type="button" class="btn btn-primary btn-sm" id="btnPrintThermalReceipt" onclick="window.print()">
+            <select id="escposPaperSize" class="form-control form-control-sm" style="width: auto; height: 34px !important; font-size: 12px !important;" title="Ukuran Kertas Thermal">
+                <option value="80" selected>80mm (48 Kolom)</option>
+                <option value="58">58mm (32 Kolom)</option>
+            </select>
+            <select id="escposBaudRate" class="form-control form-control-sm" style="width: auto; height: 34px !important; font-size: 12px !important;" title="Baud Rate Serial/Bluetooth COM">
+                <option value="9600" selected>9600 bps (Default)</option>
+                <option value="115200">115200 bps</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" id="btnPrintEscPosSerial" title="Cetak langsung ke Bluetooth COM Port / USB Serial tanpa dialog">
+                <i class="fas fa-bluetooth-b mr-1"></i> Direct Print (COM / USB)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnPrintEscPosBle" title="Cetak langsung ke Printer Thermal BLE">
+                <i class="fas fa-broadcast-tower mr-1"></i> BLE Print
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnPrintThermalReceipt" onclick="window.print()">
                 <i class="fas fa-print mr-1"></i> Print Struk Thermal
             </button>
         </div>
     </div>
 
-    <div class="thermal-receipt-box" id="thermalReceiptPrintArea">
+    <div id="escposStatusAlert" class="alert d-none mb-3 no-print" role="alert"></div>
+
+    <div class="thermal-receipt-box" id="thermalReceiptPrintArea"
+         data-no-struk="{{ no_struk }}"
+         data-tanggal="{{ pembayaran.tgl_pembayaran|date:'d/m/Y H:i'|default:'-' }}"
+         data-kasir="{{ pembayaran.kasir.username|default:'Sistem' }}"
+         data-kode-member="{{ kode_member }}"
+         data-nama="{{ pelanggan.nama }}"
+         data-rumah="{% if rumah %}RT {{ rumah.rt }} / {{ rumah.no_rumah }}{% else %}-{% endif %}"
+         data-no-hp="{{ pelanggan.no_hp|default:'-' }}"
+         data-layanan="{{ jenis_layanan.layanan.nama_layanan }} - {{ jenis_layanan.nama_jenis }}"
+         data-periode="{{ nama_bulan }} {{ pembayaran.tahun }}"
+         data-items="{{ items_json|escape }}"
+         data-total="{{ total_bayar|rupiah }}"
+         data-status="{{ pembayaran.status_bayar|upper }}">
         <div class="text-center mb-2">
             <div class="font-weight-bold" style="font-size: 14px;">JOGO TIRTO</div>
             <div class="small text-muted">SIAP AIR BERSIH &amp; WIFI WARGA</div>
@@ -105,19 +139,21 @@
 
         <div class="thermal-divider"></div>
 
-        <div class="mb-1">
-            <div class="font-weight-bold">{{ jenis_layanan.layanan.nama_layanan }} - {{ jenis_layanan.nama_jenis }}</div>
+        {% for item in items %}
+        <div class="mb-2">
+            <div class="font-weight-bold">{{ item.layanan }}</div>
             <div class="thermal-row">
-                <span>Periode {{ nama_bulan }} {{ pembayaran.tahun }}</span>
-                <strong>{{ pembayaran.jumlah_bayar|rupiah }}</strong>
+                <span>Periode {{ item.periode }}</span>
+                <strong>{{ item.jumlah_bayar|rupiah }}</strong>
             </div>
         </div>
+        {% endfor %}
 
         <div class="thermal-divider"></div>
 
         <div class="thermal-row" style="font-size: 14px;">
-            <strong>TOTAL BAYAR</strong>
-            <strong id="receiptTotalBayar">{{ pembayaran.jumlah_bayar|rupiah }}</strong>
+            <strong>TOTAL BAYAR{% if is_batch %} ({{ items|length }} Item){% endif %}</strong>
+            <strong id="receiptTotalBayar">{{ total_bayar|rupiah }}</strong>
         </div>
         <div class="thermal-row">
             <span>Status:</span>
@@ -136,6 +172,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/thermal-escpos.js' %}?v=20261117b"></script>
 {% if autoprint %}
 <script>
     window.addEventListener('load', function () {
