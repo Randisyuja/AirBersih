@@ -26,18 +26,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-fallback-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
 AUTH_USER_MODEL = "users.Kasir"
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver', '.railway.app']
+_raw_allowed = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost,testserver,.railway.app")
+ALLOWED_HOSTS = [h.strip() for h in _raw_allowed.split(",") if h.strip()]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://airbersih-production.up.railway.app",
-]
+_raw_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "https://airbersih-production.up.railway.app")
+CSRF_TRUSTED_ORIGINS = [c.strip() for c in _raw_csrf.split(",") if c.strip()]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
