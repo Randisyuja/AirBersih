@@ -149,9 +149,162 @@ footer.sticky-footer {
     font-size: 0.85rem !important; margin: 0.1rem 0 !important; padding: 0.45rem 0.75rem !important;
 }
 .sidebar .collapse-inner .collapse-item:hover, .sidebar .collapse-inner .collapse-item.active { background: var(--surface-1) !important; color: var(--text-main) !important; }
-.sidebar.toggled { width: 5.5rem !important; }
-.sidebar.toggled .nav-item { padding: 0 0.35rem !important; }
-.sidebar.toggled .sidebar-brand-text, .sidebar.toggled .sidebar-heading, .sidebar.toggled .nav-item .nav-link span { display: none !important; }
+/* 5.1 COLLAPSED / TOGGLED SIDEBAR CENTERING & POLISH */
+.sidebar.toggled {
+    width: 5.5rem !important;
+    overflow: visible !important;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sidebar.toggled .sidebar-brand {
+    height: 4.5rem !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sidebar.toggled .sidebar-brand .sidebar-brand-icon {
+    margin: 0 !important;
+    padding: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sidebar.toggled .sidebar-brand-text,
+.sidebar.toggled .sidebar-heading {
+    display: none !important;
+}
+
+.sidebar.toggled hr.sidebar-divider {
+    width: calc(100% - 1.5rem) !important;
+    margin: 0.5rem auto !important;
+}
+
+.sidebar.toggled .nav-item {
+    width: 100% !important;
+    padding: 0.2rem 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: relative !important;
+}
+
+.sidebar.toggled .nav-item .nav-link {
+    width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: var(--radius-md) !important;
+    text-align: center !important;
+    position: relative !important;
+}
+
+.sidebar.toggled .nav-item .nav-link i {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 1.15rem !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sidebar.toggled .nav-item .nav-link span {
+    display: none !important;
+}
+
+.sidebar.toggled .nav-item .nav-link[data-toggle="collapse"]::after {
+    display: none !important;
+}
+
+.sidebar.toggled .nav-item.active > .nav-link,
+.sidebar.toggled .nav-item .nav-link.active {
+    border-left: none !important;
+    background: var(--surface-2) !important;
+    color: var(--accent) !important;
+    box-shadow: inset 0 0 0 1.5px var(--accent) !important;
+}
+
+.sidebar.toggled .nav-item.active > .nav-link i,
+.sidebar.toggled .nav-item .nav-link.active i {
+    color: var(--accent) !important;
+}
+
+.sidebar.toggled .nav-item .nav-link:hover {
+    background: var(--surface-2) !important;
+    color: var(--text-main) !important;
+}
+
+.sidebar.toggled .nav-item .nav-link:hover i {
+    color: var(--accent) !important;
+}
+
+@media (min-width: 768px) {
+    .sidebar.toggled .nav-item .collapse {
+        position: absolute !important;
+        left: calc(5.5rem + 0.5rem) !important;
+        top: 0 !important;
+        width: 13rem !important;
+        z-index: 1050 !important;
+        box-sizing: border-box !important;
+    }
+    .sidebar.toggled .nav-item .collapse .collapse-inner {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+        background: var(--surface-1) !important;
+        border: 1px solid var(--border-subtle) !important;
+        padding: 0.5rem !important;
+        border-radius: var(--radius-md) !important;
+    }
+}
+
+/* 5.2 SIDEBAR TOGGLER BUTTON */
+.sidebar #sidebarToggle {
+    background: var(--surface-2) !important;
+    color: var(--text-muted) !important;
+    border: 1px solid var(--border-subtle) !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+}
+
+.sidebar #sidebarToggle:hover {
+    background: var(--surface-1) !important;
+    color: var(--text-main) !important;
+    border-color: var(--accent) !important;
+}
+
+.sidebar #sidebarToggle::after,
+.sidebar.toggled #sidebarToggle::after {
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+.sidebar.toggled .text-center {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.sidebar.toggled #sidebarToggle {
+    margin: 0 auto !important;
+}
 
 /* 6. TOPBAR & THEME TOGGLE */
 .topbar, nav.navbar.topbar {
