@@ -1,0 +1,94 @@
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tableContainer = document.getElementById("pembayaranTableContainer");
+    const tableBody = document.getElementById("pembayaranTableBody");
+    const sentinel = document.getElementById("scrollSentinel");
+    const spinner = document.getElementById("loadingSpinner");
+    const endNotice = document.getElementById("endOfDataNotice");
+    const emptyRow = document.getElementById("emptyTableRow");
+
+    if (!tableContainer || !tableBody || !sentinel) return;
+
+    let hasNext = tableContainer.getAttribute("data-has-next") === "true";
+    let nextPage = parseInt(tableContainer.getAttribute("data-next-page") || "2", 10);
+    let isLoading = false;
+
+    // Check if initial data is already at the end
+    if (!hasNext) {
+        if (!emptyRow && endNotice) {
+            endNotice.classList.remove("d-none");
+        }
+        return;
+    }
+
+    function getFilterParams(page) {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set("page", page);
+        urlParams.set("ajax", "1");
+        return urlParams.toString();
+    }
+
+    async function loadMoreData() {
+        if (isLoading || !hasNext) return;
+        isLoading = true;
+
+        if (spinner) spinner.classList.remove("d-none");
+
+        try {
+            const query = getFilterParams(nextPage);
+            const response = await fetch(`${window.location.pathname}?${query}`, {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.html && data.html.trim().length > 0) {
+                // Insert new rows right before sentinel
+                sentinel.insertAdjacentHTML("beforebegin", data.html);
+            }
+
+            hasNext = data.has_next;
+            nextPage = data.next_page;
+            tableContainer.setAttribute("data-has-next", hasNext ? "true" : "false");
+            if (nextPage) tableContainer.setAttribute("data-next-page", nextPage);
+
+            // Update badge if exists
+            const badge = document.getElementById("pembayaranTotalBadge");
+            if (badge && data.total_count !== undefined) {
+                badge.textContent = `Total: ${data.total_count} Transaksi`;
+            }
+
+            if (!hasNext) {
+                observer.unobserve(sentinel);
+                if (endNotice) endNotice.classList.remove("d-none");
+            }
+        } catch (err) {
+            console.error("Gagal memuat transaksi berikutnya:", err);
+        } finally {
+            isLoading = false;
+            if (spinner) spinner.classList.add("d-none");
+        }
+    }
+
+    const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting && hasNext && !isLoading) {
+                loadMoreData();
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: "250px", // pre-fetch 250px before reaching bottom
+        threshold: 0.1
+    });
+
+    observer.observe(sentinel);
+});
+</script>

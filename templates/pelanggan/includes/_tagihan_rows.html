@@ -1,0 +1,64 @@
+{% load rupiah_filters %}
+{% for tagihan in tagihan_list %}
+    <tr class="tagihan-row" data-id="{{ tagihan.id_tagihan }}">
+        <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">
+            {% if page_obj %}{{ forloop.counter0|add:page_obj.start_index }}{% else %}{{ forloop.counter }}{% endif %}
+        </td>
+        <td>
+            <div class="font-weight-bold text-slate-800">{{ tagihan.pelanggan.nama }}</div>
+            <small class="text-muted">
+                <i class="fas fa-home mr-1"></i>RT {{ tagihan.pelanggan.rumah.rt|default:"-" }} / No. {{ tagihan.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
+            </small>
+        </td>
+        <td>
+            <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
+                {{ tagihan.jenis_layanan.layanan.nama_layanan }} - {{ tagihan.jenis_layanan.nama_jenis|default:tagihan.jenis_layanan }}
+            </span>
+        </td>
+        <td>
+            <span class="font-weight-semibold text-slate-700">Bulan {{ tagihan.bulan }}</span>
+            <small class="text-muted">/ {{ tagihan.tahun }}</small>
+        </td>
+        <td>
+            {% if tagihan.status_tagihan == 'Lunas' or tagihan.status_tagihan == '1' or 'Lunas' in tagihan.get_status_tagihan_display %}
+                <span class="badge-status-paid">
+                    <i class="fas fa-check-circle mr-1"></i> Lunas
+                </span>
+            {% else %}
+                <span class="badge-status-unpaid">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Belum Lunas
+                </span>
+            {% endif %}
+        </td>
+        <td class="text-right font-weight-bold text-slate-800" style="font-size: 0.95rem;">
+            {{ tagihan.jumlah_bayar|rupiah }}
+        </td>
+        <td class="text-center">
+            <div class="btn-group btn-group-sm">
+                {% if perms.pelanggan.change_tagihan %}
+                <a href="{% url 'edit_tagihan' tagihan.id_tagihan %}" class="btn btn-light border text-primary" title="Edit Tagihan" style="border-radius: 6px 0 0 6px;">
+                    <i class="fas fa-edit"></i>
+                </a>
+                {% endif %}
+                {% if perms.pelanggan.delete_tagihan %}
+                <button type="button" class="btn btn-light border text-danger" title="Hapus Tagihan" 
+                        data-toggle="modal" data-target="#deleteModal" 
+                        data-url="{% url 'hapus_tagihan' tagihan.id_tagihan %}" 
+                        data-nama="Tagihan {{ tagihan.pelanggan.nama }} ({{ tagihan.bulan }}/{{ tagihan.tahun }})"
+                        style="border-radius: 0 6px 6px 0;">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+{% empty %}
+    {% if not is_ajax %}
+        <tr id="emptyTableRow">
+            <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fas fa-file-invoice-dollar fa-3x mb-2 text-slate-300 d-block"></i>
+                Belum ada data tagihan tercatat.
+            </td>
+        </tr>
+    {% endif %}
+{% endfor %}

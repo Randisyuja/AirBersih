@@ -14,23 +14,38 @@
             <p class="text-muted small mb-0">Catatan mutasi pelunasan tagihan air & iuran warga secara real-time</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
+            {% if perms.pembayaran.add_pembayaran %}
             <button type="button" class="btn btn-secondary btn-sm px-3 mr-2" id="btnOpenScannerList" data-toggle="modal" data-target="#barcodeScannerModal">
                 <i class="fas fa-barcode mr-1"></i> Scan Barcode
             </button>
+            {% endif %}
             <a href="{% url 'export_pembayaran_excel' %}" class="btn btn-secondary btn-sm px-3 mr-2">
                 <i class="fas fa-file-excel mr-1"></i> Export Excel
             </a>
+            {% if perms.pembayaran.add_pembayaran %}
             <a href="{% url 'tambah_pembayaran' %}" class="btn btn-primary btn-sm px-3">
                 <i class="fas fa-plus mr-1"></i> Tambah Pembayaran
             </a>
+            {% endif %}
         </div>
     </div>
 
     <!-- Search & Filter Bar -->
     {% include "pembayaran/includes/_daftar_filter_bar.html" %}
 
-    <!-- Data Card -->
-    <div class="card data-card border-0 shadow-sm">
+    <!-- Data Card with Infinite Scroll -->
+    <div class="card data-card border-0 shadow-sm" id="pembayaranTableContainer"
+         data-has-next="{% if page_obj.has_next %}true{% else %}false{% endif %}"
+         data-next-page="{% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}1{% endif %}"
+         data-total-count="{{ paginator.count|default:pembayaran_list|length }}">
+        <div class="card-header py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-main">
+                <i class="fas fa-receipt text-primary mr-2"></i>Daftar Riwayat Transaksi
+            </h6>
+            <span class="badge badge-light border text-muted px-2 py-1 font-weight-normal small" id="pembayaranTotalBadge">
+                Total: <strong>{{ paginator.count|default:pembayaran_list|length }}</strong> Transaksi
+            </span>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive p-3">
                 <table class="table modern-table table-hover align-middle mb-0" id="dataTable" width="100%">
@@ -48,84 +63,32 @@
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                    {% for pembayaran in pembayaran_list %}
-                        <tr>
-                            <td class="font-weight-medium text-muted" style="font-size: 0.85rem;">{{ forloop.counter }}</td>
-                            <td>
-                                <div class="font-weight-bold text-slate-800">{{ pembayaran.pelanggan.nama }}</div>
-                                <small class="text-muted font-mono">{{ pembayaran.pelanggan.barcode|default:"-" }}</small>
-                            </td>
-                            <td>
-                                <span class="badge badge-light border px-2 py-1 text-slate-700 font-weight-bold">
-                                    <i class="fas fa-home mr-1 text-muted"></i>RT {{ pembayaran.pelanggan.rumah.rt|default:"-" }} / No. {{ pembayaran.pelanggan.rumah.no_rumah|default:"Tanpa Rumah" }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge badge-pill badge-primary-subtle text-primary font-weight-semibold px-2 py-1">
-                                    {{ pembayaran.jenis_layanan.layanan.nama_layanan }} - {{ pembayaran.jenis_layanan.nama_jenis }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="font-weight-semibold text-slate-800">{{ pembayaran.get_bulan_display }}</span>
-                                <small class="text-muted d-block" style="font-size: 0.75rem;">Bulan {{ pembayaran.bulan }} / {{ pembayaran.tahun }}</small>
-                            </td>
-                            <td>
-                                {% if pembayaran.status_bayar == 'Lunas' or pembayaran.status_bayar == '1' or 'Lunas' in pembayaran.get_status_bayar_display %}
-                                    <span class="badge-status-paid">
-                                        <i class="fas fa-check-circle mr-1"></i> Lunas
-                                    </span>
-                                {% else %}
-                                    <span class="badge-status-unpaid">
-                                        <i class="fas fa-clock mr-1"></i> Belum Lunas
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td class="text-muted small">
-                                {{ pembayaran.tgl_pembayaran|date:"d M Y"|default:pembayaran.tgl_pembayaran|default:"-" }}
-                            </td>
-                            <td class="text-right font-weight-bold text-success" style="font-size: 0.95rem;">
-                                {{ pembayaran.jumlah_bayar|rupiah }}
-                            </td>
-                            <td>
-                                <span class="badge badge-light border text-muted px-2 py-1" style="font-size: 0.75rem;">
-                                    <i class="fas fa-user-tie mr-1"></i>{{ pembayaran.kasir|default:"Sistem" }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'cetak_struk_thermal' pembayaran.id_pembayaran %}?autoprint=1" target="_blank"
-                                       class="btn btn-light border text-primary" title="Cetak Struk Thermal"
-                                       id="btnStrukThermal_{{ pembayaran.id_pembayaran }}" style="border-radius: 6px 0 0 6px;">
-                                        <i class="fas fa-print"></i>
-                                    </a>
-                                    <a href="{% url 'edit_pembayaran' pembayaran.id_pembayaran %}" class="btn btn-light border text-info" title="Edit Transaksi">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-light border text-danger" title="Hapus Transaksi" 
-                                            data-toggle="modal" data-target="#deleteModal" 
-                                            data-url="{% url 'hapus_pembayaran' pembayaran.id_pembayaran %}" 
-                                            data-nama="Pembayaran {{ pembayaran.pelanggan.nama }} ({{ pembayaran.bulan }}/{{ pembayaran.tahun }})"
-                                            style="border-radius: 0 6px 6px 0;">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
+                    <tbody id="pembayaranTableBody">
+                        {% include "pembayaran/includes/_pembayaran_rows.html" %}
+                        <tr id="scrollSentinel">
+                            <td colspan="10" class="p-0 border-0"></td>
                         </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="10" class="text-center py-5 text-muted">
-                                <i class="fas fa-receipt fa-3x mb-2 text-slate-300 d-block"></i>
-                                Belum ada catatan transaksi pembayaran yang sesuai filter.
-                            </td>
-                        </tr>
-                    {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Infinite Scroll Loading Spinner -->
+            <div id="loadingSpinner" class="d-none text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary mr-2" role="status"></div>
+                <span class="text-muted small font-weight-medium">Memuat data transaksi pembayaran berikutnya...</span>
+            </div>
+
+            <!-- End of Data Indicator -->
+            <div id="endOfDataNotice" class="d-none text-center py-3 text-muted small border-top">
+                <i class="fas fa-check-circle text-success mr-1"></i> Seluruh catatan transaksi telah ditampilkan.
             </div>
         </div>
     </div>
 </div>
 
 {% include "pembayaran/includes/_barcode_scanner_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+{% include "pembayaran/includes/_infinite_scroll_scripts.html" %}
 {% endblock %}

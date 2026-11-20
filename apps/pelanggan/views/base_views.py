@@ -4,8 +4,8 @@ from apps.pelanggan.models import Pelanggan, Langganan, Tagihan
 from apps.layanan.models import JenisLayanan
 from django.http import JsonResponse, HttpResponseBadRequest
 from apps.rumah.models import Rumah
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from apps.core.permissions import FeaturePermissionMixin, feature_permission_required
 from apps.pelanggan.forms import PelangganForm, LanggananForm, TagihanForm
 from django.contrib import messages
 from django.db.models import ProtectedError
@@ -14,7 +14,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
 
 
-class DaftarPelanggan(LoginRequiredMixin, ListView):
+class DaftarPelanggan(FeaturePermissionMixin, ListView):
+    permission_required = "pelanggan.view_pelanggan"
     model = Pelanggan
     template_name = "pelanggan/daftar_pelanggan.html"
     context_object_name = "pelanggan_list"
@@ -61,7 +62,8 @@ class DaftarPelanggan(LoginRequiredMixin, ListView):
         return context
 
 
-class TambahPelanggan(LoginRequiredMixin, CreateView):
+class TambahPelanggan(FeaturePermissionMixin, CreateView):
+    permission_required = "pelanggan.add_pelanggan"
     model = Pelanggan
     form_class = PelangganForm
     template_name = "pelanggan/form_pelanggan.html"
@@ -73,7 +75,8 @@ class TambahPelanggan(LoginRequiredMixin, CreateView):
         return form
 
 
-class UpdatePelanggan(LoginRequiredMixin, UpdateView):
+class UpdatePelanggan(FeaturePermissionMixin, UpdateView):
+    permission_required = "pelanggan.change_pelanggan"
     model = Pelanggan
     form_class = PelangganForm
     template_name = "pelanggan/form_pelanggan.html"
@@ -87,6 +90,7 @@ class UpdatePelanggan(LoginRequiredMixin, UpdateView):
         return form
 
 
+@feature_permission_required("pelanggan.delete_pelanggan")
 def hapus_pelanggan(request, pk):
     if request.method == "POST":
         data = get_object_or_404(Pelanggan, pk=pk)
@@ -106,7 +110,8 @@ def hapus_pelanggan(request, pk):
     return redirect("daftar_pelanggan")
 
 
-class DaftarLangganan(LoginRequiredMixin, ListView):
+class DaftarLangganan(FeaturePermissionMixin, ListView):
+    permission_required = "pelanggan.view_langganan"
     model = Langganan
     template_name = "pelanggan/daftar_langganan.html"
     context_object_name = "langganan_list"
@@ -125,26 +130,30 @@ class DaftarLangganan(LoginRequiredMixin, ListView):
         )
 
 
-class DetailLangganan(LoginRequiredMixin, DetailView):
+class DetailLangganan(FeaturePermissionMixin, DetailView):
+    permission_required = "pelanggan.view_langganan"
     model = Langganan
     template_name = "pelanggan/detail_langganan.html"
     context_object_name = "langganan"
 
 
-class TambahLangganan(LoginRequiredMixin, CreateView):
+class TambahLangganan(FeaturePermissionMixin, CreateView):
+    permission_required = "pelanggan.add_langganan"
     model = Langganan
     form_class = LanggananForm
     template_name = "pelanggan/form_langganan.html"
     success_url = reverse_lazy("daftar_langganan")
 
 
-class UpdateLangganan(LoginRequiredMixin, UpdateView):
+class UpdateLangganan(FeaturePermissionMixin, UpdateView):
+    permission_required = "pelanggan.change_langganan"
     model = Langganan
     form_class = LanggananForm
     template_name = "pelanggan/form_langganan.html"
     success_url = reverse_lazy("daftar_langganan")
 
 
+@feature_permission_required("pelanggan.delete_langganan")
 def hapus_langganan(request, pk):
     if request.method == "POST":
         data = get_object_or_404(Langganan, pk=pk)
@@ -176,31 +185,74 @@ def get_harga_jenis(request):
         return HttpResponseBadRequest("Jenis tidak ditemukan")
 
 
-class DaftarTagihan(LoginRequiredMixin, ListView):
+class DaftarTagihan(FeaturePermissionMixin, ListView):
+    permission_required = "pelanggan.view_tagihan"
     model = Tagihan
     template_name = "pelanggan/daftar_tagihan.html"
     context_object_name = "tagihan_list"
+    paginate_by = 25
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "pelanggan",
+                "pelanggan__rumah",
+                "jenis_layanan",
+                "jenis_layanan__layanan",
+            )
+            .order_by("-tahun", "-bulan", "pelanggan__nama")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["bulan_list"] = range(1, 13)
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+        is_ajax = (
+            self.request.headers.get("x-requested-with") == "XMLHttpRequest"
+            or self.request.GET.get("ajax") == "1"
+        )
+        if is_ajax:
+            from django.template.loader import render_to_string
+            page_obj = context.get("page_obj")
+            context["is_ajax"] = True
+            html = render_to_string(
+                "pelanggan/includes/_tagihan_rows.html",
+                context,
+                request=self.request,
+            )
+            return JsonResponse(
+                {
+                    "html": html,
+                    "has_next": page_obj.has_next() if page_obj else False,
+                    "next_page": page_obj.next_page_number() if page_obj and page_obj.has_next() else None,
+                    "current_page": page_obj.number if page_obj else 1,
+                    "total_count": context["paginator"].count if "paginator" in context else 0,
+                }
+            )
+        return super().render_to_response(context, **response_kwargs)
 
-class TambahTagihan(LoginRequiredMixin, CreateView):
+
+class TambahTagihan(FeaturePermissionMixin, CreateView):
+    permission_required = "pelanggan.add_tagihan"
     model = Tagihan
     form_class = TagihanForm
     template_name = "pelanggan/form_tagihan.html"
     success_url = reverse_lazy("daftar_tagihan")
 
 
-class UpdateTagihan(LoginRequiredMixin, UpdateView):
+class UpdateTagihan(FeaturePermissionMixin, UpdateView):
+    permission_required = "pelanggan.change_tagihan"
     model = Tagihan
     form_class = TagihanForm
     template_name = "pelanggan/form_tagihan.html"
     success_url = reverse_lazy("daftar_tagihan")
 
 
+@feature_permission_required("pelanggan.delete_tagihan")
 def hapus_tagihan(request, pk):
     if request.method == 'POST':
         data = get_object_or_404(Tagihan, pk=pk)
@@ -209,7 +261,7 @@ def hapus_tagihan(request, pk):
     return redirect('daftar_tagihan')
 
 
-@login_required()
+@feature_permission_required("pelanggan.add_tagihan")
 def generate_tagihan(request):
     if request.method == "POST":
         tahun = int(request.POST.get("year", timezone.now().year))

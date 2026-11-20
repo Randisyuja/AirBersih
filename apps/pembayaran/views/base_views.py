@@ -1,13 +1,13 @@
 """Base CRUD and list views for pembayaran (ADR 002 §1.1 - Thin views)."""
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
+from apps.core.permissions import FeaturePermissionMixin, feature_permission_required
 from apps.pembayaran.choices import BulanChoice
 from apps.pembayaran.forms import PembayaranForm
 from apps.pembayaran.models import Pembayaran
@@ -22,11 +22,13 @@ from apps.pembayaran.selectors.payment_selectors import (
 from apps.pembayaran.services.payment_service import delete_payment
 
 
-class DaftarPembayaran(LoginRequiredMixin, ListView):
-    """Lists all payment transactions with preloaded relations and search/filter support."""
+class DaftarPembayaran(FeaturePermissionMixin, ListView):
+    """Lists all payment transactions with preloaded relations, search/filter, and infinite scroll support."""
+    permission_required = "pembayaran.view_pembayaran"
     model = Pembayaran
     template_name = "pembayaran/daftar_pembayaran.html"
     context_object_name = "pembayaran_list"
+    paginate_by = 25
 
     def get_queryset(self):
         return get_pembayaran_list_queryset(
@@ -49,9 +51,35 @@ class DaftarPembayaran(LoginRequiredMixin, ListView):
         context["tgl_akhir"] = (self.request.GET.get("tgl_akhir") or "").strip()
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+        is_ajax = (
+            self.request.headers.get("x-requested-with") == "XMLHttpRequest"
+            or self.request.GET.get("ajax") == "1"
+        )
+        if is_ajax:
+            from django.template.loader import render_to_string
+            page_obj = context.get("page_obj")
+            context["is_ajax"] = True
+            html = render_to_string(
+                "pembayaran/includes/_pembayaran_rows.html",
+                context,
+                request=self.request,
+            )
+            return JsonResponse(
+                {
+                    "html": html,
+                    "has_next": page_obj.has_next() if page_obj else False,
+                    "next_page": page_obj.next_page_number() if page_obj and page_obj.has_next() else None,
+                    "current_page": page_obj.number if page_obj else 1,
+                    "total_count": context["paginator"].count if "paginator" in context else 0,
+                }
+            )
+        return super().render_to_response(context, **response_kwargs)
 
-class PembayaranBulananView(TemplateView):
+
+class PembayaranBulananView(FeaturePermissionMixin, TemplateView):
     """Monthly payment breakdown and income KPI."""
+    permission_required = "pembayaran.view_pembayaran"
     template_name = "pembayaran/pembayaran_bulanan.html"
 
     def get_context_data(self, **kwargs):
@@ -73,8 +101,9 @@ class PembayaranBulananView(TemplateView):
         return context
 
 
-class TambahPembayaran(LoginRequiredMixin, CreateView):
+class TambahPembayaran(FeaturePermissionMixin, CreateView):
     """Form view for creating a new payment."""
+    permission_required = "pembayaran.add_pembayaran"
     model = Pembayaran
     form_class = PembayaranForm
     template_name = "pembayaran/form_pembayaran.html"
@@ -88,14 +117,16 @@ class TambahPembayaran(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class UpdatePembayaran(LoginRequiredMixin, UpdateView):
+class UpdatePembayaran(FeaturePermissionMixin, UpdateView):
     """Form view for updating an existing payment."""
+    permission_required = "pembayaran.change_pembayaran"
     model = Pembayaran
     form_class = PembayaranForm
     template_name = "pembayaran/form_pembayaran.html"
     success_url = reverse_lazy("daftar_pembayaran")
 
 
+@feature_permission_required("pembayaran.delete_pembayaran")
 def hapus_pembayaran(request: HttpRequest, pk: int) -> HttpResponse:
     """Action view for deleting payment by pk."""
     if request.method == "POST":
