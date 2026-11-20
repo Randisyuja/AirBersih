@@ -32,6 +32,7 @@
                             <th style="width: 60px;">No</th>
                             <th>Username</th>
                             <th>Nama Lengkap</th>
+                            <th>Role / Grup Akses</th>
                             <th>Kontak / No HP</th>
                             <th class="text-center" style="width: 120px;">Aksi</th>
                         </tr>
@@ -56,6 +57,17 @@
                                 </span>
                             </td>
                             <td>
+                                {% if u.is_superuser %}
+                                    <span class="badge badge-pill badge-primary-subtle text-primary px-2 py-1 font-weight-bold">Superuser / Admin</span>
+                                {% else %}
+                                    {% for g in u.groups.all %}
+                                        <span class="badge badge-pill badge-success-subtle text-success px-2 py-1 mr-1 font-weight-semibold">{{ g.name }}</span>
+                                    {% empty %}
+                                        <span class="badge badge-pill badge-light border text-muted px-2 py-1">Custom / Belum Diatur</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
                                 {% if u.no_hp %}
                                     <span class="text-slate-700 font-weight-medium">
                                         <i class="fab fa-whatsapp text-success mr-1"></i> {{ u.no_hp }}
@@ -66,9 +78,12 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'update_users' u.pk %}" class="btn btn-light border text-primary" title="Edit Petugas" style="border-radius: 6px 0 0 6px;">
+                                    {% if perms.users.change_kasir %}
+                                    <a href="{% url 'update_users' u.pk %}" class="btn btn-light border text-primary" title="Edit Petugas & Hak Akses" style="border-radius: 6px 0 0 6px;">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    {% endif %}
+                                    {% if perms.users.delete_kasir %}
                                     <button type="button" class="btn btn-light border text-danger" title="Hapus Petugas" 
                                             data-toggle="modal" data-target="#deleteModal" 
                                             data-url="{% url 'delete_users' u.pk %}" 
@@ -76,12 +91,13 @@
                                             style="border-radius: 0 6px 6px 0;">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="fas fa-user-shield fa-3x mb-2 text-slate-300 d-block"></i>
                                 Belum ada data pengguna / kasir terdaftar.
                             </td>

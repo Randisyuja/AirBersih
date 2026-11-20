@@ -1,9 +1,9 @@
 """Export document views for pembayaran (ADR 002 §1.1 & §1.6)."""
 
-from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from apps.core.permissions import feature_permission_required
 from apps.pembayaran.exports.excel_export import (
     export_laporan_tahunan_excel,
     export_pembayaran_to_excel,
@@ -11,7 +11,7 @@ from apps.pembayaran.exports.excel_export import (
 from apps.pembayaran.exports.pdf_export import generate_laporan_pembayaran_pdf
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran")
 def export_pembayaran_excel(request: HttpRequest) -> HttpResponse:
     """Exports payment records to Excel format."""
     buffer = export_pembayaran_to_excel()
@@ -23,7 +23,7 @@ def export_pembayaran_excel(request: HttpRequest) -> HttpResponse:
     return response
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran")
 @xframe_options_sameorigin
 def export_pembayaran_pdf(
     request: HttpRequest, layanan: str, tahun: int
@@ -49,7 +49,7 @@ def export_pembayaran_pdf(
     return response
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran")
 def export_laporan_tahunan_excel_view(
     request: HttpRequest, layanan: str, tahun: int
 ) -> HttpResponse:

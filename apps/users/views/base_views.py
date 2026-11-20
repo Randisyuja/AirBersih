@@ -15,6 +15,7 @@ from apps.pelanggan.forms import TagihanUpdate
 from apps.pembayaran.choices import BulanChoice, StatusChoice
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from apps.core.permissions import FeaturePermissionMixin
 from apps.users.forms import KasirCreationForm, LoginForm, PenggunaForm
 from django.db.models import Sum
 from apps.layanan.models import JenisLayanan, Layanan
@@ -137,27 +138,34 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         return redirect("dashboard")
 
 
-class DaftarKasir(LoginRequiredMixin, ListView):
+class DaftarKasir(FeaturePermissionMixin, ListView):
+    permission_required = "users.view_kasir"
     model = Kasir
     template_name = "users/daftar_users.html"
     context_object_name = "users_list"
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("groups", "user_permissions").order_by("username")
 
-class TambahKasir(LoginRequiredMixin, CreateView):
+
+class TambahKasir(FeaturePermissionMixin, CreateView):
+    permission_required = "users.add_kasir"
     model = Kasir
     form_class = PenggunaForm
     template_name = "users/form_users.html"
     success_url = reverse_lazy("daftar_users")
 
 
-class UpdateKasir(LoginRequiredMixin, UpdateView):
+class UpdateKasir(FeaturePermissionMixin, UpdateView):
+    permission_required = "users.change_kasir"
     model = Kasir
     form_class = PenggunaForm
     template_name = "users/form_users.html"
     success_url = reverse_lazy("daftar_users")
 
 
-class DeleteKasir(LoginRequiredMixin, DeleteView):
+class DeleteKasir(FeaturePermissionMixin, DeleteView):
+    permission_required = "users.delete_kasir"
     model = Kasir
     template_name = "users/delete_users.html"
     success_url = reverse_lazy("daftar_users")

@@ -34,7 +34,9 @@
                                 <th>No. Rumah</th>
                                 <th>Paket Layanan</th>
                                 <th class="text-right">Nominal Tagihan</th>
+                                {% if perms.pembayaran.add_pembayaran %}
                                 <th class="text-center" style="width: 130px;">Aksi</th>
+                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -62,12 +64,14 @@
                                         <span class="badge badge-pill badge-warning-subtle text-warning">Tarif Manual/Meteran</span>
                                     {% endif %}
                                 </td>
+                                {% if perms.pembayaran.add_pembayaran %}
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-primary font-weight-bold"
                                             onclick="window.openBarcodeScannerWithCode('{{ t.pelanggan.barcode }}')">
                                         <i class="fas fa-cash-register mr-1"></i> Bayar
                                     </button>
                                 </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>

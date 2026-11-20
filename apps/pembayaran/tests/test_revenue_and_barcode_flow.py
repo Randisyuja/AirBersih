@@ -21,9 +21,12 @@ class RevenueAndBarcodeFlowTests(TestCase):
     """Verifies revenue selectors, report views, and barcode scan-to-pay endpoints."""
 
     def setUp(self):
+        from apps.core.permissions import sync_default_groups
+        groups = sync_default_groups()
         self.user = Kasir.objects.create_user(
             username="kasir_argon", password="password123"
         )
+        self.user.groups.add(groups["Kasir"])
         self.client.force_login(self.user)
 
         self.layanan_air = Layanan.objects.create(nama_layanan="AIR")

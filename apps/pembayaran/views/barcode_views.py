@@ -3,11 +3,11 @@
 import json
 import logging
 from typing import Any, Dict
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import DatabaseError, IntegrityError
 from django.http import HttpRequest, JsonResponse
 from django.urls import reverse
+from apps.core.permissions import feature_permission_required
 from apps.pembayaran.exceptions.payment_exceptions import (
     CustomerNotFoundError,
     PaymentAlreadySettledError,
@@ -34,7 +34,7 @@ def _extract_post_payload(request: HttpRequest) -> Dict[str, Any]:
     return request.POST.dict()
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran", is_api=True)
 def scan_barcode_api(request: HttpRequest) -> JsonResponse:
     """
     GET /pembayaran/api/scan-barcode/?code=<string>
@@ -78,7 +78,7 @@ def scan_barcode_api(request: HttpRequest) -> JsonResponse:
         )
 
 
-@login_required
+@feature_permission_required("pembayaran.add_pembayaran", is_api=True)
 def pay_by_barcode_api(request: HttpRequest) -> JsonResponse:
     """
     POST /pembayaran/api/pay-barcode/

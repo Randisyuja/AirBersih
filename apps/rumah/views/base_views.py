@@ -1,14 +1,15 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from apps.core.permissions import FeaturePermissionMixin, feature_permission_required
 from apps.rumah.forms import RumahForm
 from apps.rumah.models import Rumah
 
 
-class DaftarRumah(LoginRequiredMixin, ListView):
+class DaftarRumah(FeaturePermissionMixin, ListView):
+    permission_required = "rumah.view_rumah"
     model = Rumah
     template_name = "rumah/daftar_rumah.html"
     context_object_name = "rumah_list"
@@ -53,20 +54,23 @@ class DaftarRumah(LoginRequiredMixin, ListView):
         return context
 
 
-class TambahRumah(LoginRequiredMixin, CreateView):
+class TambahRumah(FeaturePermissionMixin, CreateView):
+    permission_required = "rumah.add_rumah"
     model = Rumah
     form_class = RumahForm
     template_name = "rumah/form_rumah.html"
     success_url = reverse_lazy("daftar_rumah")
 
 
-class UpdateRumah(LoginRequiredMixin, UpdateView):
+class UpdateRumah(FeaturePermissionMixin, UpdateView):
+    permission_required = "rumah.change_rumah"
     model = Rumah
     form_class = RumahForm
     template_name = "rumah/form_rumah.html"
     success_url = reverse_lazy("daftar_rumah")
 
 
+@feature_permission_required("rumah.delete_rumah")
 def hapus_rumah(request, pk):
     if request.method == "POST":
         data = get_object_or_404(Rumah, pk=pk)

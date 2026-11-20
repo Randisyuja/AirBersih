@@ -2,9 +2,9 @@
 
 import json
 from typing import List
-from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
+from apps.core.permissions import feature_permission_required
 from apps.pelanggan.exports.qr_export import generate_qr_svg_bytes
 from apps.pelanggan.models import Langganan
 from apps.pembayaran.choices import BulanChoice
@@ -33,7 +33,7 @@ def _parse_receipt_ids(raw_ids: str, fallback_pk: int) -> List[int]:
     return parsed or [fallback_pk]
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran")
 def cetak_struk_thermal(request: HttpRequest, pk: int) -> HttpResponse:
     """
     Renders a 58mm / 80mm thermal POS receipt for one or multiple Pembayaran records
@@ -110,7 +110,7 @@ def cetak_struk_thermal(request: HttpRequest, pk: int) -> HttpResponse:
     return render(request, "pembayaran/struk_thermal.html", context)
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran")
 def pembayaran_qr_svg(request: HttpRequest, pk: int) -> HttpResponse:
     """Returns SVG QR code for a payment receipt's customer/member code."""
     pembayaran = get_pembayaran_by_id(pk)

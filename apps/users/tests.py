@@ -25,6 +25,7 @@ class UserPasswordHashingAndLoginTests(TestCase):
                 "email": "petugas@example.com",
                 "no_hp": "08123456789",
                 "password": "secretpassword123",
+                "is_active": True,
             },
         )
         self.assertEqual(res.status_code, 302)
@@ -55,6 +56,7 @@ class UserPasswordHashingAndLoginTests(TestCase):
                 "email": "reva@example.com",
                 "no_hp": "0811223344",
                 "password": "123456",
+                "is_active": True,
             },
         )
         self.assertEqual(res.status_code, 302)

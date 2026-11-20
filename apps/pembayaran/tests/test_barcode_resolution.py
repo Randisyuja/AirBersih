@@ -117,10 +117,13 @@ class BarcodeResolutionSelectorTests(TestCase):
 
 class BarcodeScanAPITests(TestCase):
     def setUp(self):
+        from apps.core.permissions import sync_default_groups
+        groups = sync_default_groups()
         self.user = Kasir.objects.create_user(
             username="kasir_test",
             password="password123",
         )
+        self.user.groups.add(groups["Kasir"])
         self.rumah = Rumah.objects.create(rt="02", no_rumah="C-12")
         self.pelanggan = Pelanggan.objects.create(
             nama="Budi Santoso",

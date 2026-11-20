@@ -120,12 +120,16 @@
             <p class="text-muted small mb-0">Pantau performa penerimaan kas air & iuran warga secara real-time</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2">
+            {% if perms.pelanggan.add_tagihan %}
             <button class="btn btn-outline-primary btn-sm px-3 shadow-sm mr-2" data-toggle="modal" data-target="#yearModal" style="border-radius: 8px;" id="btnGenerateTagihanDash">
                 <i class="fas fa-magic mr-1"></i> Generate Tagihan
             </button>
+            {% endif %}
+            {% if perms.pembayaran.view_pembayaran %}
             <a href="{% url 'daftar_pembayaran' %}" class="btn btn-primary btn-sm px-3 shadow-sm" style="border-radius: 8px;" id="btnSemuaPembayaranDash">
                 <i class="fas fa-receipt mr-1"></i> Semua Pembayaran
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -138,11 +142,15 @@
         {% include "dashboard/includes/_recent_table.html" %}
 
         <!-- Form Loket Pembayaran Cepat -->
-        {% include "dashboard/includes/_quick_pay_card.html" %}
+        {% if perms.pembayaran.add_pembayaran %}
+            {% include "dashboard/includes/_quick_pay_card.html" %}
+        {% endif %}
     </div>
 </div>
 
-{% include "pembayaran/includes/_barcode_scanner_modal.html" %}
+{% if perms.pembayaran.add_pembayaran %}
+    {% include "pembayaran/includes/_barcode_scanner_modal.html" %}
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

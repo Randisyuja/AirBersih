@@ -1,6 +1,6 @@
 {% load rupiah_filters %}
 
-<div class="col-xl-8 col-lg-7 mb-4">
+<div class="{% if perms.pembayaran.add_pembayaran %}col-xl-8 col-lg-7{% else %}col-12{% endif %} mb-4">
     <div class="card data-card border-0 shadow-sm h-100" id="cardRiwayatPembayaran">
         <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
             <div class="d-flex align-items-center">

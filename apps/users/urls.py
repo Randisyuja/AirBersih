@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import TemplateView
 from apps.users.views import (
     Dashboard,
     get_layanan_by_rumah,
@@ -20,6 +21,7 @@ from apps.users.views.excel_views import (
 urlpatterns = [
     # Dashboard & Auth
     path('', Dashboard.as_view(), name='dashboard'),
+    path('403/', TemplateView.as_view(template_name='403.html'), name='preview_403'),
     path("get-layanan/", get_layanan_by_rumah, name="get_layanan_by_rumah"),
     path("login/", UserLoginView.as_view(), name="login"),
     path("logout/", UserLogoutView.as_view(), name="logout"),

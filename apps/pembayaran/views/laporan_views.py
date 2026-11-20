@@ -2,10 +2,10 @@
 
 import json
 from typing import Optional
-from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
+from apps.core.permissions import feature_permission_required
 from apps.pembayaran.forms import TahunForm
 from apps.pembayaran.selectors.report_selectors import get_service_payment_matrix
 from apps.pembayaran.selectors.revenue_selectors import (
@@ -30,7 +30,7 @@ def _parse_optional_bulan(raw_bulan: Optional[str]) -> Optional[int]:
         return None
 
 
-@login_required
+@feature_permission_required("pembayaran.view_pembayaran")
 def laporan_tahunan(request: HttpRequest, layanan: str) -> HttpResponse:
     """Renders annual matrix payment report, monthly revenue chart, and annual KPI for AIR/WIFI."""
     current_year = timezone.now().year

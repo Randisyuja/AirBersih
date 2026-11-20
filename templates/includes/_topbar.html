@@ -22,11 +22,13 @@
     <ul class="navbar-nav ml-auto align-items-center">
 
         <!-- Quick Action: Generate Tagihan Button -->
+        {% if perms.pelanggan.add_tagihan %}
         <li class="nav-item d-none d-sm-block mr-2">
             <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#yearModal" id="topbarGenerateBtn" style="border-radius: 8px; font-weight: 600; font-size: 0.8rem; padding: 0.35rem 0.85rem;">
                 <i class="fas fa-magic mr-1"></i> Generate Tagihan
             </button>
         </li>
+        {% endif %}
 
         <!-- Theme Toggle Button -->
         <li class="nav-item mr-2" id="themeToggleWrapper">
@@ -47,7 +49,7 @@
                         {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
                     </span>
                     <span class="badge-role align-self-end mt-1">
-                        {% if user.is_superuser %}ADMINISTRATOR{% else %}KASIR RT{% endif %}
+                        {% if user.is_superuser %}ADMINISTRATOR{% elif user.groups.all %}{% for g in user.groups.all %}{{ g.name|upper }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}PETUGAS{% endif %}
                     </span>
                 </div>
                 <div class="user-avatar-circle" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #2563eb); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);">

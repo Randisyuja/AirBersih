@@ -3,6 +3,7 @@
 import json
 from django.test import TestCase
 from django.urls import reverse
+from apps.core.permissions import sync_default_groups
 from apps.layanan.models import JenisLayanan, Layanan
 from apps.pelanggan.models import Langganan, Pelanggan, Tagihan
 from apps.pembayaran.choices import StatusChoice
@@ -12,7 +13,9 @@ from apps.users.models import Kasir
 
 class BarcodePaymentErrorHandlingTests(TestCase):
     def setUp(self):
+        groups = sync_default_groups()
         self.kasir = Kasir.objects.create_user(username="kasir_test", password="password")
+        self.kasir.groups.add(groups["Kasir"])
         self.client.force_login(self.kasir)
 
         self.rumah = Rumah.objects.create(rt="05", no_rumah="C-01")
@@ -161,3 +164,81 @@ class BarcodePaymentErrorHandlingTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "sticky-col-1")
         self.assertContains(res, "sticky-col-2")
+
+    def test_daftar_pembayaran_infinite_scroll_ajax(self):
+        """DaftarPembayaran returns JSON with next_page and html partial on AJAX request."""
+        from django.utils import timezone
+        from apps.pembayaran.models import Pembayaran
+
+        # Create 30 payments (25 on page 1, 5 on page 2)
+        for i in range(1, 31):
+            Pembayaran.objects.create(
+                pelanggan=self.pelanggan,
+                jenis_layanan=self.jenis,
+                bulan=((i - 1) % 12) + 1,
+                tahun=2026 + (i // 13),
+                status_bayar=StatusChoice.Lunas,
+                tgl_pembayaran=timezone.now(),
+                jumlah_bayar=35000,
+                kasir=self.kasir,
+            )
+
+        # Standard GET should render HTML with first page
+        res = self.client.get(reverse("daftar_pembayaran"))
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.context["is_paginated"])
+        self.assertEqual(len(res.context["pembayaran_list"]), 25)
+
+        # AJAX GET page 2
+        res_ajax = self.client.get(
+            reverse("daftar_pembayaran"),
+            {"page": 2, "ajax": 1},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(res_ajax.status_code, 200)
+        self.assertEqual(res_ajax["Content-Type"], "application/json")
+        data = res_ajax.json()
+        self.assertIn("html", data)
+        self.assertEqual(data["current_page"], 2)
+        self.assertFalse(data["has_next"])
+        self.assertIsNone(data["next_page"])
+        self.assertEqual(data["total_count"], 30)
+
+    def test_daftar_tagihan_infinite_scroll_ajax(self):
+        """DaftarTagihan returns JSON with next_page and html partial on AJAX request."""
+        from apps.pelanggan.models import Tagihan
+
+        # Create 30 tagihan
+        for i in range(1, 31):
+            Tagihan.objects.create(
+                pelanggan=self.pelanggan,
+                jenis_layanan=self.jenis,
+                bulan=((i - 1) % 12) + 1,
+                tahun=2026 + (i // 13),
+                status_tagihan=StatusChoice.Belum,
+                jumlah_bayar=35000,
+            )
+
+        total_expected = Tagihan.objects.count()
+        # Standard GET should render HTML with first 25 records
+        res = self.client.get(reverse("daftar_tagihan"))
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.context["is_paginated"])
+        self.assertEqual(len(res.context["tagihan_list"]), 25)
+
+        # AJAX GET page 2
+        res_ajax = self.client.get(
+            reverse("daftar_tagihan"),
+            {"page": 2, "ajax": 1},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(res_ajax.status_code, 200)
+        self.assertEqual(res_ajax["Content-Type"], "application/json")
+        data = res_ajax.json()
+        self.assertIn("html", data)
+        self.assertEqual(data["current_page"], 2)
+        self.assertFalse(data["has_next"])
+        self.assertIsNone(data["next_page"])
+        self.assertEqual(data["total_count"], total_expected)
+
+

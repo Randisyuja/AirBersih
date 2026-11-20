@@ -24,10 +24,13 @@ from apps.users.models import Kasir
 
 class PembayaranExportServiceTests(TestCase):
     def setUp(self):
+        from apps.core.permissions import sync_default_groups
+        groups = sync_default_groups()
         self.kasir = Kasir.objects.create_user(
             username="kasir_export",
             password="password",
         )
+        self.kasir.groups.add(groups["Kasir"])
         self.rumah = Rumah.objects.create(rt="01", no_rumah="A-01")
         self.pelanggan = Pelanggan.objects.create(
             nama="Hasan",

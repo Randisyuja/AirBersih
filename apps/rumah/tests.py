@@ -8,7 +8,10 @@ from apps.users.models import Kasir
 
 class HapusRumahProtectedErrorTests(TestCase):
     def setUp(self):
+        from apps.core.permissions import sync_default_groups
+        groups = sync_default_groups()
         self.kasir = Kasir.objects.create_user(username="kasir_rumah", password="password")
+        self.kasir.groups.add(groups["Administrator"])
         self.client.force_login(self.kasir)
         self.rumah = Rumah.objects.create(rt="06", no_rumah="D3NO2")
         self.pelanggan = Pelanggan.objects.create(
