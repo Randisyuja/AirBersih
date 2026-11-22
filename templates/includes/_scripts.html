@@ -81,6 +81,50 @@
                 }
             });
         }
+
+        // 6. Sidebar State Persistence & Cross-Page Synchronization
+        $(document).on('click', '#sidebarToggle, #sidebarToggleTop', function () {
+            setTimeout(function () {
+                const isToggled = $('#accordionSidebar').hasClass('toggled');
+                try {
+                    localStorage.setItem('sidebar_toggled', isToggled ? 'true' : 'false');
+                } catch (e) {}
+
+                // If user just expanded the sidebar on desktop, re-open active submenu accordion
+                if (!isToggled && window.innerWidth >= 768) {
+                    $('#accordionSidebar .nav-item.active .collapse').collapse('show');
+                }
+            }, 50);
+        });
+
+        // Close open flyout collapse in toggled sidebar when clicking outside
+        $(document).on('click', function (e) {
+            if ($('#accordionSidebar').hasClass('toggled')) {
+                if (!$(e.target).closest('#accordionSidebar').length) {
+                    $('#accordionSidebar .collapse.show').collapse('hide');
+                }
+            }
+        });
+
+        // Ensure sidebar state matches localStorage on ready (safety sync)
+        try {
+            if (localStorage.getItem('sidebar_toggled') === 'true' && window.innerWidth >= 768) {
+                if (!$('body').hasClass('sidebar-toggled')) {
+                    $('body').addClass('sidebar-toggled');
+                }
+                if (!$('#accordionSidebar').hasClass('toggled')) {
+                    $('#accordionSidebar').addClass('toggled');
+                    $('#accordionSidebar .collapse').collapse('hide');
+                }
+            } else if (localStorage.getItem('sidebar_toggled') === 'false' && window.innerWidth >= 768) {
+                if ($('body').hasClass('sidebar-toggled')) {
+                    $('body').removeClass('sidebar-toggled');
+                }
+                if ($('#accordionSidebar').hasClass('toggled')) {
+                    $('#accordionSidebar').removeClass('toggled');
+                }
+            }
+        } catch (e) {}
     });
 </script>
 

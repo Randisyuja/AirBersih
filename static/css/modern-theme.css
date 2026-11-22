@@ -104,6 +104,8 @@ footer.sticky-footer {
 /* 5. SIDEBAR NAVIGATION */
 .sidebar, ul.navbar-nav.sidebar {
     background: var(--surface-1) !important; border-right: 1px solid var(--border-subtle) !important; box-shadow: none !important;
+}
+.sidebar:not(.toggled), ul.navbar-nav.sidebar:not(.toggled) {
     overflow-x: hidden !important;
 }
 .sidebar .sidebar-brand { background: transparent !important; height: 4.5rem !important; width: 100% !important; box-sizing: border-box !important; }
@@ -150,9 +152,14 @@ footer.sticky-footer {
 }
 .sidebar .collapse-inner .collapse-item:hover, .sidebar .collapse-inner .collapse-item.active { background: var(--surface-1) !important; color: var(--text-main) !important; }
 /* 5.1 COLLAPSED / TOGGLED SIDEBAR CENTERING & POLISH */
-.sidebar.toggled {
+.sidebar.toggled,
+ul.navbar-nav.sidebar.toggled {
     width: 5.5rem !important;
     overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    z-index: 1030 !important;
+    position: relative !important;
     transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
@@ -249,20 +256,85 @@ footer.sticky-footer {
 }
 
 @media (min-width: 768px) {
-    .sidebar.toggled .nav-item .collapse {
+    /* 1. Flyout positioning when toggled */
+    .sidebar.toggled .nav-item .collapse,
+    .sidebar.toggled .nav-item .collapsing {
         position: absolute !important;
-        left: calc(5.5rem + 0.5rem) !important;
+        left: 5.25rem !important;
         top: 0 !important;
-        width: 13rem !important;
-        z-index: 1050 !important;
+        width: 14.5rem !important;
+        margin: 0 !important;
+        padding-left: 0.5rem !important;
+        z-index: 1060 !important;
         box-sizing: border-box !important;
+        height: auto !important;
     }
+
+    .sidebar.toggled .nav-item .collapse:not(.show) {
+        display: none;
+    }
+
+    /* 2. Show flyout on HOVER over .nav-item or when .show is active (click) */
+    .sidebar.toggled .nav-item:hover > .collapse,
+    .sidebar.toggled .nav-item .collapse.show {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        animation: flyoutFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* 3. Flyout Card Container */
     .sidebar.toggled .nav-item .collapse .collapse-inner {
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
         background: var(--surface-1) !important;
         border: 1px solid var(--border-subtle) !important;
-        padding: 0.5rem !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border-subtle) !important;
         border-radius: var(--radius-md) !important;
+        padding: 0.6rem 0.5rem !important;
+        min-width: 13.5rem !important;
+        display: block !important;
+    }
+
+    /* 4. Header in Flyout */
+    .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-header {
+        color: var(--text-muted) !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        text-transform: uppercase !important;
+        padding: 0.25rem 0.65rem 0.4rem !important;
+        border-bottom: 1px solid var(--border-subtle) !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    /* 5. Items in Flyout */
+    .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item {
+        color: var(--text-main) !important;
+        border-radius: var(--radius-sm) !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        padding: 0.5rem 0.75rem !important;
+        margin: 0.1rem 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: all 0.15s ease !important;
+        white-space: nowrap !important;
+    }
+
+    .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item:hover,
+    .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item.active {
+        background: var(--surface-2) !important;
+        color: var(--accent) !important;
+    }
+
+    @keyframes flyoutFadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 }
 

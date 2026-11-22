@@ -30,12 +30,22 @@
     <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
 
     <!-- Modern Jogo Tirto Design System Theme -->
-    <link href="{% static 'css/modern-theme.css' %}?v=20261120a" rel="stylesheet">
+    <link href="{% static 'css/modern-theme.css' %}?v=20261122b" rel="stylesheet">
 
     {% block extra_css %}{% endblock %}
 </head>
 
 <body id="page-top">
+    <!-- Immediate Sidebar State Restoration (Zero-FOUC) -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('sidebar_toggled') === 'true' && window.innerWidth >= 768) {
+                    document.body.classList.add('sidebar-toggled');
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- Main App Wrapper -->
     <div id="wrapper">

@@ -1,6 +1,19 @@
 {% load static %}
 <!-- Sidebar -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <!-- Immediate Sidebar State Restoration -->
+    <script>
+        (function () {
+            try {
+                if (document.body.classList.contains('sidebar-toggled')) {
+                    var sb = document.getElementById('accordionSidebar');
+                    if (sb) {
+                        sb.classList.add('toggled');
+                    }
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center px-3 py-3" href="{% url 'dashboard' %}" id="brandLink">
@@ -162,6 +175,26 @@
     <div class="text-center d-none d-md-inline mb-4">
         <button class="rounded-circle border-0" id="sidebarToggle" aria-label="Toggle Sidebar"></button>
     </div>
+
+    <!-- Synchronous Collapse Cleanup for Minimized State -->
+    <script>
+        (function () {
+            try {
+                var sb = document.getElementById('accordionSidebar');
+                if (sb && sb.classList.contains('toggled')) {
+                    var openCollapses = sb.querySelectorAll('.collapse.show');
+                    for (var i = 0; i < openCollapses.length; i++) {
+                        openCollapses[i].classList.remove('show');
+                        var trigger = sb.querySelector('[data-target="#' + openCollapses[i].id + '"]');
+                        if (trigger) {
+                            trigger.classList.add('collapsed');
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                }
+            } catch (e) {}
+        })();
+    </script>
 
 </ul>
 <!-- End of Sidebar -->
